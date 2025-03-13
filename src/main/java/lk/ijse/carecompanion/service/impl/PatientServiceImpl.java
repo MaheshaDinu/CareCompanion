@@ -55,17 +55,6 @@ public class PatientServiceImpl implements PatientService {
         return modelMapper.map(patientRepo.findAll(),new TypeToken<List<PatientDTO>>(){}.getType());
     }
 
-    public void addSymptom(SymptomDTO symptomDTO) {
-        Optional<Patient> optPatient = patientRepo.findById(symptomDTO.getPatientId());
-        if (!optPatient.isPresent()) {
-            throw new RuntimeException("Patient not found with id: " + symptomDTO.getPatientId());
-        }
-        Patient patient = optPatient.get();
-
-        Symptom symptom = modelMapper.map(symptomDTO, Symptom.class);
-        symptom.setPatient(patient);
-        symptomRepo.save(symptom);
-    }
     public void addPatientThreshold(PatientThresholdDTO patientThresholdDTO) {
         Optional<Patient> optPatient = patientRepo.findById(patientThresholdDTO.getPatientId());
         if (!optPatient.isPresent()) {
