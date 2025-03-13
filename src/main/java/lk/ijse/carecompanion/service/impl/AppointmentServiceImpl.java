@@ -24,7 +24,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private ProviderRepo providerRepo;
     @Autowired
     private ModelMapper modelMapper;
-    public void addAppointment(AppointmentDTO appointmentDTO){
+    public void save(AppointmentDTO appointmentDTO){
         Appointment appointment = modelMapper.map(appointmentDTO, Appointment.class);
         Optional<Patient> optPatient = patientRepo.findById(appointmentDTO.getPatientId());
         Optional<Provider> optProvider =providerRepo.findById(appointmentDTO.getProviderId());
@@ -37,5 +37,9 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointment.setPatient(patient);
             appointment.setProvider(provider);
             appointmentRepo.save(appointment);
+    }
+    public void update(AppointmentDTO appointmentDTO){
+        Appointment appointment = modelMapper.map(appointmentDTO, Appointment.class);
+        appointmentRepo.save(appointment);
     }
 }
