@@ -15,4 +15,5 @@ public class HealthMetricDTO {
     private Double value;
     private LocalDateTime timestamp;
     private String notes;
+    private int patientId;
 }

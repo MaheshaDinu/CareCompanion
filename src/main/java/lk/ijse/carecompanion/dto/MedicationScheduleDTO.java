@@ -18,4 +18,5 @@ public class MedicationScheduleDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalTime reminderTime;
+    private int patientId;
 }

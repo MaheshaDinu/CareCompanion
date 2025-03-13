@@ -38,4 +38,5 @@ public class ProviderServiceImpl implements ProviderService {
     public ProviderDTO getByUserName(String userName){
         return modelMapper.map(providerRepo.findByUserName(userName),ProviderDTO.class);
     }
+
 }
