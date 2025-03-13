@@ -25,7 +25,7 @@ public class ProviderServiceImpl implements ProviderService {
         providerRepo.save(provider);
     }
     @Override
-    public void update(ProviderDTO providerDTO){
+    public void update(ProviderRegistrationDTO providerDTO){
         Provider provider = modelMapper.map(providerDTO,Provider.class);
         providerRepo.save(provider);
     }

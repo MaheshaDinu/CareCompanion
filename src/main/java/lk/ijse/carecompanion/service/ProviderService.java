@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ProviderService {
     void register(ProviderRegistrationDTO providerRegistrationDTO);
-    void update(ProviderDTO providerDTO);
+    void update(ProviderRegistrationDTO providerDTO);
     void delete(int id);
     List<ProviderDTO> getAll();
     ProviderDTO getByUserName(String userName);
