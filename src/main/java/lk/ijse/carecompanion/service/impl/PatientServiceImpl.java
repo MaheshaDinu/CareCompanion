@@ -33,7 +33,7 @@ public class PatientServiceImpl implements PatientService {
     public void register(PatientRegistrationDTO patientRegistrationDTO){
         Patient patient = modelMapper.map(patientRegistrationDTO, Patient.class);
         Optional<Provider> optProvider = providerRepo.findById(patientRegistrationDTO.getProviderId());
-        if (!optProvider.isPresent()) {
+        if (optProvider.isEmpty()) {
             throw new RuntimeException("Provider not found with id: " + patientRegistrationDTO.getProviderId());
         }
         Provider provider = optProvider.get();
@@ -55,18 +55,6 @@ public class PatientServiceImpl implements PatientService {
         return modelMapper.map(patientRepo.findAll(),new TypeToken<List<PatientDTO>>(){}.getType());
     }
 
-
-    public void addMedicationSchedule(MedicationScheduleDTO medicationScheduleDTO) {
-        Optional<Patient> optPatient = patientRepo.findById(medicationScheduleDTO.getPatientId());
-        if (!optPatient.isPresent()) {
-            throw new RuntimeException("Patient not found with id: " + medicationScheduleDTO.getPatientId());
-        }
-        Patient patient = optPatient.get();
-
-        MedicationSchedule medicationSchedule = modelMapper.map(medicationScheduleDTO, MedicationSchedule.class);
-        medicationSchedule.setPatient(patient);
-        medicationScheduleRepo.save(medicationSchedule);
-    }
     public void addSymptom(SymptomDTO symptomDTO) {
         Optional<Patient> optPatient = patientRepo.findById(symptomDTO.getPatientId());
         if (!optPatient.isPresent()) {
