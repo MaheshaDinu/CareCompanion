@@ -55,15 +55,4 @@ public class PatientServiceImpl implements PatientService {
         return modelMapper.map(patientRepo.findAll(),new TypeToken<List<PatientDTO>>(){}.getType());
     }
 
-    public void addPatientThreshold(PatientThresholdDTO patientThresholdDTO) {
-        Optional<Patient> optPatient = patientRepo.findById(patientThresholdDTO.getPatientId());
-        if (!optPatient.isPresent()) {
-            throw new RuntimeException("Patient not found with id: " + patientThresholdDTO.getPatientId());
-        }
-        Patient patient = optPatient.get();
-
-        PatientThreshold patientThreshold = modelMapper.map(patientThresholdDTO, PatientThreshold.class);
-        patientThreshold.setPatient(patient);
-        patientThresholdRepo.save(patientThreshold);
-    }
 }

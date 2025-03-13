@@ -10,5 +10,4 @@ public interface PatientService {
     void delete(int id);
     List<PatientDTO> getAll();
     PatientDTO getByUserName(String userName);
-    void addPatientThreshold(PatientThresholdDTO patientThresholdDTO);
 }
