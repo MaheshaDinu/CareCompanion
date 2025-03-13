@@ -21,7 +21,7 @@ public class MedicationScheduleServiceImpl implements MedicationScheduleService 
     @Autowired
     private ModelMapper modelMapper;
 
-    public void addMedicationSchedule(MedicationScheduleDTO medicationScheduleDTO) {
+    public void save(MedicationScheduleDTO medicationScheduleDTO) {
         Optional<Patient> optPatient = patientRepo.findById(medicationScheduleDTO.getPatientId());
         if (!optPatient.isPresent()) {
             throw new RuntimeException("Patient not found with id: " + medicationScheduleDTO.getPatientId());
@@ -31,5 +31,12 @@ public class MedicationScheduleServiceImpl implements MedicationScheduleService 
         MedicationSchedule medicationSchedule = modelMapper.map(medicationScheduleDTO, MedicationSchedule.class);
         medicationSchedule.setPatient(patient);
         medicationScheduleRepo.save(medicationSchedule);
+    }
+    public void update(MedicationScheduleDTO medicationScheduleDTO) {
+        MedicationSchedule medicationSchedule = modelMapper.map(medicationScheduleDTO, MedicationSchedule.class);
+        medicationScheduleRepo.save(medicationSchedule);
+    }
+    public void delete(int id){
+        medicationScheduleRepo.deleteById(id);
     }
 }

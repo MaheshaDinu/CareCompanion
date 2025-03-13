@@ -20,7 +20,7 @@ public class SymptomServiceImpl implements SymptomService {
     private PatientRepo patientRepo;
     @Autowired
     private ModelMapper modelMapper;
-    public void addSymptom(SymptomDTO symptomDTO) {
+    public void save(SymptomDTO symptomDTO) {
         Optional<Patient> optPatient = patientRepo.findById(symptomDTO.getPatientId());
         if (!optPatient.isPresent()) {
             throw new RuntimeException("Patient not found with id: " + symptomDTO.getPatientId());
@@ -30,5 +30,12 @@ public class SymptomServiceImpl implements SymptomService {
         Symptom symptom = modelMapper.map(symptomDTO, Symptom.class);
         symptom.setPatient(patient);
         symptomRepo.save(symptom);
+    }
+    public void update(SymptomDTO symptomDTO) {
+        Symptom symptom = modelMapper.map(symptomDTO, Symptom.class);
+        symptomRepo.save(symptom);
+    }
+    public void delete(int id) {
+        symptomRepo.deleteById(id);
     }
 }

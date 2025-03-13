@@ -21,7 +21,7 @@ public class PatientThresholdServiceImpl implements PatientThresholdService {
     PatientRepo patientRepo;
     @Autowired
     private ModelMapper modelMapper;
-    public void addPatientThreshold(PatientThresholdDTO patientThresholdDTO) {
+    public void save(PatientThresholdDTO patientThresholdDTO) {
         Optional<Patient> optPatient = patientRepo.findById(patientThresholdDTO.getPatientId());
         if (!optPatient.isPresent()) {
             throw new RuntimeException("Patient not found with id: " + patientThresholdDTO.getPatientId());
@@ -31,5 +31,12 @@ public class PatientThresholdServiceImpl implements PatientThresholdService {
         PatientThreshold patientThreshold = modelMapper.map(patientThresholdDTO, PatientThreshold.class);
         patientThreshold.setPatient(patient);
         patientThresholdRepo.save(patientThreshold);
+    }
+    public void update(PatientThresholdDTO patientThresholdDTO) {
+        PatientThreshold patientThreshold = modelMapper.map(patientThresholdDTO, PatientThreshold.class);
+        patientThresholdRepo.save(patientThreshold);
+    }
+    public void delete(int id) {
+        patientThresholdRepo.deleteById(id);
     }
 }

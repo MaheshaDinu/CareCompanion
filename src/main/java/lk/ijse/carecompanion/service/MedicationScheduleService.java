@@ -3,5 +3,7 @@ package lk.ijse.carecompanion.service;
 import lk.ijse.carecompanion.dto.MedicationScheduleDTO;
 
 public interface MedicationScheduleService {
-    void addMedicationSchedule(MedicationScheduleDTO medicationScheduleDTO);
+    void save(MedicationScheduleDTO medicationScheduleDTO);
+    void update(MedicationScheduleDTO medicationScheduleDTO);
+    void delete(int id);
 }

@@ -20,7 +20,7 @@ public class HealthMetricServiceImpl implements HealthMetricService {
     private PatientRepo patientRepo;
     @Autowired
     private ModelMapper modelMapper;
-    public void addHealthMetrics(HealthMetricDTO healthMetricDTO) {
+    public void save(HealthMetricDTO healthMetricDTO) {
         Optional<Patient> optPatient = patientRepo.findById(healthMetricDTO.getPatientId());
         if (!optPatient.isPresent()) {
             throw new RuntimeException("Patient not found with id: " + healthMetricDTO.getPatientId());
@@ -30,5 +30,12 @@ public class HealthMetricServiceImpl implements HealthMetricService {
         HealthMetric healthMetric = modelMapper.map(healthMetricDTO, HealthMetric.class);
         healthMetric.setPatient(patient);
         healthMetricRepo.save(healthMetric);
+    }
+    public void update(HealthMetricDTO healthMetricDTO) {
+        HealthMetric healthMetric = modelMapper.map(healthMetricDTO, HealthMetric.class);
+        healthMetricRepo.save(healthMetric);
+    }
+    public void delete(int id) {
+        healthMetricRepo.deleteById(id);
     }
 }
