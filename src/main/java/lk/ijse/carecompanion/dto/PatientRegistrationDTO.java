@@ -19,5 +19,7 @@ public class PatientRegistrationDTO extends UserRegistrationDTO{
     @NotBlank
     private Date dob;
     private String medicalHistory;
+    @NotBlank
+    private int providerId;
 
 }

@@ -12,5 +12,5 @@ public class PatientThresholdDTO {
     private String metricType; // e.g., "BLOOD_PRESSURE", "BLOOD_SUGAR", etc.
     private Double minValue;
     private Double maxValue;
-    private Long patientId;
+    private int patientId;
 }

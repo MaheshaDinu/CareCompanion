@@ -1,14 +1,8 @@
 package lk.ijse.carecompanion.service.impl;
 
 import lk.ijse.carecompanion.dto.*;
-import lk.ijse.carecompanion.entity.HealthMetric;
-import lk.ijse.carecompanion.entity.MedicationSchedule;
-import lk.ijse.carecompanion.entity.Patient;
-import lk.ijse.carecompanion.entity.Symptom;
-import lk.ijse.carecompanion.repository.HealthMetricRepo;
-import lk.ijse.carecompanion.repository.MedicationScheduleRepo;
-import lk.ijse.carecompanion.repository.PatientRepo;
-import lk.ijse.carecompanion.repository.SymptomRepo;
+import lk.ijse.carecompanion.entity.*;
+import lk.ijse.carecompanion.repository.*;
 import lk.ijse.carecompanion.service.PatientService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -23,17 +17,27 @@ public class PatientServiceImpl implements PatientService {
     @Autowired
     PatientRepo patientRepo;
     @Autowired
+    ProviderRepo providerRepo;
+    @Autowired
     HealthMetricRepo healthMetricRepo;
     @Autowired
     MedicationScheduleRepo medicationScheduleRepo;
     @Autowired
     SymptomRepo symptomRepo;
     @Autowired
+    PatientThresholdRepo patientThresholdRepo;
+    @Autowired
     ModelMapper modelMapper;
 
 
     public void register(PatientRegistrationDTO patientRegistrationDTO){
         Patient patient = modelMapper.map(patientRegistrationDTO, Patient.class);
+        Optional<Provider> optProvider = providerRepo.findById(patientRegistrationDTO.getProviderId());
+        if (!optProvider.isPresent()) {
+            throw new RuntimeException("Provider not found with id: " + patientRegistrationDTO.getProviderId());
+        }
+        Provider provider = optProvider.get();
+        patient.setProvider(provider);
         patientRepo.save(patient);
 
     }
@@ -84,5 +88,15 @@ public class PatientServiceImpl implements PatientService {
         symptom.setPatient(patient);
         symptomRepo.save(symptom);
     }
+    public void addPatientThreshold(PatientThresholdDTO patientThresholdDTO) {
+        Optional<Patient> optPatient = patientRepo.findById(patientThresholdDTO.getPatientId());
+        if (!optPatient.isPresent()) {
+            throw new RuntimeException("Patient not found with id: " + patientThresholdDTO.getPatientId());
+        }
+        Patient patient = optPatient.get();
 
+        PatientThreshold patientThreshold = modelMapper.map(patientThresholdDTO, PatientThreshold.class);
+        patientThreshold.setPatient(patient);
+        patientThresholdRepo.save(patientThreshold);
+    }
 }
