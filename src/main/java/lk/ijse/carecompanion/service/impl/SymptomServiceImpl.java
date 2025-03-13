@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,5 +38,9 @@ public class SymptomServiceImpl implements SymptomService {
     }
     public void delete(int id) {
         symptomRepo.deleteById(id);
+    }
+    public List<SymptomDTO> getSymptomsByPatientId(int patientId) {
+        List<Symptom> symptoms = symptomRepo.findByPatientId(patientId);
+        return symptoms.stream().map(symptom -> modelMapper.map(symptom, SymptomDTO.class)).toList();
     }
 }

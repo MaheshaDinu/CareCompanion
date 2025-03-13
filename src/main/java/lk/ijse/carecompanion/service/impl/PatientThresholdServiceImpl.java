@@ -8,9 +8,11 @@ import lk.ijse.carecompanion.repository.PatientThresholdRepo;
 import lk.ijse.carecompanion.service.PatientService;
 import lk.ijse.carecompanion.service.PatientThresholdService;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -38,5 +40,9 @@ public class PatientThresholdServiceImpl implements PatientThresholdService {
     }
     public void delete(int id) {
         patientThresholdRepo.deleteById(id);
+    }
+    public List<PatientThresholdDTO> getPatientThresholdsByPatientId(int patientId) {
+        List<PatientThreshold> patientThresholds = patientThresholdRepo.findByPatientId(patientId);
+        return modelMapper.map(patientThresholds, new TypeToken<List<PatientThresholdDTO>>() {}.getType());
     }
 }

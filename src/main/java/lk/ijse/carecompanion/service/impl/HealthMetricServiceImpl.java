@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,5 +38,9 @@ public class HealthMetricServiceImpl implements HealthMetricService {
     }
     public void delete(int id) {
         healthMetricRepo.deleteById(id);
+    }
+    public List<HealthMetricDTO> getHealthMetricsByPatientId(int patientId) {
+        List<HealthMetric> healthMetrics = healthMetricRepo.findByPatientId(patientId);
+        return healthMetrics.stream().map(healthMetric -> modelMapper.map(healthMetric, HealthMetricDTO.class)).toList();
     }
 }

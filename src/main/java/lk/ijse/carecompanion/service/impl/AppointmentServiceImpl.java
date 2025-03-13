@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -44,5 +45,17 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
     public void delete(int id){
         appointmentRepo.deleteById(id);
+    }
+    public List<AppointmentDTO> getAppointmentsByPatientId(int patientId) {
+        List<Appointment> appointments = appointmentRepo.findByPatientId(patientId);
+        return appointments.stream()
+                .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
+                .toList();
+    }
+    public List<AppointmentDTO> getAppointmentsByProviderId(int providerId) {
+        List<Appointment> appointments = appointmentRepo.findByProviderId(providerId);
+        return appointments.stream()
+                .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
+                .toList();
     }
 }
