@@ -15,4 +15,5 @@ public class SymptomDTO {
     private Severity severity; // e.g., "LOW", "MEDIUM", "HIGH"
     private LocalDate date;
     private String notes;
+    private int patientId;
 }
