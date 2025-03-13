@@ -55,17 +55,7 @@ public class PatientServiceImpl implements PatientService {
         return modelMapper.map(patientRepo.findAll(),new TypeToken<List<PatientDTO>>(){}.getType());
     }
 
-    public void addHealthMetrics(HealthMetricDTO healthMetricDTO) {
-        Optional<Patient> optPatient = patientRepo.findById(healthMetricDTO.getPatientId());
-        if (!optPatient.isPresent()) {
-            throw new RuntimeException("Patient not found with id: " + healthMetricDTO.getPatientId());
-        }
-        Patient patient = optPatient.get();
 
-        HealthMetric healthMetric = modelMapper.map(healthMetricDTO, HealthMetric.class);
-        healthMetric.setPatient(patient);
-        healthMetricRepo.save(healthMetric);
-    }
     public void addMedicationSchedule(MedicationScheduleDTO medicationScheduleDTO) {
         Optional<Patient> optPatient = patientRepo.findById(medicationScheduleDTO.getPatientId());
         if (!optPatient.isPresent()) {

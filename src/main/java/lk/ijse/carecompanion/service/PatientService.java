@@ -1,8 +1,6 @@
 package lk.ijse.carecompanion.service;
 
-import lk.ijse.carecompanion.dto.HealthMetricDTO;
-import lk.ijse.carecompanion.dto.PatientDTO;
-import lk.ijse.carecompanion.dto.PatientRegistrationDTO;
+import lk.ijse.carecompanion.dto.*;
 
 import java.util.List;
 
@@ -12,5 +10,7 @@ public interface PatientService {
     void delete(int id);
     List<PatientDTO> getAll();
     PatientDTO getByUserName(String userName);
-    void addHealthMetrics(HealthMetricDTO healthMetricDTO);
+    void addMedicationSchedule(MedicationScheduleDTO medicationScheduleDTO);
+    void addSymptom(SymptomDTO symptomDTO);
+    void addPatientThreshold(PatientThresholdDTO patientThresholdDTO);
 }
