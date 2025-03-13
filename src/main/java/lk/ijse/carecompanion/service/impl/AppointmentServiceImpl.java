@@ -42,4 +42,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = modelMapper.map(appointmentDTO, Appointment.class);
         appointmentRepo.save(appointment);
     }
+    public void delete(int id){
+        appointmentRepo.deleteById(id);
+    }
 }
