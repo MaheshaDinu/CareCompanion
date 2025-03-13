@@ -10,7 +10,6 @@ public interface PatientService {
     void delete(int id);
     List<PatientDTO> getAll();
     PatientDTO getByUserName(String userName);
-    void addMedicationSchedule(MedicationScheduleDTO medicationScheduleDTO);
     void addSymptom(SymptomDTO symptomDTO);
     void addPatientThreshold(PatientThresholdDTO patientThresholdDTO);
 }
