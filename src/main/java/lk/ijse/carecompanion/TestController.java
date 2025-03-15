@@ -11,16 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/test")
 public class TestController {
 
-    @GetMapping("/provider")
+    @GetMapping("")
     public String getProvider() {
-        ProviderDTO providerDTO = new ProviderDTO();
-        providerDTO.setUserName("provider");
-        providerDTO.setId(1);
-        providerDTO.setEmail("pr@gmail.com");
-        providerDTO.setFirstName("Mahesha");
-        providerDTO.setLastName("Prabath");
-        providerDTO.setClinicName("DOCcare");
 
-        return providerDTO.getUserName();
+
+        return "CareCompanion";
     }
 }
