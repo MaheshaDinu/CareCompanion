@@ -7,6 +7,7 @@ import lk.ijse.carecompanion.service.PatientService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,9 +29,12 @@ public class PatientServiceImpl implements PatientService {
     PatientThresholdRepo patientThresholdRepo;
     @Autowired
     ModelMapper modelMapper;
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
     public void register(PatientRegistrationDTO patientRegistrationDTO){
+        patientRegistrationDTO.setPassword(bCryptPasswordEncoder.encode(patientRegistrationDTO.getPassword()));
         Patient patient = modelMapper.map(patientRegistrationDTO, Patient.class);
         Optional<Provider> optProvider = providerRepo.findById(patientRegistrationDTO.getProviderId());
         if (optProvider.isEmpty()) {

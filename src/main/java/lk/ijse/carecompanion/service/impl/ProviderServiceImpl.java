@@ -8,6 +8,7 @@ import lk.ijse.carecompanion.service.ProviderService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,9 +19,12 @@ public class ProviderServiceImpl implements ProviderService {
     ProviderRepo providerRepo;
     @Autowired
     ModelMapper modelMapper;
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
     public void register(ProviderRegistrationDTO providerRegistrationDTO){
+        providerRegistrationDTO.setPassword(bCryptPasswordEncoder.encode(providerRegistrationDTO.getPassword()));
         Provider provider = modelMapper.map(providerRegistrationDTO,Provider.class);
         providerRepo.save(provider);
     }
