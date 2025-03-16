@@ -1,17 +1,21 @@
 package lk.ijse.carecompanion.service.impl;
 
-import lk.ijse.carecompanion.dto.ProviderDTO;
-import lk.ijse.carecompanion.dto.ProviderRegistrationDTO;
+import lk.ijse.carecompanion.dto.*;
 import lk.ijse.carecompanion.entity.Provider;
 import lk.ijse.carecompanion.repository.ProviderRepo;
+import lk.ijse.carecompanion.service.JWTService;
 import lk.ijse.carecompanion.service.ProviderService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProviderServiceImpl implements ProviderService {
@@ -21,6 +25,10 @@ public class ProviderServiceImpl implements ProviderService {
     ModelMapper modelMapper;
     @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    AuthenticationManager authenticationManager;
+    @Autowired
+    JWTService jwtService;
 
     @Override
     public void register(ProviderRegistrationDTO providerRegistrationDTO){
@@ -43,4 +51,16 @@ public class ProviderServiceImpl implements ProviderService {
         return modelMapper.map(providerRepo.findByUserName(userName),ProviderDTO.class);
     }
 
+    @Override
+    public String verify(UserLoginDTO userDTO) {
+        Optional<Provider> optProvider = providerRepo.findByUserName(userDTO.getUsername());
+        if (optProvider.isPresent()) {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword()));
+            if (authentication.isAuthenticated()) {
+                return jwtService.generateToken(userDTO.getUsername());
+            }
+            return "fail";
+        }
+        return "Provider not found";
+    }
 }

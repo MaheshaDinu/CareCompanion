@@ -3,10 +3,14 @@ package lk.ijse.carecompanion.service.impl;
 import lk.ijse.carecompanion.dto.*;
 import lk.ijse.carecompanion.entity.*;
 import lk.ijse.carecompanion.repository.*;
+import lk.ijse.carecompanion.service.JWTService;
 import lk.ijse.carecompanion.service.PatientService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +35,10 @@ public class PatientServiceImpl implements PatientService {
     ModelMapper modelMapper;
     @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    AuthenticationManager authenticationManager;
+    @Autowired
+    JWTService jwtService;
 
 
     public void register(PatientRegistrationDTO patientRegistrationDTO){
@@ -55,6 +63,21 @@ public class PatientServiceImpl implements PatientService {
     public PatientDTO getByUserName(String userName){
         return modelMapper.map(patientRepo.findByUserName(userName),PatientDTO.class);
     }
+
+    @Override
+    public String verify(UserLoginDTO userDTO) {
+        Optional<Patient> optPatient = patientRepo.findByUserName(userDTO.getUsername());
+        if (optPatient.isPresent()) {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDTO.getUsername(),userDTO.getPassword()));
+            if (authentication.isAuthenticated()){
+                return jwtService.generateToken(userDTO.getUsername());
+            }
+            return "fail";
+        }
+        return "Patient not found";
+
+    }
+
     public List<PatientDTO> getAll(){
         return modelMapper.map(patientRepo.findAll(),new TypeToken<List<PatientDTO>>(){}.getType());
     }

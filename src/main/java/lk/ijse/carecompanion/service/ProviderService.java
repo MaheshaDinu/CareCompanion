@@ -1,7 +1,6 @@
 package lk.ijse.carecompanion.service;
 
-import lk.ijse.carecompanion.dto.ProviderDTO;
-import lk.ijse.carecompanion.dto.ProviderRegistrationDTO;
+import lk.ijse.carecompanion.dto.*;
 
 import java.util.List;
 
@@ -11,4 +10,6 @@ public interface ProviderService {
     void delete(int id);
     List<ProviderDTO> getAll();
     ProviderDTO getByUserName(String userName);
+
+    String verify(UserLoginDTO userDTO);
 }

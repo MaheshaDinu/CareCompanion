@@ -10,4 +10,6 @@ public interface PatientService {
     void delete(int id);
     List<PatientDTO> getAll();
     PatientDTO getByUserName(String userName);
+
+    String verify(UserLoginDTO userDTO);
 }
