@@ -1,5 +1,6 @@
 package lk.ijse.carecompanion;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lk.ijse.carecompanion.dto.ProviderDTO;
 import lk.ijse.carecompanion.entity.Patient;
 import lk.ijse.carecompanion.entity.Users;
@@ -12,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
 
     @GetMapping("")
-    public String getProvider() {
+    public String getProvider(HttpServletRequest request) {
 
 
-        return "CareCompanion";
+        return "CareCompanion Session ID:"+request.getSession().getId();
     }
 }
