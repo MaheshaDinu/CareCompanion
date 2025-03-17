@@ -11,5 +11,5 @@ public interface PatientService {
     List<PatientDTO> getAll();
     PatientDTO getByUserName(String userName);
 
-    String verify(UserLoginDTO userDTO);
+    AuthTokenDTO verifyPatient(UserLoginDTO userDTO);
 }

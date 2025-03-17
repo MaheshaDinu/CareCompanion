@@ -29,12 +29,7 @@ public class TestController {
         return "CareCompanion Session ID:"+request.getSession().getId();
     }
     @PostMapping("/login")
-    public String login(@RequestBody UserLoginDTO userDTO){
-
-        if (userDTO.getRole().equals(Role.PATIENT)){
-            return patientService.verify(userDTO);
-        }
-            return providerService.verify(userDTO);
-
+    public String login(@RequestBody UserLoginDTO userDTO) {
+        return "";
     }
 }

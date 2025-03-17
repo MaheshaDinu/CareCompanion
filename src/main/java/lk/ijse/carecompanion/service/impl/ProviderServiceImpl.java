@@ -29,6 +29,7 @@ public class ProviderServiceImpl implements ProviderService {
     AuthenticationManager authenticationManager;
     @Autowired
     JWTService jwtService;
+    AuthTokenDTO authTokenDTO = new AuthTokenDTO();
 
     @Override
     public void register(ProviderRegistrationDTO providerRegistrationDTO){
@@ -52,15 +53,22 @@ public class ProviderServiceImpl implements ProviderService {
     }
 
     @Override
-    public String verify(UserLoginDTO userDTO) {
+    public AuthTokenDTO verifyProvider(UserLoginDTO userDTO) {
         Optional<Provider> optProvider = providerRepo.findByUserName(userDTO.getUsername());
         if (optProvider.isPresent()) {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword()));
             if (authentication.isAuthenticated()) {
-                return jwtService.generateToken(userDTO.getUsername());
+                authTokenDTO.setAuthenticated(true);
+                authTokenDTO.setToken(jwtService.generateToken(userDTO.getUsername(),userDTO.getRole()));
+                authTokenDTO.setMessage("success");
+                return authTokenDTO;
             }
-            return "fail";
+            authTokenDTO.setAuthenticated(false);
+            authTokenDTO.setMessage("fail");
+            return authTokenDTO;
         }
-        return "Provider not found";
+        authTokenDTO.setAuthenticated(false);
+        authTokenDTO.setMessage("Provider not found");
+        return authTokenDTO;
     }
 }

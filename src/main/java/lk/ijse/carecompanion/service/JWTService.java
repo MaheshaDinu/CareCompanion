@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lk.ijse.carecompanion.enums.Role;
 import org.hibernate.annotations.DialectOverride;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @Service
@@ -30,12 +32,15 @@ public class JWTService {
             throw new RuntimeException(e);
         }
     }
-    public String generateToken(String userName){
+    public String generateToken(String userName,Role role){
 
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role",role );
+        claims.put("issuer", "CareCompanion");
+        long expirationTime = TimeUnit.HOURS.toMillis(24);
         return Jwts.builder().claims().add(claims).subject(userName)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .and()
                 .signWith(getKey())
                 .compact();

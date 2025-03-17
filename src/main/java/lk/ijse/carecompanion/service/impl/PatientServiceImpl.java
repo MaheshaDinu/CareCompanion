@@ -39,6 +39,7 @@ public class PatientServiceImpl implements PatientService {
     AuthenticationManager authenticationManager;
     @Autowired
     JWTService jwtService;
+    AuthTokenDTO authTokenDTO = new AuthTokenDTO();
 
 
     public void register(PatientRegistrationDTO patientRegistrationDTO){
@@ -65,16 +66,24 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public String verify(UserLoginDTO userDTO) {
+    public AuthTokenDTO verifyPatient(UserLoginDTO userDTO) {
         Optional<Patient> optPatient = patientRepo.findByUserName(userDTO.getUsername());
         if (optPatient.isPresent()) {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDTO.getUsername(),userDTO.getPassword()));
             if (authentication.isAuthenticated()){
-                return jwtService.generateToken(userDTO.getUsername());
+
+                authTokenDTO.setAuthenticated(true);
+                authTokenDTO.setToken(jwtService.generateToken(userDTO.getUsername(),userDTO.getRole()));
+                authTokenDTO.setMessage("Success");
+                return authTokenDTO;
             }
-            return "fail";
+            authTokenDTO.setAuthenticated(false);
+            authTokenDTO.setMessage("Fail");
+            return authTokenDTO;
         }
-        return "Patient not found";
+        authTokenDTO.setAuthenticated(false);
+        authTokenDTO.setMessage("Patient not found");
+        return authTokenDTO;
 
     }
 

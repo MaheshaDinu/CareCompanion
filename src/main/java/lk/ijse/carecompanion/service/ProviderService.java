@@ -11,5 +11,5 @@ public interface ProviderService {
     List<ProviderDTO> getAll();
     ProviderDTO getByUserName(String userName);
 
-    String verify(UserLoginDTO userDTO);
+    AuthTokenDTO verifyProvider(UserLoginDTO userDTO);
 }
