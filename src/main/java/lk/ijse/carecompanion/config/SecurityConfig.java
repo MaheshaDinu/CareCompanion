@@ -35,13 +35,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
-       // httpSecurity.formLogin(form -> form.loginPage("/login").permitAll());
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login","/register/provider","/register/patient","/test/login").permitAll()
+                .requestMatchers("/register/provider","/register/patient","/test/login","/swagger-ui/**",
+                        "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated())
-        //.formLogin(Customizer.withDefaults())
+        .formLogin(form -> form.loginPage("/login").permitAll())
         .httpBasic(Customizer.withDefaults())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
 
