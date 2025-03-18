@@ -1,6 +1,7 @@
 package lk.ijse.carecompanion.service.impl;
 
 import lk.ijse.carecompanion.dto.*;
+import lk.ijse.carecompanion.entity.Patient;
 import lk.ijse.carecompanion.entity.Provider;
 import lk.ijse.carecompanion.repository.ProviderRepo;
 import lk.ijse.carecompanion.service.JWTService;
@@ -70,5 +71,13 @@ public class ProviderServiceImpl implements ProviderService {
         authTokenDTO.setAuthenticated(false);
         authTokenDTO.setMessage("Provider not found");
         return authTokenDTO;
+    }
+
+    @Override
+    public List<PatientDTO> getPatientsByProviderId(int providerId) {
+        List<Patient> patients = providerRepo.findById(providerId).get().getPatients();
+        return patients.stream()
+                .map(patient -> modelMapper.map(patient, PatientDTO.class))
+                .toList();
     }
 }

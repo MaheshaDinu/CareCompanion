@@ -12,4 +12,5 @@ public interface PatientService {
     PatientDTO getByUserName(String userName);
 
     AuthTokenDTO verifyPatient(UserLoginDTO userDTO);
+    List<AppointmentDTO> getAppointmentsByPatientId(int patientId);
 }

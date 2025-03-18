@@ -87,6 +87,14 @@ public class PatientServiceImpl implements PatientService {
 
     }
 
+    @Override
+    public List<AppointmentDTO> getAppointmentsByPatientId(int patientId) {
+        List<Appointment> appointments = patientRepo.findById(patientId).get().getAppointmentsAsPatient();
+        return appointments.stream()
+                .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
+                .toList();
+    }
+
     public List<PatientDTO> getAll(){
         return modelMapper.map(patientRepo.findAll(),new TypeToken<List<PatientDTO>>(){}.getType());
     }
