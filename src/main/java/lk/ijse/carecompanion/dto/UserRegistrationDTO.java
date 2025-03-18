@@ -2,6 +2,7 @@ package lk.ijse.carecompanion.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lk.ijse.carecompanion.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +25,6 @@ public abstract class UserRegistrationDTO {
     private String lastName;
     @NotBlank
     private String phoneNumber;
-    @NotBlank
+    @NotNull
     private Role role;
 }

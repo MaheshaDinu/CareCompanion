@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,9 +40,9 @@ public class PatientServiceImpl implements PatientService {
     AuthenticationManager authenticationManager;
     @Autowired
     JWTService jwtService;
-    AuthTokenDTO authTokenDTO = new AuthTokenDTO();
 
 
+    @Transactional
     public void register(PatientRegistrationDTO patientRegistrationDTO){
         patientRegistrationDTO.setPassword(bCryptPasswordEncoder.encode(patientRegistrationDTO.getPassword()));
         Patient patient = modelMapper.map(patientRegistrationDTO, Patient.class);
@@ -68,6 +69,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public AuthTokenDTO verifyPatient(UserLoginDTO userDTO) {
         Optional<Patient> optPatient = patientRepo.findByUserName(userDTO.getUsername());
+        AuthTokenDTO authTokenDTO = new AuthTokenDTO();
         if (optPatient.isPresent()) {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDTO.getUsername(),userDTO.getPassword()));
             if (authentication.isAuthenticated()){
@@ -87,13 +89,7 @@ public class PatientServiceImpl implements PatientService {
 
     }
 
-    @Override
-    public List<AppointmentDTO> getAppointmentsByPatientId(int patientId) {
-        List<Appointment> appointments = patientRepo.findById(patientId).get().getAppointmentsAsPatient();
-        return appointments.stream()
-                .map(appointment -> modelMapper.map(appointment, AppointmentDTO.class))
-                .toList();
-    }
+
 
     public List<PatientDTO> getAll(){
         return modelMapper.map(patientRepo.findAll(),new TypeToken<List<PatientDTO>>(){}.getType());

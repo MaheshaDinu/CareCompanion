@@ -1,6 +1,7 @@
 package lk.ijse.carecompanion.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,14 +13,14 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class PatientRegistrationDTO extends UserRegistrationDTO{
-    @NotBlank
+    @NotNull
     private int age;
     @NotBlank
     private String gender;
-    @NotBlank
+    @NotNull
     private Date dob;
     private String medicalHistory;
-    @NotBlank
+    @NotNull
     private int providerId;
 
 }
