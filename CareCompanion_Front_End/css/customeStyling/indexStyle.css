@@ -1,0 +1,316 @@
+:root {
+    --provider-primary: #4361ee;
+    --provider-secondary: #3a0ca3;
+    --patient-primary: #4cc9f0;
+    --patient-secondary: #4895ef;
+    --light-bg: #f8f9fa;
+    --transition-time: 0.5s;
+    --error-primary: #ef476f;
+    --error-secondary: #d62246;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+}
+
+.login-container {
+    max-width: 550px;
+    margin: 0 auto;
+    padding: 2rem 2.5rem;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-time) ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo h1 {
+    background: linear-gradient(to right, var(--provider-primary), var(--patient-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 0.5rem;
+}
+
+.logo .icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--provider-primary);
+}
+
+.user-type-btn {
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-radius: 15px;
+    font-weight: 600;
+    transition: all 0.4s ease;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.user-type-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(-100%);
+    transition: all 0.4s ease;
+    z-index: -1;
+}
+
+.user-type-btn:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.2);
+}
+
+.user-type-btn:hover::before {
+    transform: translateX(0);
+}
+
+.provider-btn {
+    background: linear-gradient(45deg, var(--provider-primary), var(--provider-secondary));
+    color: white;
+}
+
+.patient-btn {
+    background: linear-gradient(45deg, var(--patient-primary), var(--patient-secondary));
+    color: white;
+}
+
+.back-btn {
+    margin-bottom: 1.5rem;
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: 1px solid #e0e0e0;
+}
+
+.back-btn:hover {
+    background: #f8f9fa;
+    transform: translateX(-5px);
+}
+
+.form-control {
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    border: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: var(--provider-primary);
+    background-color: white;
+}
+
+.btn-submit {
+    border-radius: 10px;
+    padding: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-provider {
+    background: linear-gradient(45deg, var(--provider-primary), var(--provider-secondary));
+    border: none;
+}
+
+.btn-provider:hover {
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+}
+
+.btn-patient {
+    background: linear-gradient(45deg, var(--patient-primary), var(--patient-secondary));
+    border: none;
+}
+
+.btn-patient:hover {
+    box-shadow: 0 5px 15px rgba(76, 201, 240, 0.4);
+}
+
+.form-check-input:checked {
+    background-color: var(--provider-primary);
+    border-color: var(--provider-primary);
+}
+
+.screen {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity var(--transition-time) ease, transform var(--transition-time) ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    padding: 2.5rem;
+}
+
+.screen.active {
+    opacity: 1;
+    transform: translateY(0);
+    position: relative;
+    pointer-events: all;
+}
+
+.create-account-btn {
+    border-radius: 10px;
+    padding: 0.7rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.create-account-provider {
+    border: 2px solid var(--provider-primary);
+    color: var(--provider-primary);
+}
+
+.create-account-provider:hover {
+    background-color: var(--provider-primary);
+    color: white;
+}
+
+.create-account-patient {
+    border: 2px solid var(--patient-primary);
+    color: var(--patient-primary);
+}
+
+.create-account-patient:hover {
+    background-color: var(--patient-primary);
+    color: white;
+}
+
+.forgot-password {
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: var(--provider-primary);
+}
+
+.decoration {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(45deg, rgba(67, 97, 238, 0.1), rgba(76, 201, 240, 0.1));
+    z-index: -1;
+}
+
+.decoration-1 {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    right: -150px;
+}
+
+.decoration-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -100px;
+    left: -100px;
+}
+/* Error Popup Styles */
+.error-popup {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: linear-gradient(45deg, var(--error-primary), var(--error-secondary));
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(239, 71, 111, 0.3);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    min-width: 300px;
+    max-width: 500px;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    pointer-events: none;
+}
+
+.error-popup.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: all;
+}
+
+.error-popup .error-icon {
+    margin-right: 1rem;
+    font-size: 1.5rem;
+}
+
+.error-popup .error-content {
+    flex: 1;
+}
+
+.error-popup .error-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.error-popup .error-message {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+.error-popup .close-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    margin-left: 0.5rem;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.error-popup .close-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Error popup animation */
+@keyframes shake {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-55%) translateY(0); }
+    20%, 40%, 60%, 80% { transform: translateX(-45%) translateY(0); }
+}
+
+.error-popup.shake {
+    animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@media (max-width: 576px) {
+    .login-container {
+        padding: 1.5rem;
+    }
+
+    .screen {
+        padding: 1.5rem;
+    }
+}

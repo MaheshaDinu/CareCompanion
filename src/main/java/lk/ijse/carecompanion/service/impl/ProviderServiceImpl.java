@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,28 +32,33 @@ public class ProviderServiceImpl implements ProviderService {
     @Autowired
     JWTService jwtService;
     AuthTokenDTO authTokenDTO = new AuthTokenDTO();
-
+    @Transactional
     @Override
     public void register(ProviderRegistrationDTO providerRegistrationDTO){
         providerRegistrationDTO.setPassword(bCryptPasswordEncoder.encode(providerRegistrationDTO.getPassword()));
         Provider provider = modelMapper.map(providerRegistrationDTO,Provider.class);
         providerRepo.save(provider);
     }
+    @Transactional
     @Override
     public void update(ProviderRegistrationDTO providerDTO){
         Provider provider = modelMapper.map(providerDTO,Provider.class);
         providerRepo.save(provider);
     }
+    @Transactional
+    @Override
     public void delete(int id){
         providerRepo.deleteById(id);
     }
+    @Transactional
+    @Override
     public List<ProviderDTO> getAll(){
         return modelMapper.map(providerRepo.findAll(),new TypeToken<List<ProviderDTO>>(){}.getType());
     }
     public ProviderDTO getByUserName(String userName){
         return modelMapper.map(providerRepo.findByUserName(userName),ProviderDTO.class);
     }
-
+    @Transactional
     @Override
     public AuthTokenDTO verifyProvider(UserLoginDTO userDTO) {
         Optional<Provider> optProvider = providerRepo.findByUserName(userDTO.getUsername());

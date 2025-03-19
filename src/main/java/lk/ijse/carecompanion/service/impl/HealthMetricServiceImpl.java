@@ -9,6 +9,7 @@ import lk.ijse.carecompanion.service.HealthMetricService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,8 @@ public class HealthMetricServiceImpl implements HealthMetricService {
     private PatientRepo patientRepo;
     @Autowired
     private ModelMapper modelMapper;
+    @Transactional
+    @Override
     public void save(HealthMetricDTO healthMetricDTO) {
         Optional<Patient> optPatient = patientRepo.findById(healthMetricDTO.getPatientId());
         if (!optPatient.isPresent()) {
@@ -32,10 +35,14 @@ public class HealthMetricServiceImpl implements HealthMetricService {
         healthMetric.setPatient(patient);
         healthMetricRepo.save(healthMetric);
     }
+    @Transactional
+    @Override
     public void update(HealthMetricDTO healthMetricDTO) {
         HealthMetric healthMetric = modelMapper.map(healthMetricDTO, HealthMetric.class);
         healthMetricRepo.save(healthMetric);
     }
+    @Transactional
+    @Override
     public void delete(int id) {
         healthMetricRepo.deleteById(id);
     }

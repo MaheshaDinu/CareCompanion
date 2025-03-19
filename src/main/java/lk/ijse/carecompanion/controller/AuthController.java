@@ -7,19 +7,17 @@ import lk.ijse.carecompanion.service.PatientService;
 import lk.ijse.carecompanion.service.ProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth/login")
+@CrossOrigin(origins = "http://localhost:63342")
 public class AuthController {
     @Autowired
     PatientService patientService;
     @Autowired
     ProviderService providerService;
-    @PostMapping("")
+    @PostMapping("/verify")
     public ResponseEntity<AuthTokenDTO> login(@RequestBody UserLoginDTO userDTO) {
 
         if (userDTO.getRole().equals(Role.PATIENT)){

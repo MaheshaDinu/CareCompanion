@@ -36,12 +36,12 @@ public class SecurityConfig {
 
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/register/provider","/register/patient","/test/login","/swagger-ui/**",
+                .requestMatchers("auth/login/verify","/register/provider","/register/patient","/test/login","/swagger-ui/**",
                         "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated())
-        .formLogin(form -> form.loginPage("/login").permitAll())
+        .formLogin(Customizer.withDefaults())
         .httpBasic(Customizer.withDefaults())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
 

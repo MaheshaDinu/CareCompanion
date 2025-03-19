@@ -43,6 +43,7 @@ public class PatientServiceImpl implements PatientService {
 
 
     @Transactional
+    @Override
     public void register(PatientRegistrationDTO patientRegistrationDTO){
         patientRegistrationDTO.setPassword(bCryptPasswordEncoder.encode(patientRegistrationDTO.getPassword()));
         Patient patient = modelMapper.map(patientRegistrationDTO, Patient.class);
@@ -55,17 +56,20 @@ public class PatientServiceImpl implements PatientService {
         patientRepo.save(patient);
 
     }
+    @Transactional
     public  void update(PatientRegistrationDTO patientRegistrationDTO){
         Patient patient = modelMapper.map(patientRegistrationDTO, Patient.class);
         patientRepo.save(patient);
     }
+    @Transactional
+    @Override
     public  void delete(int id){
         patientRepo.deleteById(id);
     }
     public PatientDTO getByUserName(String userName){
         return modelMapper.map(patientRepo.findByUserName(userName),PatientDTO.class);
     }
-
+    @Transactional
     @Override
     public AuthTokenDTO verifyPatient(UserLoginDTO userDTO) {
         Optional<Patient> optPatient = patientRepo.findByUserName(userDTO.getUsername());
@@ -89,8 +93,8 @@ public class PatientServiceImpl implements PatientService {
 
     }
 
-
-
+    @Transactional
+    @Override
     public List<PatientDTO> getAll(){
         return modelMapper.map(patientRepo.findAll(),new TypeToken<List<PatientDTO>>(){}.getType());
     }
