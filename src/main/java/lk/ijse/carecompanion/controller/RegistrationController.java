@@ -40,4 +40,12 @@ public class RegistrationController {
         }
 
     }
+    @GetMapping("getAllProviders")
+    public ResponseEntity<ResponseUtil> getAllProviders(){
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200,"Providers Fetched Successfully",providerService.getAll()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
+    }
 }
