@@ -160,6 +160,7 @@
                 if (authentication) {
                     const token = response.token;
                     localStorage.setItem("jwtToken", token);
+                    window.location.href = "/pages/provider/provider-dashboard.html";
                 }
                 else {
                     showError(response.message, "Error");
@@ -191,6 +192,7 @@
                 if (authentication) {
                     const token = response.token;
                     localStorage.setItem("jwtToken", token);
+                    window.location.href = "/pages/patient/patient-dashboard.html";
                 }
                 else {
                     showError(response.message, "Error");
