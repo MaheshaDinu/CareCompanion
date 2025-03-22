@@ -2,6 +2,7 @@ package lk.ijse.carecompanion.service.impl;
 
 import lk.ijse.carecompanion.dto.*;
 import lk.ijse.carecompanion.entity.*;
+import lk.ijse.carecompanion.enums.HealthMetricType;
 import lk.ijse.carecompanion.repository.*;
 import lk.ijse.carecompanion.service.JWTService;
 import lk.ijse.carecompanion.service.PatientService;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,6 +99,19 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public List<PatientDTO> getAll(){
         return modelMapper.map(patientRepo.findAll(),new TypeToken<List<PatientDTO>>(){}.getType());
+    }
+    @Transactional
+    @Override
+    public List<HealthMetricDTO> getHealthMetricsByPatientId(int patientId, HealthMetricType type) {
+        List<HealthMetric> allHealthMetrics = healthMetricRepo.findByPatientId(patientId);
+        List<HealthMetric> healthMetrics = new ArrayList<>();
+        for (HealthMetric healthMetric : allHealthMetrics) {
+            if (healthMetric.getType().equals(type)) {
+                healthMetrics.add(healthMetric);
+            }
+        }
+        return modelMapper.map(healthMetrics, new TypeToken<List<HealthMetricDTO>>() {}.getType());
+
     }
 
 }

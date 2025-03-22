@@ -1,6 +1,7 @@
 package lk.ijse.carecompanion.service;
 
 import lk.ijse.carecompanion.dto.*;
+import lk.ijse.carecompanion.enums.HealthMetricType;
 
 import java.util.List;
 
@@ -12,5 +13,5 @@ public interface PatientService {
     PatientDTO getByUserName(String userName);
 
     AuthTokenDTO verifyPatient(UserLoginDTO userDTO);
-
+    List<HealthMetricDTO> getHealthMetricsByPatientId(int patientId, HealthMetricType type);
 }

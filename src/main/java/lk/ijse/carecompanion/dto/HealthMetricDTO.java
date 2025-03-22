@@ -13,6 +13,8 @@ public class HealthMetricDTO {
     private int id;
     private HealthMetricType type; // e.g., "BLOOD_PRESSURE", "HEART_RATE", etc.
     private Double value;
+    private Integer systolic;
+    private Integer diastolic;
     private LocalDateTime timestamp;
     private String notes;
     private int patientId;

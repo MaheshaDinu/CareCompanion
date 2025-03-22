@@ -2,9 +2,470 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Patient Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCompanion - Patient Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="/CareCompanion/CareCompanion_Front_End/css/customeStyling/patientDashboardStyle.css" rel="stylesheet">
 </head>
 <body>
-<h1>Patient Dashboard</h1>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <i class="bi bi-heart-pulse me-2"></i>CareCompanion
+        </a>
+        <div class="d-flex align-items-center">
+            <div class="position-relative me-4">
+                <a href="#" class="text-dark">
+                    <i class="bi bi-bell fs-4"></i>
+                    <span class="notification-badge">3</span>
+                </a>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="d-block text-decoration-none dropdown-toggle"
+                   data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle fs-4"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 bg-white sidebar">
+            <nav class="nav nav-pills flex-column">
+                <a class="nav-link active" href="#">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-heart-pulse"></i>Health Data
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-calendar-check"></i>Appointments
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-capsule"></i>Medications
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-journal-text"></i>Symptom Diary
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-file-earmark-text"></i>Reports
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-chat-left-dots"></i>Messages
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-10 main-content">
+            <!-- Welcome Banner -->
+            <div class="welcome-banner">
+                <h3 id="welcomeMessage">Welcome back, John!</h3>
+                <p>Here's a summary of your health data and upcoming appointments.</p>
+            </div>
+
+            <!-- Health Metrics -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <h4 class="mb-4">Health Overview</h4>
+                    <div class="row g-4">
+                        <div class="col-md-6 col-xl-4">
+                            <div class="dashboard-card p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-container bg-primary rounded me-3">
+                                        <i class="bi bi-heart-pulse fs-4 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Blood Pressure</div>
+                                        <div id ="bloodPressureValues" class="metric-value">120/80</div>
+                                    </div>
+                                </div>
+                                <div class="metric-trend up">
+                                    <i class="bi bi-arrow-up-short"></i> Normal range
+                                </div>
+                                <div id="bloodPressureChart" class="mini-chart">
+                                    <div class="chart-bar" style="height: 60%"></div>
+                                    <div class="chart-bar" style="height: 80%"></div>
+                                    <div class="chart-bar" style="height: 70%"></div>
+                                    <div class="chart-bar" style="height: 75%"></div>
+                                    <div class="chart-bar" style="height: 65%"></div>
+                                    <div class="chart-bar" style="height: 70%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-xl-4">
+                            <div class="dashboard-card p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-container bg-success rounded me-3">
+                                        <i class="bi bi-droplet fs-4 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Blood Glucose</div>
+                                        <div id="bloodGlucoseValue" class="metric-value">98 mg/dL</div>
+                                    </div>
+                                </div>
+                                <div class="metric-trend up">
+                                    <i class="bi bi-arrow-up-short"></i> Normal range
+                                </div>
+                                <div id="bloodGlucoseChart" class="mini-chart">
+                                    <div class="chart-bar" style="height: 40%"></div>
+                                    <div class="chart-bar" style="height: 60%"></div>
+                                    <div class="chart-bar" style="height: 50%"></div>
+                                    <div class="chart-bar" style="height: 45%"></div>
+                                    <div class="chart-bar" style="height: 70%"></div>
+                                    <div class="chart-bar" style="height: 55%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-xl-4">
+                            <div class="dashboard-card p-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-container bg-warning rounded me-3">
+                                        <i class="bi bi-activity fs-4 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small">Heart Rate</div>
+                                        <div id="heartRateValues" class="metric-value">72 bpm</div>
+                                    </div>
+                                </div>
+                                <div class="metric-trend neutral">
+                                    <i class="bi bi-dash"></i> Stable
+                                </div>
+                                <div id="heartRateChart" class="mini-chart">
+                                    <div class="chart-bar" style="height: 65%"></div>
+                                    <div class="chart-bar" style="height: 75%"></div>
+                                    <div class="chart-bar" style="height: 60%"></div>
+                                    <div class="chart-bar" style="height: 80%"></div>
+                                    <div class="chart-bar" style="height: 70%"></div>
+                                    <div class="chart-bar" style="height: 75%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="col-12">
+                    <h4 class="mb-4">Quick Actions</h4>
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="quick-action">
+                                <div class="quick-action-icon bg-primary-light text-primary">
+                                    <i class="bi bi-plus-lg"></i>
+                                </div>
+                                <div class="quick-action-title">Log Health Data</div>
+                                <div class="quick-action-desc">Record your latest health metrics</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="quick-action">
+                                <div class="quick-action-icon bg-warning-light text-warning">
+                                    <i class="bi bi-journal-plus"></i>
+                                </div>
+                                <div class="quick-action-title">Log Symptoms</div>
+                                <div class="quick-action-desc">Track how you're feeling today</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="quick-action">
+                                <div class="quick-action-icon bg-success-light text-success">
+                                    <i class="bi bi-calendar-plus"></i>
+                                </div>
+                                <div class="quick-action-title">Schedule Appointment</div>
+                                <div class="quick-action-desc">Book your next visit</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="quick-action">
+                                <div class="quick-action-icon bg-danger-light text-danger">
+                                    <i class="bi bi-file-earmark-bar-graph"></i>
+                                </div>
+                                <div class="quick-action-title">View Reports</div>
+                                <div class="quick-action-desc">See detailed health analytics</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointments -->
+                <div class="col-lg-8">
+                    <div class="dashboard-card p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Upcoming Appointments</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-plus-lg"></i> Schedule
+                            </a>
+                        </div>
+
+                        <div class="list-group">
+                            <div class="list-group-item border-0 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="appointment-date">
+                                        <div class="day">15</div>
+                                        <div class="month">Jun</div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold">Annual Checkup</div>
+                                        <small class="text-muted">10:30 AM • Dr. Sarah Johnson</small>
+                                    </div>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Details</a>
+                                </div>
+                            </div>
+
+                            <div class="list-group-item border-0 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="appointment-date">
+                                        <div class="day">22</div>
+                                        <div class="month">Jun</div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold">Cardiology Follow-up</div>
+                                        <small class="text-muted">2:15 PM • Dr. Michael Chen</small>
+                                    </div>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Details</a>
+                                </div>
+                            </div>
+
+                            <div class="list-group-item border-0 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="appointment-date">
+                                        <div class="day">30</div>
+                                        <div class="month">Jun</div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold">Lab Test</div>
+                                        <small class="text-muted">9:00 AM • City Medical Center</small>
+                                    </div>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medications -->
+                <div class="col-lg-4">
+                    <div class="dashboard-card p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Medication Schedule</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View All
+                            </a>
+                        </div>
+
+                        <div class="list-group">
+                            <div class="list-group-item border-0 py-3 position-relative">
+                                <div class="medication-status overdue"></div>
+                                <div class="d-flex justify-content-between align-items-center ms-3">
+                                    <div>
+                                        <div class="fw-semibold">Lisinopril</div>
+                                        <div class="text-muted small">10mg · 8:00 AM</div>
+                                    </div>
+                                    <span class="badge-pill badge-overdue">Overdue</span>
+                                </div>
+                            </div>
+
+                            <div class="list-group-item border-0 py-3 position-relative">
+                                <div class="medication-status taken"></div>
+                                <div class="d-flex justify-content-between align-items-center ms-3">
+                                    <div>
+                                        <div class="fw-semibold">Metformin</div>
+                                        <div class="text-muted small">500mg · 12:00 PM</div>
+                                    </div>
+                                    <span class="badge-pill badge-taken">Taken</span>
+                                </div>
+                            </div>
+
+                            <div class="list-group-item border-0 py-3 position-relative">
+                                <div class="medication-status due"></div>
+                                <div class="d-flex justify-content-between align-items-center ms-3">
+                                    <div>
+                                        <div class="fw-semibold">Atorvastatin</div>
+                                        <div class="text-muted small">20mg · 8:00 PM</div>
+                                    </div>
+                                    <span class="badge-pill badge-due">Due Soon</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!--jquery-->
+<script src="/CareCompanion/CareCompanion_Front_End/js/jquery-3.7.1.min.js"></script>
+<!-- Custom JavaScript for Charts -->
+<script>
+    let patientId;
+    let patientFirstName;
+    let patientLastName;
+    //getUser from backend
+    $(document).ready(function (event){
+        $.ajax({
+            url: "http://localhost:8080/api/patient/dashboard/getPatient",
+            method: "GET",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("jwtToken"));
+            },
+            success: function (response){
+                console.log(response.data)
+                console.log(response.data.firstName)
+                 patientId = response.data.id;
+                 patientFirstName = response.data.firstName;
+                 patientLastName = response.data.lastName;
+
+                setWelcomeMessage(patientFirstName)
+                setBloodPressureValue(patientId);
+                setBloodGlucoseValue(patientId);
+                setHeartRateValue(patientId)
+
+            }
+
+        })
+
+    })
+    // Initialize chart bars with animation
+    document.addEventListener('DOMContentLoaded', function() {
+        const chartBars = document.querySelectorAll('.chart-bar');
+
+        chartBars.forEach(bar => {
+            const height = bar.style.height;
+            bar.style.height = '0';
+
+            setTimeout(() => {
+                bar.style.transition = 'height 1s ease';
+                bar.style.height = height;
+            }, 300);
+        });
+    });
+
+    function setWelcomeMessage(firstName) {
+        let welcomeMessage = document.getElementById("welcomeMessage");
+        welcomeMessage.innerHTML = "Welcome, " + firstName;
+    }
+    setBloodPressureValue = (patientId) => {
+        let bloodPressureValues = document.getElementById("bloodPressureValues");
+
+        $.ajax({
+            url:"http://localhost:8080/api/patient/dashboard/getPatientHealthMetric?patientId=" + patientId +"&stringHealthMetricType=BLOOD_PRESSURE",
+            method: "GET",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("jwtToken"));
+            },
+            success: function (response){
+                var bloodPressureData = response.data;
+                if (bloodPressureData.length === 0) {
+                    bloodPressureValues.innerHTML = "No Data";
+                    $("#bloodPressureChart").empty();
+                } else {
+                    $("#bloodPressureChart").empty();
+                    const lastSixData = bloodPressureData.slice(-6);
+                    const maxSystolic = Math.max(...lastSixData.map(data => data.systolic));
+                    $.each(lastSixData, function (index, data) {
+                        let heightPercentage = (data.systolic / maxSystolic) * 100;
+                        heightPercentage = Math.min(heightPercentage, 100);
+                        if (index === bloodPressureData.length - 1) {
+                            bloodPressureValues.innerHTML = data.systolic + "/" + data.diastolic +" mmHg";
+                        }
+                        $("#bloodPressureChart").append(
+                            `<div class="chart-bar" style="height: ${heightPercentage}%"></div>`
+                        )
+                    })
+                }
+            }
+        })
+    }
+    setBloodGlucoseValue = (patientId) => {
+        let bloodGlucoseValues = document.getElementById("bloodGlucoseValues");
+
+        $.ajax({
+            url:"http://localhost:8080/api/patient/dashboard/getPatientHealthMetric?patientId=" + patientId +"&stringHealthMetricType=BLOOD_GLUCOSE",
+            method: "GET",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("jwtToken"));
+            },
+            success: function (response){
+                var bloodGlucoseData = response.data;
+                if (bloodGlucoseData.length === 0) {
+                    let bloodGlucoseValue = document.getElementById("bloodGlucoseValue");
+                    bloodGlucoseValue.innerHTML = "No Data";
+                    $("#bloodGlucoseChart").empty();
+                } else {
+                    $("#bloodGlucoseChart").empty();
+                    const lastSixData = bloodGlucoseData.slice(-6);
+                    const maxGlucose = Math.max(...lastSixData.map(data => data.value));
+                    $.each(lastSixData, function (index, data) {
+                        let heightPercentage = (data.value / maxGlucose) * 100;
+                        heightPercentage = Math.min(heightPercentage, 100);
+                        if (index === bloodGlucoseData.length - 1) {
+                            bloodGlucoseValues.innerHTML = data.value +" mg/dL";
+                        }
+                        $("#bloodGlucoseChart").append(
+                            `<div class="chart-bar" style="height: ${heightPercentage}%"></div>`
+                        )
+                    })
+                }
+            }
+        })
+    }
+    setHeartRateValue = (patientId) => {
+        let heartRateValues = document.getElementById("heartRateValues");
+
+        $.ajax({
+            url:"http://localhost:8080/api/patient/dashboard/getPatientHealthMetric?patientId=" + patientId +"&stringHealthMetricType=HEART_RATE",
+            method: "GET",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("jwtToken"));
+            },
+            success: function (response){
+                var heartRateData = response.data;
+                if (heartRateData.length === 0) {
+                    heartRateValues.innerHTML = "No Data";
+                    $("#heartRateChart").empty();
+                } else {
+                    $("#heartRateChart").empty();
+                    const lastSixData = heartRateData.slice(-6);
+                    const maxHeartRate = Math.max(...lastSixData.map(data => data.value));
+                    $.each(lastSixData, function (index, data) {
+                        let heightPercentage = (data.value / maxHeartRate) * 100;
+                        heightPercentage = Math.min(heightPercentage, 100);
+                        if (index === heartRateData.length - 1) {
+                            heartRateValues.innerHTML = data.value +" bpm";
+                        }
+                        $("#heartRateChart").append(
+                            `<div class="chart-bar" style="height: ${heightPercentage}%"></div>`
+                        )
+                    })
+                }
+            }
+        })
+    }
+
+</script>
 </body>
 </html>

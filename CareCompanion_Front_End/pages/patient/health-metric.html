@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCompanion - Health Metrics</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #4895ef;
+            --primary-light: rgba(72, 149, 239, 0.1);
+            --primary-dark: #3a75c4;
+            --secondary: #3a0ca3;
+            --success: #06d6a0;
+            --success-light: rgba(6, 214, 160, 0.1);
+            --light-bg: #f8f9fa;
+            --text-dark: #2d3436;
+            --danger: #ef476f;
+            --danger-light: rgba(239, 71, 111, 0.1);
+            --warning: #ffd166;
+            --warning-light: rgba(255, 209, 102, 0.1);
+            --gray: #adb5bd;
+            --gray-light: #e9ecef;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 8px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: var(--primary-light);
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 8px rgba(72, 149, 239, 0.2);
+        }
+
+        .nav-pills .nav-link i {
+            margin-right: 0.75rem;
+        }
+
+        .navbar {
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+        }
+
+        .sidebar {
+            height: calc(100vh - 70px);
+            position: sticky;
+            top: 70px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            transition: width 0.3s ease;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .icon-container {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .metric-card {
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: 10px;
+            background-color: white;
+            margin-bottom: 1rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-trend {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .metric-trend.up {
+            color: var(--success);
+        }
+
+        .metric-trend.down {
+            color: var(--danger);
+        }
+
+        .metric-trend.neutral {
+            color: var(--gray);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem var(--primary-light);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge-pill {
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+
+        .badge-normal {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .metric-type-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-type-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            background-color: white;
+            color: var(--text-dark);
+            border: 1px solid var(--gray-light);
+            transition: all 0.2s ease;
+        }
+
+        .metric-type-btn:hover {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary-light);
+        }
+
+        .metric-type-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .metric-type-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .entry-card {
+            border-radius: 12px;
+            border: 1px solid var(--gray-light);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+
+        .entry-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .entry-date {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .entry-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .entry-note {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Large screens (1200px - 1919px) */
+        @media (min-width: 1200px) and (max-width: 1919px) {
+            .container-fluid {
+                max-width: 1800px;
+                margin: 0 auto;
+            }
+
+            .metric-value {
+                font-size: 2rem;
+            }
+
+            .dashboard-card {
+                padding: 1.5rem !important;
+            }
+
+            .icon-container {
+                width: 48px;
+                height: 48px;
+            }
+
+            h4 {
+                font-size: 1.6rem;
+            }
+
+            h5 {
+                font-size: 1.3rem;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        /* Extra large screens (1920px - 2559px) */
+        @media (min-width: 1920px) and (max-width: 2559px) {
+            .container-fluid {
+                max-width: 1900px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.1rem;
+            }
+
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.6rem;
+            }
+
+            .sidebar {
+                padding: 2rem;
+                width: 300px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 0.8rem 1.2rem;
+                font-size: 1.2rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.3rem;
+            }
+
+            .main-content {
+                padding: 2rem;
+            }
+
+            .dashboard-card {
+                padding: 1.8rem !important;
+                border-radius: 16px;
+            }
+
+            .metric-value {
+                font-size: 2.2rem;
+            }
+
+            .icon-container {
+                width: 56px;
+                height: 56px;
+                border-radius: 12px;
+            }
+
+            .icon-container i {
+                font-size: 1.8rem !important;
+            }
+
+            h4 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            h5 {
+                font-size: 1.5rem;
+                margin-bottom: 1.2rem !important;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+
+            .chart-container {
+                height: 350px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .metric-type-btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 1rem;
+            }
+
+            .entry-card {
+                padding: 1.5rem;
+            }
+
+            .entry-value {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* Ultra large screens (2560px and above) */
+        @media (min-width: 2560px) {
+            .container-fluid {
+                max-width: 2400px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.25rem;
+            }
+
+            .navbar {
+                padding: 1.25rem 2.5rem;
+            }
+
+            .navbar-brand {
+                font-size: 2rem;
+            }
+
+            .navbar-brand i {
+                font-size: 1.8rem;
+            }
+
+            .sidebar {
+                padding: 2.5rem;
+                width: 350px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 1rem 1.5rem;
+                font-size: 1.4rem;
+                margin-bottom: 1rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.5rem;
+                margin-right: 1rem;
+            }
+
+            .main-content {
+                padding: 2.5rem;
+            }
+
+            .dashboard-card {
+                padding: 2rem !important;
+                border-radius: 20px;
+                box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            }
+
+            .metric-value {
+                font-size: 2.5rem;
+            }
+
+            .icon-container {
+                width: 70px;
+                height: 70px;
+                border-radius: 14px;
+            }
+
+            .icon-container i {
+                font-size: 2.2rem !important;
+            }
+
+            h4 {
+                font-size: 2.2rem;
+                margin-bottom: 2rem !important;
+            }
+
+            h5 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 1.2rem;
+            }
+
+            .fw-semibold {
+                font-size: 1.3rem;
+            }
+
+            .text-muted {
+                font-size: 1.1rem;
+            }
+
+            .dropdown-menu {
+                font-size: 1.2rem;
+            }
+
+            .dropdown-item {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .chart-container {
+                height: 400px;
+            }
+
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.4rem;
+            }
+
+            .metric-type-btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 1.2rem;
+            }
+
+            .entry-card {
+                padding: 2rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .entry-date {
+                font-size: 1rem;
+            }
+
+            .entry-value {
+                font-size: 1.6rem;
+            }
+
+            .entry-note {
+                font-size: 1.1rem;
+            }
+
+            .form-label {
+                font-size: 1.2rem;
+            }
+
+            .form-control {
+                padding: 0.8rem 1.2rem;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <i class="bi bi-heart-pulse me-2"></i>CareCompanion
+        </a>
+        <div class="d-flex align-items-center">
+            <div class="position-relative me-4">
+                <a href="#" class="text-dark">
+                    <i class="bi bi-bell fs-4"></i>
+                    <span class="notification-badge">3</span>
+                </a>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="d-block text-decoration-none dropdown-toggle"
+                   data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle fs-4"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 bg-white sidebar">
+            <nav class="nav nav-pills flex-column">
+                <a class="nav-link" href="patient-dashboard.html">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+                <a class="nav-link active" href="#">
+                    <i class="bi bi-heart-pulse"></i>Health Data
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-calendar-check"></i>Appointments
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-capsule"></i>Medications
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-journal-text"></i>Symptom Diary
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-file-earmark-text"></i>Reports
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-chat-left-dots"></i>Messages
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-10 main-content">
+            <div class="page-header">
+                <h1 class="page-title">Health Metrics</h1>
+                <p class="page-subtitle">Track and manage your health data</p>
+            </div>
+
+            <!-- Metric Type Selector -->
+            <div class="metric-type-selector">
+                <button class="metric-type-btn active" data-metric-type="blood-pressure">
+                    <i class="bi bi-heart-pulse"></i>Blood Pressure
+                </button>
+                <button class="metric-type-btn" data-metric-type="blood-glucose">
+                    <i class="bi bi-droplet"></i>Blood Glucose
+                </button>
+                <button class="metric-type-btn" data-metric-type="heart-rate">
+                    <i class="bi bi-activity"></i>Heart Rate
+                </button>
+                <button class="metric-type-btn" data-metric-type="weight">
+                    <i class="bi bi-speedometer2"></i>Weight
+                </button>
+                <button class="metric-type-btn" data-metric-type="temperature">
+                    <i class="bi bi-thermometer"></i>Temperature
+                </button>
+                <button class="metric-type-btn" data-metric-type="oxygen">
+                    <i class="bi bi-lungs"></i>Oxygen Level
+                </button>
+            </div>
+
+            <div class="row g-4">
+                <!-- Chart Section -->
+                <div class="col-lg-8">
+                    <div class="dashboard-card p-4">
+                        <h5 class="mb-4">Blood Pressure History</h5>
+                        <div class="chart-container">
+                            <canvas id="healthMetricChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="col-lg-4">
+                    <div class="dashboard-card p-4">
+                        <h5 class="mb-4">Summary</h5>
+                        <div class="metric-card">
+                            <div class="metric-title">Latest Reading</div>
+                            <div class="metric-value">120/80 mmHg</div>
+                            <div class="metric-trend up">
+                                <i class="bi bi-arrow-up-short"></i> Normal range
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Average (30 days)</div>
+                            <div class="metric-value">118/78 mmHg</div>
+                            <div class="metric-trend neutral">
+                                <i class="bi bi-dash"></i> Stable
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Trend</div>
+                            <div class="metric-trend up">
+                                <i class="bi bi-arrow-up-short"></i> Improving
+                            </div>
+                            <div class="text-muted mt-2">Your readings have been consistent and within normal range.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add New Entry Section -->
+                <div class="col-12">
+                    <div class="dashboard-card p-4">
+                        <h5 class="mb-4">Add New Entry</h5>
+                        <form id="healthMetricForm">
+                            <div class="row g-3">
+                                <div class="col-md-6 col-lg-3" id="systolicField">
+                                    <label for="systolic" class="form-label">Systolic (mmHg)</label>
+                                    <input type="number" class="form-control" id="systolic" placeholder="120">
+                                </div>
+                                <div class="col-md-6 col-lg-3" id="diastolicField">
+                                    <label for="diastolic" class="form-label">Diastolic (mmHg)</label>
+                                    <input type="number" class="form-control" id="diastolic" placeholder="80">
+                                </div>
+                                <div class="col-md-6 col-lg-3 d-none" id="singleValueField">
+                                    <label for="metricValue" class="form-label">Value</label>
+                                    <input type="number" class="form-control" id="metricValue" placeholder="0">
+                                </div>
+                                <div class="col-md-6 col-lg-3">
+                                    <label for="metricDate" class="form-label">Date & Time</label>
+                                    <input type="datetime-local" class="form-control" id="metricDate">
+                                </div>
+                                <div class="col-12">
+                                    <label for="metricNote" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="metricNote" rows="2" placeholder="Add any additional information here..."></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Save Entry</button>
+                                    <button type="reset" class="btn btn-outline-secondary ms-2">Clear</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Recent Entries Section -->
+                <div class="col-12">
+                    <div class="dashboard-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0">Recent Entries</h5>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" id="viewAllBtn">
+                                    <i class="bi bi-eye"></i> View All
+                                </button>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-download"></i> Export
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                                        <li><a class="dropdown-item" href="#">CSV</a></li>
+                                        <li><a class="dropdown-item" href="#">PDF</a></li>
+                                        <li><a class="dropdown-item" href="#">Excel</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="entriesTable">
+                                <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Reading</th>
+                                    <th>Status</th>
+                                    <th>Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Jun 15, 2024 08:30 AM</td>
+                                    <td>120/80 mmHg</td>
+                                    <td><span class="badge-pill badge-normal">Normal</span></td>
+                                    <td>Morning reading before breakfast</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary edit-entry" data-id="1">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger delete-entry" data-id="1">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 14, 2024 09:15 PM</td>
+                                    <td>118/78 mmHg</td>
+                                    <td><span class="badge-pill badge-normal">Normal</span></td>
+                                    <td>Evening reading after walk</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary edit-entry" data-id="2">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger delete-entry" data-id="2">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 14, 2024 08:45 AM</td>
+                                    <td>122/82 mmHg</td>
+                                    <td><span class="badge-pill badge-normal">Normal</span></td>
+                                    <td>Morning reading</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary edit-entry" data-id="3">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger delete-entry" data-id="3">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 13, 2024 09:30 PM</td>
+                                    <td>125/85 mmHg</td>
+                                    <td><span class="badge-pill badge-warning">Elevated</span></td>
+                                    <td>After stressful day at work</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary edit-entry" data-id="4">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger delete-entry" data-id="4">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 13, 2024 08:15 AM</td>
+                                    <td>119/79 mmHg</td>
+                                    <td><span class="badge-pill badge-normal">Normal</span></td>
+                                    <td>Morning reading</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary edit-entry" data-id="5">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger delete-entry" data-id="5">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editEntryModal" tabindex="-1" aria-labelledby="editEntryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEntryModalLabel">Edit Health Metric Entry</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editEntryForm">
+                    <input type="hidden" id="editEntryId">
+                    <div class="row g-3">
+                        <div class="col-md-6" id="editSystolicField">
+                            <label for="editSystolic" class="form-label">Systolic (mmHg)</label>
+                            <input type="number" class="form-control" id="editSystolic">
+                        </div>
+                        <div class="col-md-6" id="editDiastolicField">
+                            <label for="editDiastolic" class="form-label">Diastolic (mmHg)</label>
+                            <input type="number" class="form-control" id="editDiastolic">
+                        </div>
+                        <div class="col-md-6 d-none" id="editSingleValueField">
+                            <label for="editMetricValue" class="form-label">Value</label>
+                            <input type="number" class="form-control" id="editMetricValue">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editMetricDate" class="form-label">Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="editMetricDate">
+                        </div>
+                        <div class="col-12">
+                            <label for="editMetricNote" class="form-label">Notes</label>
+                            <textarea class="form-control" id="editMetricNote" rows="3"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteEntryModal" tabindex="-1" aria-labelledby="deleteEntryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteEntryModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this health metric entry? This action cannot be undone.</p>
+                <input type="hidden" id="deleteEntryId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set current date and time for the date input
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+        document.getElementById('metricDate').value = localISOTime;
+
+        // Initialize Chart
+        const ctx = document.getElementById('healthMetricChart').getContext('2d');
+        const healthMetricChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jun 10', 'Jun 11', 'Jun 12', 'Jun 13', 'Jun 14', 'Jun 15'],
+                datasets: [
+                    {
+                        label: 'Systolic',
+                        data: [122, 120, 118, 122, 118, 120],
+                        borderColor: '#4895ef',
+                        backgroundColor: 'rgba(72, 149, 239, 0.1)',
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4895ef',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Diastolic',
+                        data: [82, 80, 78, 82, 78, 80],
+                        borderColor: '#3a0ca3',
+                        backgroundColor: 'rgba(58, 12, 163, 0.1)',
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#3a0ca3',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#2d3436',
+                        bodyColor: '#2d3436',
+                        borderColor: 'rgba(0, 0, 0, 0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                const datasetLabel = context.dataset.label || '';
+                                const value = context.parsed.y;
+                                return `${datasetLabel}: ${value} mmHg`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 60,
+                        max: 140,
+                        grid: {
+                            drawBorder: false,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Metric Type Selector
+        const metricTypeButtons = document.querySelectorAll('.metric-type-btn');
+        const systolicField = document.getElementById('systolicField');
+        const diastolicField = document.getElementById('diastolicField');
+        const singleValueField = document.getElementById('singleValueField');
+        const editSystolicField = document.getElementById('editSystolicField');
+        const editDiastolicField = document.getElementById('editDiastolicField');
+        const editSingleValueField = document.getElementById('editSingleValueField');
+
+        metricTypeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                metricTypeButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                const metricType = this.getAttribute('data-metric-type');
+                updateFormFields(metricType);
+                updateChartData(metricType);
+                updateTableHeaders(metricType);
+            });
+        });
+
+        function updateFormFields(metricType) {
+            if (metricType === 'blood-pressure') {
+                systolicField.classList.remove('d-none');
+                diastolicField.classList.remove('d-none');
+                singleValueField.classList.add('d-none');
+
+                editSystolicField.classList.remove('d-none');
+                editDiastolicField.classList.remove('d-none');
+                editSingleValueField.classList.add('d-none');
+            } else {
+                systolicField.classList.add('d-none');
+                diastolicField.classList.add('d-none');
+                singleValueField.classList.remove('d-none');
+
+                editSystolicField.classList.add('d-none');
+                editDiastolicField.classList.add('d-none');
+                editSingleValueField.classList.remove('d-none');
+
+                // Update label and placeholder based on metric type
+                const valueLabel = document.querySelector('label[for="metricValue"]');
+                const valueInput = document.getElementById('metricValue');
+                const editValueLabel = document.querySelector('label[for="editMetricValue"]');
+
+                switch(metricType) {
+                    case 'blood-glucose':
+                        valueLabel.textContent = 'Blood Glucose (mg/dL)';
+                        valueInput.placeholder = '98';
+                        editValueLabel.textContent = 'Blood Glucose (mg/dL)';
+                        break;
+                    case 'heart-rate':
+                        valueLabel.textContent = 'Heart Rate (bpm)';
+                        valueInput.placeholder = '72';
+                        editValueLabel.textContent = 'Heart Rate (bpm)';
+                        break;
+                    case 'weight':
+                        valueLabel.textContent = 'Weight (lbs)';
+                        valueInput.placeholder = '165';
+                        editValueLabel.textContent = 'Weight (lbs)';
+                        break;
+                    case 'temperature':
+                        valueLabel.textContent = 'Temperature (°F)';
+                        valueInput.placeholder = '98.6';
+                        editValueLabel.textContent = 'Temperature (°F)';
+                        break;
+                    case 'oxygen':
+                        valueLabel.textContent = 'Oxygen Level (%)';
+                        valueInput.placeholder = '98';
+                        editValueLabel.textContent = 'Oxygen Level (%)';
+                        break;
+                }
+            }
+        }
+
+        function updateChartData(metricType) {
+            // Update chart title
+            const chartTitle = document.querySelector('.dashboard-card h5');
+
+            // Update chart data based on metric type
+            switch(metricType) {
+                case 'blood-pressure':
+                    chartTitle.textContent = 'Blood Pressure History';
+                    healthMetricChart.data.datasets = [
+                        {
+                            label: 'Systolic',
+                            data: [122, 120, 118, 122, 118, 120],
+                            borderColor: '#4895ef',
+                            backgroundColor: 'rgba(72, 149, 239, 0.1)',
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#4895ef'
+                        },
+                        {
+                            label: 'Diastolic',
+                            data: [82, 80, 78, 82, 78, 80],
+                            borderColor: '#3a0ca3',
+                            backgroundColor: 'rgba(58, 12, 163, 0.1)',
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#3a0ca3'
+                        }
+                    ];
+                    healthMetricChart.options.scales.y.min = 60;
+                    healthMetricChart.options.scales.y.max = 140;
+                    break;
+                case 'blood-glucose':
+                    chartTitle.textContent = 'Blood Glucose History';
+                    healthMetricChart.data.datasets = [
+                        {
+                            label: 'Blood Glucose',
+                            data: [95, 98, 92, 97, 94, 98],
+                            borderColor: '#06d6a0',
+                            backgroundColor: 'rgba(6, 214, 160, 0.1)',
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#06d6a0'
+                        }
+                    ];
+                    healthMetricChart.options.scales.y.min = 70;
+                    healthMetricChart.options.scales.y.max = 130;
+                    break;
+                case 'heart-rate':
+                    chartTitle.textContent = 'Heart Rate History';
+                    healthMetricChart.data.datasets = [
+                        {
+                            label: 'Heart Rate',
+                            data: [75, 72, 78, 74, 70, 72],
+                            borderColor: '#ef476f',
+                            backgroundColor: 'rgba(239, 71, 111, 0.1)',
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#ef476f'
+                        }
+                    ];
+                    healthMetricChart.options.scales.y.min = 50;
+                    healthMetricChart.options.scales.y.max = 100;
+                    break;
+                case 'weight':
+                    chartTitle.textContent = 'Weight History';
+                    healthMetricChart.data.datasets = [
+                        {
+                            label: 'Weight',
+                            data: [168, 167, 166, 166, 165, 165],
+                            borderColor: '#ffd166',
+                            backgroundColor: 'rgba(255, 209, 102, 0.1)',
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#ffd166'
+                        }
+                    ];
+                    healthMetricChart.options.scales.y.min = 160;
+                    healthMetricChart.options.scales.y.max = 175;
+                    break;
+                case 'temperature':
+                    chartTitle.textContent = 'Temperature History';
+                    healthMetricChart.data.datasets = [
+                        {
+                            label: 'Temperature',
+                            data: [98.4, 98.6, 98.5, 98.7, 98.6, 98.6],
+                            borderColor: '#4895ef',
+                            backgroundColor: 'rgba(72, 149, 239, 0.1)',
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#4895ef'
+                        }
+                    ];
+                    healthMetricChart.options.scales.y.min = 97;
+                    healthMetricChart.options.scales.y.max = 100;
+                    break;
+                case 'oxygen':
+                    chartTitle.textContent = 'Oxygen Level History';
+                    healthMetricChart.data.datasets = [
+                        {
+                            label: 'Oxygen Level',
+                            data: [97, 98, 98, 97, 98, 98],
+                            borderColor: '#06d6a0',
+                            backgroundColor: 'rgba(6, 214, 160, 0.1)',
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#06d6a0'
+                        }
+                    ];
+                    healthMetricChart.options.scales.y.min = 90;
+                    healthMetricChart.options.scales.y.max = 100;
+                    break;
+            }
+
+            // Update tooltip callback based on metric type
+            healthMetricChart.options.plugins.tooltip.callbacks.label = function(context) {
+                const datasetLabel = context.dataset.label || '';
+                const value = context.parsed.y;
+                let unit = '';
+
+                switch(metricType) {
+                    case 'blood-pressure':
+                        unit = 'mmHg';
+                        break;
+                    case 'blood-glucose':
+                        unit = 'mg/dL';
+                        break;
+                    case 'heart-rate':
+                        unit = 'bpm';
+                        break;
+                    case 'weight':
+                        unit = 'lbs';
+                        break;
+                    case 'temperature':
+                        unit = '°F';
+                        break;
+                    case 'oxygen':
+                        unit = '%';
+                        break;
+                }
+
+                return `${datasetLabel}: ${value} ${unit}`;
+            };
+
+            healthMetricChart.update();
+
+            // Update summary section
+            updateSummarySection(metricType);
+        }
+
+        function updateSummarySection(metricType) {
+            const metricCards = document.querySelectorAll('.metric-card');
+            const metricTitles = document.querySelectorAll('.metric-title');
+            const metricValues = document.querySelectorAll('.metric-value');
+            const metricTrends = document.querySelectorAll('.metric-trend');
+
+            switch(metricType) {
+                case 'blood-pressure':
+                    metricTitles[0].textContent = 'Latest Reading';
+                    metricValues[0].textContent = '120/80 mmHg';
+                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
+                    metricTrends[0].className = 'metric-trend up';
+
+                    metricTitles[1].textContent = 'Average (30 days)';
+                    metricValues[1].textContent = '118/78 mmHg';
+                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
+                    metricTrends[1].className = 'metric-trend neutral';
+                    break;
+                case 'blood-glucose':
+                    metricTitles[0].textContent = 'Latest Reading';
+                    metricValues[0].textContent = '98 mg/dL';
+                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
+                    metricTrends[0].className = 'metric-trend up';
+
+                    metricTitles[1].textContent = 'Average (30 days)';
+                    metricValues[1].textContent = '95 mg/dL';
+                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
+                    metricTrends[1].className = 'metric-trend neutral';
+                    break;
+                case 'heart-rate':
+                    metricTitles[0].textContent = 'Latest Reading';
+                    metricValues[0].textContent = '72 bpm';
+                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
+                    metricTrends[0].className = 'metric-trend up';
+
+                    metricTitles[1].textContent = 'Average (30 days)';
+                    metricValues[1].textContent = '74 bpm';
+                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
+                    metricTrends[1].className = 'metric-trend neutral';
+                    break;
+                case 'weight':
+                    metricTitles[0].textContent = 'Latest Reading';
+                    metricValues[0].textContent = '165 lbs';
+                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-down-short"></i> -3 lbs (30 days)';
+                    metricTrends[0].className = 'metric-trend down';
+
+                    metricTitles[1].textContent = 'Average (30 days)';
+                    metricValues[1].textContent = '166.5 lbs';
+                    metricTrends[1].innerHTML = '<i class="bi bi-arrow-down-short"></i> Decreasing';
+                    metricTrends[1].className = 'metric-trend down';
+                    break;
+                case 'temperature':
+                    metricTitles[0].textContent = 'Latest Reading';
+                    metricValues[0].textContent = '98.6 °F';
+                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
+                    metricTrends[0].className = 'metric-trend up';
+
+                    metricTitles[1].textContent = 'Average (30 days)';
+                    metricValues[1].textContent = '98.5 °F';
+                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
+                    metricTrends[1].className = 'metric-trend neutral';
+                    break;
+                case 'oxygen':
+                    metricTitles[0].textContent = 'Latest Reading';
+                    metricValues[0].textContent = '98%';
+                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
+                    metricTrends[0].className = 'metric-trend up';
+
+                    metricTitles[1].textContent = 'Average (30 days)';
+                    metricValues[1].textContent = '97.5%';
+                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
+                    metricTrends[1].className = 'metric-trend neutral';
+                    break;
+            }
+        }
+
+        function updateTableHeaders(metricType) {
+            const tableHeaders = document.querySelector('#entriesTable thead tr');
+            const tableRows = document.querySelector('#entriesTable tbody');
+
+            // Update table headers and sample data based on metric type
+            switch(metricType) {
+                case 'blood-pressure':
+                    tableHeaders.innerHTML = `
+                        <th>Date & Time</th>
+                        <th>Reading</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    `;
+                    tableRows.innerHTML = `
+                        <tr>
+                            <td>Jun 15, 2024 08:30 AM</td>
+                            <td>120/80 mmHg</td>
+                            <td><span class="badge-pill badge-normal">Normal</span></td>
+                            <td>Morning reading before breakfast</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary edit-entry" data-id="1">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger delete-entry" data-id="1">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Jun 14, 2024 09:15 PM</td>
+                            <td>118/78 mmHg</td>
+                            <td><span class="badge-pill badge-normal">Normal</span></td>
+                            <td>Evening reading after walk</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary edit-entry" data-id="2">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger delete-entry" data-id="2">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Jun 14, 2024 08:45 AM</td>
+                            <td>122/82 mmHg</td>
+                            <td><span class="badge-pill badge-normal">Normal</span></td>
+                            <td>Morning reading</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary edit-entry" data-id="3">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger delete-entry" data-id="3">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    break;
+                case 'blood-glucose':
+                    tableHeaders.innerHTML = `
+                        <th>Date & Time</th>
+                        <th>Reading</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    `;
+                    tableRows.innerHTML = `
+                        <tr>
+                            <td>Jun 15, 2024 08:30 AM</td>
+                            <td>98 mg/dL</td>
+                            <td><span class="badge-pill badge-normal">Normal</span></td>
+                            <td>Fasting</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary edit-entry" data-id="1">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger delete-entry" data-id="1">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Jun 14, 2024 01:15 PM</td>
+                            <td>125 mg/dL</td>
+                            <td><span class="badge-pill badge-normal">Normal</span></td>
+                            <td>After lunch</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary edit-entry" data-id="2">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger delete-entry" data-id="2">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Jun 14, 2024 08:45 AM</td>
+                            <td>94 mg/dL</td>
+                            <td><span class="badge-pill badge-normal">Normal</span></td>
+                            <td>Fasting</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary edit-entry" data-id="3">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger delete-entry" data-id="3">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    break;
+                default:
+                    // For other metric types, use a similar structure with appropriate units
+                    const unit = metricType === 'heart-rate' ? 'bpm' :
+                        metricType === 'weight' ? 'lbs' :
+                            metricType === 'temperature' ? '°F' : '%';
+
+                    tableHeaders.innerHTML = `
+                        <th>Date & Time</th>
+                        <th>Reading</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    `;
+
+                    // Generate sample data based on metric type
+                    let sampleData = '';
+                    if (metricType === 'heart-rate') {
+                        sampleData = `
+                            <tr>
+                                <td>Jun 15, 2024 08:30 AM</td>
+                                <td>72 ${unit}</td>
+                                <td><span class="badge-pill badge-normal">Normal</span></td>
+                                <td>Resting</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary edit-entry" data-id="1">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-entry" data-id="1">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Jun 14, 2024 06:15 PM</td>
+                                <td>85 ${unit}</td>
+                                <td><span class="badge-pill badge-normal">Normal</span></td>
+                                <td>After exercise</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary edit-entry" data-id="2">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-entry" data-id="2">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Jun 14, 2024 08:45 AM</td>
+                                <td>70 ${unit}</td>
+                                <td><span class="badge-pill badge-normal">Normal</span></td>
+                                <td>Morning reading</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary edit-entry" data-id="3">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-entry" data-id="3">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    } else if (metricType === 'weight') {
+                        sampleData = `
+                            <tr>
+                                <td>Jun 15, 2024 08:30 AM</td>
+                                <td>165 ${unit}</td>
+                                <td><span class="badge-pill badge-normal">Normal</span></td>
+                                <td>Morning weight</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary edit-entry" data-id="1">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-entry" data-id="1">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Jun 14, 2024 08:15 AM</td>
+                                <td>166 ${unit}</td>
+                                <td><span class="badge-pill badge-normal">Normal</span></td>
+                                <td>Morning weight</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary edit-entry" data-id="2">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-entry" data-id="2">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Jun 13, 2024 08:30 AM</td>
+                                <td>167 ${unit}</td>
+                                <td><span class="badge-pill badge-normal">Normal</span></td>
+                                <td>Morning weight</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary edit-entry" data-id="3">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-entry" data-id="3">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        // For temperature and oxygen
+                        const value = metricType === 'temperature' ? '98.6' : '98';
+                        sampleData = `
+                            <tr>
+                                <td>Jun 15, 2024 08:30 AM</td>
+                                <td>${value} ${unit}</td>
+                                <td><span class="badge-pill badge-normal">Normal</span></td>
+                                <td>Morning reading</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary edit-entry" data-id="1">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-entry" data-id="1">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Jun 14, 2024 08:15 PM</td>
+                                <td>${value} ${unit}</td>
+                                <td><span class="badge-pill badge-normal">Normal</span></td>
+                                <td>Evening reading</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary edit-entry" data-id="2">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-entry" data-id="2">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Jun 14, 2024 08:45 AM</td>
+                                <td>${value} ${unit}</td>
+                                <td><span class="badge-pill badge-normal">Normal</span></td>
+                                <td>Morning reading</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary edit-entry" data-id="3">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-entry" data-id="3">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+
+                    tableRows.innerHTML = sampleData;
+                    break;
+            }
+
+            // Reattach event listeners for edit and delete buttons
+            attachActionListeners();
+        }
+
+        // Form submission
+        const healthMetricForm = document.getElementById('healthMetricForm');
+        healthMetricForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get active metric type
+            const activeMetricType = document.querySelector('.metric-type-btn.active').getAttribute('data-metric-type');
+
+            // Get form values
+            let reading = '';
+            if (activeMetricType === 'blood-pressure') {
+                const systolic = document.getElementById('systolic').value;
+                const diastolic = document.getElementById('diastolic').value;
+                reading = `${systolic}/${diastolic} mmHg`;
+            } else {
+                const value = document.getElementById('metricValue').value;
+                const unit = activeMetricType === 'heart-rate' ? 'bpm' :
+                    activeMetricType === 'weight' ? 'lbs' :
+                        activeMetricType === 'temperature' ? '°F' : '%';
+                reading = `${value} ${unit}`;
+            }
+
+            const date = document.getElementById('metricDate').value;
+            const note = document.getElementById('metricNote').value;
+
+            // Format date for display
+            const formattedDate = new Date(date).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+
+            // Create new table row
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${formattedDate}</td>
+                <td>${reading}</td>
+                <td><span class="badge-pill badge-normal">Normal</span></td>
+                <td>${note}</td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary edit-entry" data-id="new">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger delete-entry" data-id="new">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+
+            // Add new row to table
+            const tableBody = document.querySelector('#entriesTable tbody');
+            tableBody.insertBefore(newRow, tableBody.firstChild);
+
+            // Reset form
+            healthMetricForm.reset();
+
+            // Set current date and time
+            document.getElementById('metricDate').value = localISOTime;
+
+            // Show success message
+            alert('Health metric entry added successfully!');
+
+            // Reattach event listeners
+            attachActionListeners();
+        });
+
+        // Edit and Delete functionality
+        function attachActionListeners() {
+            // Edit buttons
+            const editButtons = document.querySelectorAll('.edit-entry');
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const entryId = this.getAttribute('data-id');
+                    const row = this.closest('tr');
+                    const cells = row.querySelectorAll('td');
+
+                    // Get values from row
+                    const dateTime = cells[0].textContent;
+                    const reading = cells[1].textContent;
+                    const note = cells[3].textContent;
+
+                    // Set values in edit form
+                    document.getElementById('editEntryId').value = entryId;
+
+                    // Parse date and time
+                    const dateObj = new Date(dateTime);
+                    const offset = dateObj.getTimezoneOffset() * 60000;
+                    const localISOTime = (new Date(dateObj.getTime() - offset)).toISOString().slice(0, 16);
+                    document.getElementById('editMetricDate').value = localISOTime;
+
+                    // Set reading values based on metric type
+                    const activeMetricType = document.querySelector('.metric-type-btn.active').getAttribute('data-metric-type');
+                    if (activeMetricType === 'blood-pressure') {
+                        const [systolic, diastolic] = reading.split('/')[0].trim().split(' ')[0].split('/');
+                        document.getElementById('editSystolic').value = systolic;
+                        document.getElementById('editDiastolic').value = diastolic;
+                    } else {
+                        const value = reading.split(' ')[0];
+                        document.getElementById('editMetricValue').value = value;
+                    }
+
+                    document.getElementById('editMetricNote').value = note;
+
+                    // Show edit modal
+                    const editModal = new bootstrap.Modal(document.getElementById('editEntryModal'));
+                    editModal.show();
+                });
+            });
+
+            // Delete buttons
+            const deleteButtons = document.querySelectorAll('.delete-entry');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const entryId = this.getAttribute('data-id');
+                    document.getElementById('deleteEntryId').value = entryId;
+
+                    // Show delete confirmation modal
+                    const deleteModal = new bootstrap.Modal(document.getElementById('deleteEntryModal'));
+                    deleteModal.show();
+                });
+            });
+        }
+
+        // Initial attachment of event listeners
+        attachActionListeners();
+
+        // Save edit changes
+        document.getElementById('saveEditBtn').addEventListener('click', function() {
+            const entryId = document.getElementById('editEntryId').value;
+            const row = document.querySelector(`.edit-entry[data-id="${entryId}"]`).closest('tr');
+            const cells = row.querySelectorAll('td');
+
+            // Get values from edit form
+            const date = document.getElementById('editMetricDate').value;
+            const note = document.getElementById('editMetricNote').value;
+
+            // Format date for display
+            const formattedDate = new Date(date).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+
+            // Get reading based on metric type
+            const activeMetricType = document.querySelector('.metric-type-btn.active').getAttribute('data-metric-type');
+            let reading = '';
+            if (activeMetricType === 'blood-pressure') {
+                const systolic = document.getElementById('editSystolic').value;
+                const diastolic = document.getElementById('editDiastolic').value;
+                reading = `${systolic}/${diastolic} mmHg`;
+            } else {
+                const value = document.getElementById('editMetricValue').value;
+                const unit = activeMetricType === 'heart-rate' ? 'bpm' :
+                    activeMetricType === 'weight' ? 'lbs' :
+                        activeMetricType === 'temperature' ? '°F' : '%';
+                reading = `${value} ${unit}`;
+            }
+
+            // Update row
+            cells[0].textContent = formattedDate;
+            cells[1].textContent = reading;
+            cells[3].textContent = note;
+
+            // Hide modal
+            const editModal = bootstrap.Modal.getInstance(document.getElementById('editEntryModal'));
+            editModal.hide();
+
+            // Show success message
+            alert('Health metric entry updated successfully!');
+        });
+
+        // Confirm delete
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            const entryId = document.getElementById('deleteEntryId').value;
+            const row = document.querySelector(`.delete-entry[data-id="${entryId}"]`).closest('tr');
+
+            // Remove row
+            row.remove();
+
+            // Hide modal
+            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteEntryModal'));
+            deleteModal.hide();
+
+            // Show success message
+            alert('Health metric entry deleted successfully!');
+        });
+    });
+</script>
+</body>
+</html>
