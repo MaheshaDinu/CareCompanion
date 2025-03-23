@@ -86,4 +86,8 @@ public class ProviderServiceImpl implements ProviderService {
                 .map(patient -> modelMapper.map(patient, PatientDTO.class))
                 .toList();
     }
+    @Override
+    public ProviderDTO getById(int id) {
+        return modelMapper.map(providerRepo.findById(id), ProviderDTO.class);
+    }
 }

@@ -19,4 +19,5 @@ public class PatientDTO extends UserDTO{
     private List<MedicationScheduleDTO> medicationSchedules;
     private List<AppointmentDTO> appointmentsAsPatient;
     private List<PatientThresholdDTO> thresholds;
+    private int providerId;
 }

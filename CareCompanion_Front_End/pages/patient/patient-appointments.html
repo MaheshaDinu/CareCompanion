@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCompanion - Appointments</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Flatpickr for Date/Time Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        :root {
+            --primary: #4895ef;
+            --primary-light: rgba(72, 149, 239, 0.1);
+            --primary-dark: #3a75c4;
+            --secondary: #3a0ca3;
+            --success: #06d6a0;
+            --success-light: rgba(6, 214, 160, 0.1);
+            --light-bg: #f8f9fa;
+            --text-dark: #2d3436;
+            --danger: #ef476f;
+            --danger-light: rgba(239, 71, 111, 0.1);
+            --warning: #ffd166;
+            --warning-light: rgba(255, 209, 102, 0.1);
+            --gray: #adb5bd;
+            --gray-light: #e9ecef;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 8px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: var(--primary-light);
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 8px rgba(72, 149, 239, 0.2);
+        }
+
+        .nav-pills .nav-link i {
+            margin-right: 0.75rem;
+        }
+
+        .navbar {
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+        }
+
+        .sidebar {
+            height: calc(100vh - 70px);
+            position: sticky;
+            top: 70px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            transition: width 0.3s ease;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .icon-container {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem var(--primary-light);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge-pill {
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+
+        .badge-requested {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .badge-confirmed {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-cancelled {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+            border-radius: 12px;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+
+        .appointment-date {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 60px;
+            margin-right: 1rem;
+        }
+
+        .appointment-date .day {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .appointment-date .month {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .appointment-card {
+            border-radius: 12px;
+            border: 1px solid var(--gray-light);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+
+        .appointment-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .appointment-card .appointment-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .appointment-card .appointment-details {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .appointment-card .appointment-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        .provider-card {
+            border-radius: 12px;
+            border: 1px solid var(--gray-light);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: white;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .provider-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .provider-card.selected {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .provider-card .provider-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .provider-card .provider-specialty {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .provider-card .provider-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .provider-card .provider-avatar i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        .no-data-message {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-style: italic;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Large screens (1200px - 1919px) */
+        @media (min-width: 1200px) and (max-width: 1919px) {
+            .container-fluid {
+                max-width: 1800px;
+                margin: 0 auto;
+            }
+
+            .dashboard-card {
+                padding: 1.5rem !important;
+            }
+
+            .icon-container {
+                width: 48px;
+                height: 48px;
+            }
+
+            h4 {
+                font-size: 1.6rem;
+            }
+
+            h5 {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Extra large screens (1920px - 2559px) */
+        @media (min-width: 1920px) and (max-width: 2559px) {
+            .container-fluid {
+                max-width: 1900px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.1rem;
+            }
+
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.6rem;
+            }
+
+            .sidebar {
+                padding: 2rem;
+                width: 300px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 0.8rem 1.2rem;
+                font-size: 1.2rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.3rem;
+            }
+
+            .main-content {
+                padding: 2rem;
+            }
+
+            .dashboard-card {
+                padding: 1.8rem !important;
+                border-radius: 16px;
+            }
+
+            .icon-container {
+                width: 56px;
+                height: 56px;
+                border-radius: 12px;
+            }
+
+            .icon-container i {
+                font-size: 1.8rem !important;
+            }
+
+            h4 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            h5 {
+                font-size: 1.5rem;
+                margin-bottom: 1.2rem !important;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .appointment-date .day {
+                font-size: 1.5rem;
+            }
+
+            .appointment-date .month {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Ultra large screens (2560px and above) */
+        @media (min-width: 2560px) {
+            .container-fluid {
+                max-width: 2400px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.25rem;
+            }
+
+            .navbar {
+                padding: 1.25rem 2.5rem;
+            }
+
+            .navbar-brand {
+                font-size: 2rem;
+            }
+
+            .navbar-brand i {
+                font-size: 1.8rem;
+            }
+
+            .sidebar {
+                padding: 2.5rem;
+                width: 350px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 1rem 1.5rem;
+                font-size: 1.4rem;
+                margin-bottom: 1rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.5rem;
+                margin-right: 1rem;
+            }
+
+            .main-content {
+                padding: 2.5rem;
+            }
+
+            .dashboard-card {
+                padding: 2rem !important;
+                border-radius: 20px;
+                box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            }
+
+            .icon-container {
+                width: 70px;
+                height: 70px;
+                border-radius: 14px;
+            }
+
+            .icon-container i {
+                font-size: 2.2rem !important;
+            }
+
+            h4 {
+                font-size: 2.2rem;
+                margin-bottom: 2rem !important;
+            }
+
+            h5 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 1.2rem;
+            }
+
+            .fw-semibold {
+                font-size: 1.3rem;
+            }
+
+            .text-muted {
+                font-size: 1.1rem;
+            }
+
+            .dropdown-menu {
+                font-size: 1.2rem;
+            }
+
+            .dropdown-item {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.4rem;
+            }
+
+            .form-label {
+                font-size: 1.2rem;
+            }
+
+            .form-control {
+                padding: 0.8rem 1.2rem;
+                font-size: 1.2rem;
+            }
+
+            .appointment-date {
+                padding: 0.8rem;
+                min-width: 80px;
+            }
+
+            .appointment-date .day {
+                font-size: 1.8rem;
+            }
+
+            .appointment-date .month {
+                font-size: 1rem;
+            }
+
+            .badge-pill {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <i class="bi bi-heart-pulse me-2"></i>CareCompanion
+        </a>
+        <div class="d-flex align-items-center">
+            <div class="position-relative me-4">
+                <a href="#" class="text-dark">
+                    <i class="bi bi-bell fs-4"></i>
+                    <span class="notification-badge">3</span>
+                </a>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="d-block text-decoration-none dropdown-toggle"
+                   data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle fs-4"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 bg-white sidebar">
+            <nav class="nav nav-pills flex-column">
+                <a class="nav-link" href="/CareCompanion/CareCompanion_Front_End/pages/patient/patient-dashboard.html">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+                <a class="nav-link" href="/CareCompanion/CareCompanion_Front_End/pages/patient/health-metric.html">
+                    <i class="bi bi-heart-pulse"></i>Health Data
+                </a>
+                <a class="nav-link active" href="/CareCompanion/CareCompanion_Front_End/pages/patient/patient-appointments.html">
+                    <i class="bi bi-calendar-check"></i>Appointments
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-capsule"></i>Medications
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-journal-text"></i>Symptom Diary
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-file-earmark-text"></i>Reports
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-chat-left-dots"></i>Messages
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-10 main-content">
+            <div class="page-header">
+                <h1 class="page-title">Appointments</h1>
+                <p class="page-subtitle">Manage your medical appointments</p>
+            </div>
+
+
+            <div class="row g-4">
+                <!-- Upcoming Appointments Section -->
+                <div class="col-12">
+                    <div class="dashboard-card p-4 position-relative">
+                        <div class="loading-spinner" id="appointmentsLoading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0">Upcoming Appointments</h5>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestAppointmentModal">
+                                <i class="bi bi-plus-lg me-2"></i>Request Appointment
+                            </button>
+                        </div>
+
+                        <div id="appointmentsContainer">
+                            <div class="no-data-message">No upcoming appointments found</div>
+                            <!-- Appointments will be loaded here via AJAX -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Past Appointments Section -->
+                <div class="col-12">
+                    <div class="dashboard-card p-4 position-relative">
+                        <div class="loading-spinner" id="pastAppointmentsLoading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0">Past Appointments</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-download"></i> Export
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                                    <li><a class="dropdown-item" href="#">CSV</a></li>
+                                    <li><a class="dropdown-item" href="#">PDF</a></li>
+                                    <li><a class="dropdown-item" href="#">Excel</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="pastAppointmentsTable">
+                                <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Provider</th>
+                                    <th>Purpose</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr><td colspan="5" class="no-data-message">No past appointments found</tr>
+                                <!-- Past appointments will be loaded here via AJAX -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Appointment Modal -->
+<div class="modal fade" id="requestAppointmentModal" tabindex="-1" aria-labelledby="requestAppointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="requestAppointmentModalLabel">Request Appointment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="appointmentForm">
+                    <div class="mb-3">
+                        <label for="appointmentPurpose" class="form-label">Purpose of Visit</label>
+                        <textarea class="form-control" id="appointmentPurpose" rows="3" placeholder="Please describe the reason for your appointment..."></textarea>
+                    </div>
+
+
+
+                    <div class="mb-3">
+                        <label for="appointmentDateTime" class="form-label">Preferred Date & Time</label>
+                        <input type="text" class="form-control" id="appointmentDateTime" placeholder="Select date and time">
+                    </div>
+
+                    <input type="hidden" id="patientId" value="1"> <!-- This would be set dynamically based on logged in user -->
+                    <input type="hidden" id="selectedProviderId" value="">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitAppointmentBtn">Request Appointment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Appointment Details Modal -->
+<div class="modal fade" id="appointmentDetailsModal" tabindex="-1" aria-labelledby="appointmentDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="appointmentDetailsModalLabel">Appointment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="appointmentDetailsContent">
+                    <!-- Appointment details will be loaded here via AJAX -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="cancelAppointmentBtn">Cancel Appointment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="notificationToast">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Operation completed successfully.
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    $(document).ready(function() {
+        // Global variables
+        let currentPatientId;
+        let currentProviderId;
+        let selectedAppointmentId = null;
+        let providerName = "";
+        const jwtToken = localStorage.getItem('jwtToken');
+
+        // Initialize date/time picker
+        flatpickr("#appointmentDateTime", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            minDate: "today",
+            time_24hr: true
+        })
+
+        // Initialize page
+        loadPatientData();
+
+        function loadPatientData() {
+            $.ajax({
+                url: 'http://localhost:8080/api/patient/health-metric/getPatient',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                },
+                success: (response) => {
+                    if (response.code === 200) {
+                        currentPatientId = response.data.id;
+                        currentProviderId = response.data.providerId;
+                        loadProviderName();
+                        loadAppointments(); // Load appointments after patient data
+                    }
+                },
+                error: (xhr) => {
+                    console.error('Patient load error:', xhr);
+                    showToast('Error', 'Failed to load patient data', 'error');
+                    $('.loading-spinner').hide(); // Ensure spinners are hidden
+                }
+            });
+        }
+
+        // Load provider name
+        function loadProviderName() {
+            if (currentProviderId == null) return;
+
+            $.ajax({
+                url: `http://localhost:8080/patient/appointment/getProvider/${currentProviderId}`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                },
+                success: (response) => {
+                    if (response.code === 200 && response.data) {
+                        // Correct property names from the response
+                        providerName = `${response.data.firstName} ${response.data.lastName}`;
+                        $('#requestAppointmentModalLabel').html(`Request Appointment with Dr. ${providerName}`);
+
+                        // Update appointments list immediately
+                        loadAppointments();
+                    }
+                },
+                error: (xhr) => {
+                    console.error('Provider load error:', xhr);
+                    providerName = "Your Provider";
+                    // Update UI with fallback name
+                    $('#requestAppointmentModalLabel').html(`Request Appointment with Dr. ${providerName}`);
+                }
+            });
+        }
+
+
+        // Submit appointment request (modified)
+        $('#submitAppointmentBtn').on('click', function() {
+            const purpose = $('#appointmentPurpose').val().trim();
+            const dateTime = $('#appointmentDateTime').val().trim();
+
+            if (!purpose || purpose.length < 10) {
+                showToast('Error', 'Please enter a valid purpose (min 10 characters)', 'error');
+                return;
+            }
+
+            if (!dateTime) {
+                showToast('Error', 'Please select a date and time', 'error');
+                return;
+            }
+
+            const appointmentData = {
+                patientId: parseInt(currentPatientId),
+                providerId: parseInt(currentProviderId),
+                dateTime: dateTime.replace(' ', 'T'),
+                purpose: purpose,
+                status: 'REQUESTED'
+            };
+            console.log(appointmentData)
+
+            $.ajax({
+                url: 'http://localhost:8080/patient/appointment/RequestAppointment',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                },
+                data: JSON.stringify(appointmentData),
+                success: function(response) {
+                    if (response.code === 201) {
+                        $('#requestAppointmentModal').modal('hide');
+                        $('#appointmentForm')[0].reset();
+                        showToast('Success', 'Appointment requested successfully!', 'success');
+                        loadAppointments();
+                    } else {
+                        showToast('Error', response.message || 'Failed to request appointment.', 'error');
+                    }
+                },
+                error: function(xhr) {
+                    showToast('Error', 'Failed to request appointment. Please try again.', 'error');
+                },
+                complete: ()=> {
+                    $('#submitAppointmentBtn').prop('disabled', false);
+                }
+
+            });
+        });
+
+
+        // Modified loadAppointments function
+        function loadAppointments() {
+            $('#appointmentsLoading, #pastAppointmentsLoading').show();
+
+            $.ajax({
+                url: `http://localhost:8080/patient/appointment/getPatientAppointments/${currentPatientId}`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                },
+                success: (response) => {
+                    if (response.code === 200) {
+                        const now = new Date();
+                        const upcoming = [];
+                        const past = [];
+
+                        response.data.forEach(appointment => {
+                            const apptDate = new Date(appointment.dateTime);
+                            apptDate > now ? upcoming.push(appointment) : past.push(appointment);
+                        });
+
+                        updateUpcomingAppointments(upcoming);
+                        updatePastAppointments(past);
+                    } else {
+                        showToast('Error', 'No appointments found', 'info');
+                        updateUpcomingAppointments([]);
+                        updatePastAppointments([]);
+                    }
+                },
+                error: (xhr) => {
+                    console.error('Appointments load error:', xhr);
+                    showToast('Error', 'Failed to load appointments', 'error');
+                    updateUpcomingAppointments([]);
+                    updatePastAppointments([]);
+                },
+                complete: () => {
+                    $('#appointmentsLoading, #pastAppointmentsLoading').hide();
+                }
+            });
+        }
+
+        // Modified update functions
+        function updateUpcomingAppointments(appointments) {
+            const html = appointments.map(appointment => `
+        <div class="appointment-card position-relative mb-3">
+            <span class="badge-pill ${getStatusClass(appointment.status)} appointment-status">
+                ${appointment.status}
+            </span>
+            <div class="d-flex">
+                <div class="appointment-date">
+                    <div class="day">${new Date(appointment.dateTime).getDate()}</div>
+                    <div class="month">${new Date(appointment.dateTime).toLocaleString('default', { month: 'short' })}</div>
+                </div>
+                <div>
+                    <div class="appointment-title">
+                        ${providerName ? `Appointment with Dr. ${providerName}` : 'Appointment with your provider'}
+                    </div>
+                    <div class="appointment-details">
+                        ${new Date(appointment.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} •
+                        ${appointment.purpose}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('') || `<div class="text-center p-4"><p class="text-muted">No upcoming appointments found.</p></div>`;
+
+            $('#appointmentsContainer').html(html);
+        }
+
+        function updatePastAppointments(appointments) {
+            const html = appointments.length ? appointments.map(appointment => `
+                <tr>
+                    <td>${formatDateTime(appointment.dateTime)}</td>
+                    <td>Dr. ${providerName}</td>
+                    <td>${appointment.purpose}</td>
+                    <td><span class="badge-pill ${getStatusClass(appointment.status)}">${appointment.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary view-appointment" data-id="${appointment.id}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('') : `<tr><td colspan="5" class="text-center">No past appointments found.</td></tr>`;
+
+            $('#pastAppointmentsTable tbody').html(html);
+        }
+
+        // Helper functions
+        function getStatusClass(status) {
+            return {
+                'CONFIRMED': 'badge-confirmed',
+                'REQUESTED': 'badge-requested',
+                'CANCELLED': 'badge-cancelled'
+            }[status] || '';
+        }
+
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+        // Toast notification handler
+        function showToast(title, message, type) {
+            const toast = $('#notificationToast');
+            $('#toastTitle').text(title);
+            $('#toastMessage').text(message);
+
+            toast.removeClass('bg-success bg-danger bg-info');
+            toast.addClass(
+                type === 'success' ? 'bg-success' :
+                    type === 'error' ? 'bg-danger' :
+                        'bg-info'
+            );
+
+            new bootstrap.Toast(toast[0]).show();
+        }
+
+        // Remove cancel appointment functionality
+        // Remove the cancelAppointmentBtn click handler and related code
+    });
+</script>
+</body>
+</html>
