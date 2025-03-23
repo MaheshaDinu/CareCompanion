@@ -19,10 +19,13 @@ public class HealthMetric {
     private HealthMetricType type;
 
     // For single-value metrics (glucose, heart rate, weight)
+    @Column(nullable = true)  // Ensure matches DB schema
     private Double value;
 
-    // For blood pressure only
+    @Column(nullable = true)  // Add explicit nullable
     private Integer systolic;
+
+    @Column(nullable = true)  // Add explicit nullable
     private Integer diastolic;
 
     @Column(nullable = false)

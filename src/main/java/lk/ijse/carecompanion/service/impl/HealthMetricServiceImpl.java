@@ -40,6 +40,10 @@ public class HealthMetricServiceImpl implements HealthMetricService {
     }
 
     private void validateMetric(HealthMetricDTO dto) {
+        if (dto.getType() == null) {
+            throw new IllegalArgumentException("Metric type is required");
+        }
+
         switch (dto.getType()) {
             case BLOOD_PRESSURE:
                 if (dto.getSystolic() == null || dto.getDiastolic() == null) {
@@ -47,6 +51,8 @@ public class HealthMetricServiceImpl implements HealthMetricService {
                             "Both systolic and diastolic values are required for blood pressure"
                     );
                 }
+                // Explicitly set value to null for blood pressure
+                dto.setValue(null);
                 break;
             default:
                 if (dto.getValue() == null) {
@@ -54,6 +60,9 @@ public class HealthMetricServiceImpl implements HealthMetricService {
                             "Value is required for " + dto.getType()
                     );
                 }
+                // Clear blood pressure fields for non-BP types
+                dto.setSystolic(null);
+                dto.setDiastolic(null);
                 break;
         }
     }
@@ -68,10 +77,16 @@ public class HealthMetricServiceImpl implements HealthMetricService {
     public void delete(int id) {
         healthMetricRepo.deleteById(id);
     }
+    @Transactional
+    @Override
     public List<HealthMetricDTO> getHealthMetricsByPatientId(int patientId) {
         List<HealthMetric> healthMetrics = healthMetricRepo.findByPatientId(patientId);
         return healthMetrics.stream().map(healthMetric -> modelMapper.map(healthMetric, HealthMetricDTO.class)).toList();
     }
-
-
+    @Transactional
+    @Override
+    public HealthMetricDTO getHealthMetricById(int id) {
+        Optional<HealthMetric> optionalHealthMetric = healthMetricRepo.findById(id);
+        return optionalHealthMetric.map(healthMetric -> modelMapper.map(healthMetric, HealthMetricDTO.class)).orElse(null);
+    }
 }

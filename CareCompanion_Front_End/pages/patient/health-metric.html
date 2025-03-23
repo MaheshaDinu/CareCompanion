@@ -14,6 +14,9 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -324,6 +327,49 @@
             display: flex;
             gap: 0.5rem;
         }
+        /* Add this to your CSS */
+        #systolicField, #diastolicField, #singleValueField {
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+            display: block !important; /* Override Bootstrap's d-none */
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        #systolicField.d-none, #diastolicField.d-none, #singleValueField.d-none {
+            opacity: 0;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+            border-radius: 12px;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
 
         /* Responsive styles */
         @media (max-width: 768px) {
@@ -631,7 +677,7 @@
                     <li><a class="dropdown-item" href="#">Profile</a></li>
                     <li><a class="dropdown-item" href="#">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                    <li><a class="dropdown-item text-danger" href="/CareCompanion/CareCompanion_Front_End/index.html?userType=patient">Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -643,10 +689,10 @@
         <!-- Sidebar -->
         <div class="col-lg-2 bg-white sidebar">
             <nav class="nav nav-pills flex-column">
-                <a class="nav-link" href="patient-dashboard.html">
+                <a class="nav-link" href="/CareCompanion/CareCompanion_Front_End/pages/patient/patient-dashboard.html">
                     <i class="bi bi-speedometer2"></i>Dashboard
                 </a>
-                <a class="nav-link active" href="#">
+                <a class="nav-link active" href="/CareCompanion/CareCompanion_Front_End/pages/patient/health-metric.html">
                     <i class="bi bi-heart-pulse"></i>Health Data
                 </a>
                 <a class="nav-link" href="#">
@@ -676,16 +722,16 @@
 
             <!-- Metric Type Selector -->
             <div class="metric-type-selector">
-                <button class="metric-type-btn active" data-metric-type="blood-pressure">
+                <button class="metric-type-btn active" data-metric-type="BLOOD_PRESSURE">
                     <i class="bi bi-heart-pulse"></i>Blood Pressure
                 </button>
-                <button class="metric-type-btn" data-metric-type="blood-glucose">
+                <button class="metric-type-btn" data-metric-type="BLOOD_GLUCOSE">
                     <i class="bi bi-droplet"></i>Blood Glucose
                 </button>
-                <button class="metric-type-btn" data-metric-type="heart-rate">
+                <button class="metric-type-btn" data-metric-type="HEART_RATE">
                     <i class="bi bi-activity"></i>Heart Rate
                 </button>
-                <button class="metric-type-btn" data-metric-type="weight">
+                <button class="metric-type-btn" data-metric-type="WEIGHT">
                     <i class="bi bi-speedometer2"></i>Weight
                 </button>
                 <button class="metric-type-btn" data-metric-type="temperature">
@@ -699,8 +745,13 @@
             <div class="row g-4">
                 <!-- Chart Section -->
                 <div class="col-lg-8">
-                    <div class="dashboard-card p-4">
-                        <h5 class="mb-4">Blood Pressure History</h5>
+                    <div class="dashboard-card p-4 position-relative">
+                        <div class="loading-spinner" id="chartLoading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        <h5 class="mb-4" id="chartTitle">Blood Pressure History</h5>
                         <div class="chart-container">
                             <canvas id="healthMetricChart"></canvas>
                         </div>
@@ -709,28 +760,15 @@
 
                 <!-- Summary Section -->
                 <div class="col-lg-4">
-                    <div class="dashboard-card p-4">
+                    <div class="dashboard-card p-4 position-relative">
+                        <div class="loading-spinner" id="summaryLoading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
                         <h5 class="mb-4">Summary</h5>
-                        <div class="metric-card">
-                            <div class="metric-title">Latest Reading</div>
-                            <div class="metric-value">120/80 mmHg</div>
-                            <div class="metric-trend up">
-                                <i class="bi bi-arrow-up-short"></i> Normal range
-                            </div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-title">Average (30 days)</div>
-                            <div class="metric-value">118/78 mmHg</div>
-                            <div class="metric-trend neutral">
-                                <i class="bi bi-dash"></i> Stable
-                            </div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-title">Trend</div>
-                            <div class="metric-trend up">
-                                <i class="bi bi-arrow-up-short"></i> Improving
-                            </div>
-                            <div class="text-muted mt-2">Your readings have been consistent and within normal range.</div>
+                        <div id="summaryContainer">
+                            <!-- Summary content will be loaded here via AJAX -->
                         </div>
                     </div>
                 </div>
@@ -772,7 +810,12 @@
 
                 <!-- Recent Entries Section -->
                 <div class="col-12">
-                    <div class="dashboard-card p-4">
+                    <div class="dashboard-card p-4 position-relative">
+                        <div class="loading-spinner" id="entriesLoading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="mb-0">Recent Entries</h5>
                             <div class="d-flex gap-2">
@@ -804,86 +847,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr>
-                                    <td>Jun 15, 2024 08:30 AM</td>
-                                    <td>120/80 mmHg</td>
-                                    <td><span class="badge-pill badge-normal">Normal</span></td>
-                                    <td>Morning reading before breakfast</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-primary edit-entry" data-id="1">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger delete-entry" data-id="1">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Jun 14, 2024 09:15 PM</td>
-                                    <td>118/78 mmHg</td>
-                                    <td><span class="badge-pill badge-normal">Normal</span></td>
-                                    <td>Evening reading after walk</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-primary edit-entry" data-id="2">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger delete-entry" data-id="2">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Jun 14, 2024 08:45 AM</td>
-                                    <td>122/82 mmHg</td>
-                                    <td><span class="badge-pill badge-normal">Normal</span></td>
-                                    <td>Morning reading</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-primary edit-entry" data-id="3">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger delete-entry" data-id="3">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Jun 13, 2024 09:30 PM</td>
-                                    <td>125/85 mmHg</td>
-                                    <td><span class="badge-pill badge-warning">Elevated</span></td>
-                                    <td>After stressful day at work</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-primary edit-entry" data-id="4">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger delete-entry" data-id="4">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Jun 13, 2024 08:15 AM</td>
-                                    <td>119/79 mmHg</td>
-                                    <td><span class="badge-pill badge-normal">Normal</span></td>
-                                    <td>Morning reading</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-primary edit-entry" data-id="5">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger delete-entry" data-id="5">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <!-- Table content will be loaded here via AJAX -->
                                 </tbody>
                             </table>
                         </div>
@@ -957,910 +921,634 @@
     </div>
 </div>
 
+<!-- Toast Notifications -->
+<div class="toast-container">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="notificationToast">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Operation completed successfully.
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Custom JavaScript -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    $(document).ready(function() {
+        // Global variables
+        let healthMetricChart;
+        let currentMetricType = 'BLOOD_PRESSURE'; // Match enum naming
+        let currentPatientId = null;
+        const jwtToken = localStorage.getItem('jwtToken'); // Assuming you store JWT token
+
         // Set current date and time for the date input
         const now = new Date();
         const offset = now.getTimezoneOffset() * 60000;
         const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
-        document.getElementById('metricDate').value = localISOTime;
+        $('#metricDate').val(localISOTime);
 
-        // Initialize Chart
-        const ctx = document.getElementById('healthMetricChart').getContext('2d');
-        const healthMetricChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Jun 10', 'Jun 11', 'Jun 12', 'Jun 13', 'Jun 14', 'Jun 15'],
-                datasets: [
-                    {
-                        label: 'Systolic',
-                        data: [122, 120, 118, 122, 118, 120],
-                        borderColor: '#4895ef',
-                        backgroundColor: 'rgba(72, 149, 239, 0.1)',
-                        tension: 0.3,
-                        borderWidth: 2,
-                        pointBackgroundColor: '#4895ef',
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    },
-                    {
-                        label: 'Diastolic',
-                        data: [82, 80, 78, 82, 78, 80],
-                        borderColor: '#3a0ca3',
-                        backgroundColor: 'rgba(58, 12, 163, 0.1)',
-                        tension: 0.3,
-                        borderWidth: 2,
-                        pointBackgroundColor: '#3a0ca3',
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        titleColor: '#2d3436',
-                        bodyColor: '#2d3436',
-                        borderColor: 'rgba(0, 0, 0, 0.1)',
-                        borderWidth: 1,
-                        padding: 12,
-                        displayColors: false,
-                        callbacks: {
-                            label: function(context) {
-                                const datasetLabel = context.dataset.label || '';
-                                const value = context.parsed.y;
-                                return `${datasetLabel}: ${value} mmHg`;
-                            }
-                        }
+        // Initialize the page
+        initializeChart();
+        loadPatientData();
+
+        function loadPatientData() {
+            $.ajax({
+                url: 'http://localhost:8080/api/patient/health-metric/getPatient',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                },
+                success: (response) => {
+                    if (response.code === 200) {
+                        currentPatientId = response.data.id;
+                        loadData();
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: 60,
-                        max: 140,
-                        grid: {
-                            drawBorder: false,
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        },
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Metric Type Selector
-        const metricTypeButtons = document.querySelectorAll('.metric-type-btn');
-        const systolicField = document.getElementById('systolicField');
-        const diastolicField = document.getElementById('diastolicField');
-        const singleValueField = document.getElementById('singleValueField');
-        const editSystolicField = document.getElementById('editSystolicField');
-        const editDiastolicField = document.getElementById('editDiastolicField');
-        const editSingleValueField = document.getElementById('editSingleValueField');
-
-        metricTypeButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                metricTypeButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
-                this.classList.add('active');
-
-                const metricType = this.getAttribute('data-metric-type');
-                updateFormFields(metricType);
-                updateChartData(metricType);
-                updateTableHeaders(metricType);
+                error: (xhr) => handleError(xhr, 'Failed to load patient data')
             });
+        }
+        function formatReading(metric) {
+            if (!metric) return 'N/A';
+
+            switch(metric.type) {
+                case 'BLOOD_PRESSURE':
+                    return `${metric.systolic || '--'}/${metric.diastolic || '--'} mmHg`;
+                case 'BLOOD_GLUCOSE':
+                    return `${metric.value || '--'} mg/dL`;
+                case 'HEART_RATE':
+                    return `${metric.value || '--'} bpm`;
+                case 'TEMPERATURE':
+                    return `${metric.value || '--'} °F`;
+                case 'OXYGEN':
+                    return `${metric.value || '--'}%`;
+                default:
+                    return 'N/A';
+            }
+        }
+        function calculateAverage(metrics, metricType) {
+            if (!metrics || metrics.length === 0) return 'N/A';
+
+            const formattedType = metricType.toUpperCase();
+
+            // Blood Pressure special case
+            if (formattedType === 'BLOOD_PRESSURE') {
+                const validEntries = metrics.filter(m =>
+                    m.systolic !== null &&
+                    m.diastolic !== null &&
+                    !isNaN(m.systolic) &&
+                    !isNaN(m.diastolic)
+                );
+
+                if (validEntries.length === 0) return 'N/A';
+
+                const systolicAvg = validEntries.reduce((sum, m) => sum + m.systolic, 0) / validEntries.length;
+                const diastolicAvg = validEntries.reduce((sum, m) => sum + m.diastolic, 0) / validEntries.length;
+
+                return `${systolicAvg.toFixed(1)}/${diastolicAvg.toFixed(1)} mmHg`;
+            }
+
+            // For other metric types
+            const validEntries = metrics.filter(m =>
+                m.value !== null &&
+                !isNaN(m.value) &&
+                (formattedType === 'TEMPERATURE' ? m.value > 0 : true)
+            );
+
+            if (validEntries.length === 0) return 'N/A';
+
+            const average = validEntries.reduce((sum, m) => sum + m.value, 0) / validEntries.length;
+
+            // Format based on metric type
+            switch(formattedType) {
+                case 'BLOOD_GLUCOSE':
+                    return `${average.toFixed(1)} mg/dL`;
+                case 'HEART_RATE':
+                    return `${average.toFixed(0)} bpm`;
+                case 'WEIGHT':
+                    return `${average.toFixed(1)} lbs`;
+                case 'TEMPERATURE':
+                    return `${average.toFixed(1)} °F`;
+                case 'OXYGEN':
+                    return `${average.toFixed(1)}%`;
+                default:
+                    return 'N/A';
+            }
+        }
+
+        // Metric Type Selector - updated to match enum values
+        $('.metric-type-btn').on('click', function() {
+            // Clear any existing errors
+
+
+            // Update active state
+            $('.metric-type-btn').removeClass('active');
+            $(this).addClass('active');
+
+            // Get selected type in uppercase
+            const selectedType = $(this).data('metric-type').toUpperCase();
+            currentMetricType = selectedType;
+
+            // Update form fields immediately
+            updateFormFields(selectedType);
+
+            // Reset and reload data
+            $('#healthMetricChart').data('loaded', false);
+            loadData();
         });
 
         function updateFormFields(metricType) {
-            if (metricType === 'blood-pressure') {
-                systolicField.classList.remove('d-none');
-                diastolicField.classList.remove('d-none');
-                singleValueField.classList.add('d-none');
+            // Always reset all fields first
+            $('#systolic, #diastolic, #metricValue').val('');
 
-                editSystolicField.classList.remove('d-none');
-                editDiastolicField.classList.remove('d-none');
-                editSingleValueField.classList.add('d-none');
-            } else {
-                systolicField.classList.add('d-none');
-                diastolicField.classList.add('d-none');
-                singleValueField.classList.remove('d-none');
+            // Handle blood pressure fields
+            if (metricType === 'BLOOD_PRESSURE') {
+                $('#systolicField, #diastolicField').removeClass('d-none');
+                $('#singleValueField').addClass('d-none');
 
-                editSystolicField.classList.add('d-none');
-                editDiastolicField.classList.add('d-none');
-                editSingleValueField.classList.remove('d-none');
-
-                // Update label and placeholder based on metric type
-                const valueLabel = document.querySelector('label[for="metricValue"]');
-                const valueInput = document.getElementById('metricValue');
-                const editValueLabel = document.querySelector('label[for="editMetricValue"]');
-
-                switch(metricType) {
-                    case 'blood-glucose':
-                        valueLabel.textContent = 'Blood Glucose (mg/dL)';
-                        valueInput.placeholder = '98';
-                        editValueLabel.textContent = 'Blood Glucose (mg/dL)';
-                        break;
-                    case 'heart-rate':
-                        valueLabel.textContent = 'Heart Rate (bpm)';
-                        valueInput.placeholder = '72';
-                        editValueLabel.textContent = 'Heart Rate (bpm)';
-                        break;
-                    case 'weight':
-                        valueLabel.textContent = 'Weight (lbs)';
-                        valueInput.placeholder = '165';
-                        editValueLabel.textContent = 'Weight (lbs)';
-                        break;
-                    case 'temperature':
-                        valueLabel.textContent = 'Temperature (°F)';
-                        valueInput.placeholder = '98.6';
-                        editValueLabel.textContent = 'Temperature (°F)';
-                        break;
-                    case 'oxygen':
-                        valueLabel.textContent = 'Oxygen Level (%)';
-                        valueInput.placeholder = '98';
-                        editValueLabel.textContent = 'Oxygen Level (%)';
-                        break;
-                }
+                // For edit form
+                $('#editSystolicField, #editDiastolicField').removeClass('d-none');
+                $('#editSingleValueField').addClass('d-none');
             }
+            // Handle all other metric types
+            else {
+                $('#systolicField, #diastolicField').addClass('d-none');
+                $('#singleValueField').removeClass('d-none');
+
+                // For edit form
+                $('#editSystolicField, #editDiastolicField').addClass('d-none');
+                $('#editSingleValueField').removeClass('d-none');
+
+                // Update labels dynamically
+                const labels = {
+                    'BLOOD_GLUCOSE': 'Blood Glucose (mg/dL)',
+                    'HEART_RATE': 'Heart Rate (bpm)',
+                    'WEIGHT': 'Weight (lbs)',
+                    'TEMPERATURE': 'Temperature (°F)',
+                    'OXYGEN': 'Oxygen Level (%)'
+                };
+                $('#metricValueLabel').text(labels[metricType]);
+            }
+
+            // Force redraw for transition effects
+            $('.form-control').trigger('redraw');
         }
 
-        function updateChartData(metricType) {
-            // Update chart title
-            const chartTitle = document.querySelector('.dashboard-card h5');
-
-            // Update chart data based on metric type
-            switch(metricType) {
-                case 'blood-pressure':
-                    chartTitle.textContent = 'Blood Pressure History';
-                    healthMetricChart.data.datasets = [
-                        {
-                            label: 'Systolic',
-                            data: [122, 120, 118, 122, 118, 120],
-                            borderColor: '#4895ef',
-                            backgroundColor: 'rgba(72, 149, 239, 0.1)',
-                            tension: 0.3,
-                            borderWidth: 2,
-                            pointBackgroundColor: '#4895ef'
+        function initializeChart() {
+            const ctx = document.getElementById('healthMetricChart').getContext('2d');
+            healthMetricChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
                         },
-                        {
-                            label: 'Diastolic',
-                            data: [82, 80, 78, 82, 78, 80],
-                            borderColor: '#3a0ca3',
-                            backgroundColor: 'rgba(58, 12, 163, 0.1)',
-                            tension: 0.3,
-                            borderWidth: 2,
-                            pointBackgroundColor: '#3a0ca3'
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#2d3436',
+                            bodyColor: '#2d3436',
+                            borderColor: 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false
                         }
-                    ];
-                    healthMetricChart.options.scales.y.min = 60;
-                    healthMetricChart.options.scales.y.max = 140;
-                    break;
-                case 'blood-glucose':
-                    chartTitle.textContent = 'Blood Glucose History';
-                    healthMetricChart.data.datasets = [
-                        {
-                            label: 'Blood Glucose',
-                            data: [95, 98, 92, 97, 94, 98],
-                            borderColor: '#06d6a0',
-                            backgroundColor: 'rgba(6, 214, 160, 0.1)',
-                            tension: 0.3,
-                            borderWidth: 2,
-                            pointBackgroundColor: '#06d6a0'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                drawBorder: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
                         }
-                    ];
-                    healthMetricChart.options.scales.y.min = 70;
-                    healthMetricChart.options.scales.y.max = 130;
-                    break;
-                case 'heart-rate':
-                    chartTitle.textContent = 'Heart Rate History';
-                    healthMetricChart.data.datasets = [
-                        {
-                            label: 'Heart Rate',
-                            data: [75, 72, 78, 74, 70, 72],
-                            borderColor: '#ef476f',
-                            backgroundColor: 'rgba(239, 71, 111, 0.1)',
-                            tension: 0.3,
-                            borderWidth: 2,
-                            pointBackgroundColor: '#ef476f'
-                        }
-                    ];
-                    healthMetricChart.options.scales.y.min = 50;
-                    healthMetricChart.options.scales.y.max = 100;
-                    break;
-                case 'weight':
-                    chartTitle.textContent = 'Weight History';
-                    healthMetricChart.data.datasets = [
-                        {
-                            label: 'Weight',
-                            data: [168, 167, 166, 166, 165, 165],
-                            borderColor: '#ffd166',
-                            backgroundColor: 'rgba(255, 209, 102, 0.1)',
-                            tension: 0.3,
-                            borderWidth: 2,
-                            pointBackgroundColor: '#ffd166'
-                        }
-                    ];
-                    healthMetricChart.options.scales.y.min = 160;
-                    healthMetricChart.options.scales.y.max = 175;
-                    break;
-                case 'temperature':
-                    chartTitle.textContent = 'Temperature History';
-                    healthMetricChart.data.datasets = [
-                        {
-                            label: 'Temperature',
-                            data: [98.4, 98.6, 98.5, 98.7, 98.6, 98.6],
-                            borderColor: '#4895ef',
-                            backgroundColor: 'rgba(72, 149, 239, 0.1)',
-                            tension: 0.3,
-                            borderWidth: 2,
-                            pointBackgroundColor: '#4895ef'
-                        }
-                    ];
-                    healthMetricChart.options.scales.y.min = 97;
-                    healthMetricChart.options.scales.y.max = 100;
-                    break;
-                case 'oxygen':
-                    chartTitle.textContent = 'Oxygen Level History';
-                    healthMetricChart.data.datasets = [
-                        {
-                            label: 'Oxygen Level',
-                            data: [97, 98, 98, 97, 98, 98],
-                            borderColor: '#06d6a0',
-                            backgroundColor: 'rgba(6, 214, 160, 0.1)',
-                            tension: 0.3,
-                            borderWidth: 2,
-                            pointBackgroundColor: '#06d6a0'
-                        }
-                    ];
-                    healthMetricChart.options.scales.y.min = 90;
-                    healthMetricChart.options.scales.y.max = 100;
-                    break;
-            }
-
-            // Update tooltip callback based on metric type
-            healthMetricChart.options.plugins.tooltip.callbacks.label = function(context) {
-                const datasetLabel = context.dataset.label || '';
-                const value = context.parsed.y;
-                let unit = '';
-
-                switch(metricType) {
-                    case 'blood-pressure':
-                        unit = 'mmHg';
-                        break;
-                    case 'blood-glucose':
-                        unit = 'mg/dL';
-                        break;
-                    case 'heart-rate':
-                        unit = 'bpm';
-                        break;
-                    case 'weight':
-                        unit = 'lbs';
-                        break;
-                    case 'temperature':
-                        unit = '°F';
-                        break;
-                    case 'oxygen':
-                        unit = '%';
-                        break;
-                }
-
-                return `${datasetLabel}: ${value} ${unit}`;
-            };
-
-            healthMetricChart.update();
-
-            // Update summary section
-            updateSummarySection(metricType);
-        }
-
-        function updateSummarySection(metricType) {
-            const metricCards = document.querySelectorAll('.metric-card');
-            const metricTitles = document.querySelectorAll('.metric-title');
-            const metricValues = document.querySelectorAll('.metric-value');
-            const metricTrends = document.querySelectorAll('.metric-trend');
-
-            switch(metricType) {
-                case 'blood-pressure':
-                    metricTitles[0].textContent = 'Latest Reading';
-                    metricValues[0].textContent = '120/80 mmHg';
-                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
-                    metricTrends[0].className = 'metric-trend up';
-
-                    metricTitles[1].textContent = 'Average (30 days)';
-                    metricValues[1].textContent = '118/78 mmHg';
-                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
-                    metricTrends[1].className = 'metric-trend neutral';
-                    break;
-                case 'blood-glucose':
-                    metricTitles[0].textContent = 'Latest Reading';
-                    metricValues[0].textContent = '98 mg/dL';
-                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
-                    metricTrends[0].className = 'metric-trend up';
-
-                    metricTitles[1].textContent = 'Average (30 days)';
-                    metricValues[1].textContent = '95 mg/dL';
-                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
-                    metricTrends[1].className = 'metric-trend neutral';
-                    break;
-                case 'heart-rate':
-                    metricTitles[0].textContent = 'Latest Reading';
-                    metricValues[0].textContent = '72 bpm';
-                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
-                    metricTrends[0].className = 'metric-trend up';
-
-                    metricTitles[1].textContent = 'Average (30 days)';
-                    metricValues[1].textContent = '74 bpm';
-                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
-                    metricTrends[1].className = 'metric-trend neutral';
-                    break;
-                case 'weight':
-                    metricTitles[0].textContent = 'Latest Reading';
-                    metricValues[0].textContent = '165 lbs';
-                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-down-short"></i> -3 lbs (30 days)';
-                    metricTrends[0].className = 'metric-trend down';
-
-                    metricTitles[1].textContent = 'Average (30 days)';
-                    metricValues[1].textContent = '166.5 lbs';
-                    metricTrends[1].innerHTML = '<i class="bi bi-arrow-down-short"></i> Decreasing';
-                    metricTrends[1].className = 'metric-trend down';
-                    break;
-                case 'temperature':
-                    metricTitles[0].textContent = 'Latest Reading';
-                    metricValues[0].textContent = '98.6 °F';
-                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
-                    metricTrends[0].className = 'metric-trend up';
-
-                    metricTitles[1].textContent = 'Average (30 days)';
-                    metricValues[1].textContent = '98.5 °F';
-                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
-                    metricTrends[1].className = 'metric-trend neutral';
-                    break;
-                case 'oxygen':
-                    metricTitles[0].textContent = 'Latest Reading';
-                    metricValues[0].textContent = '98%';
-                    metricTrends[0].innerHTML = '<i class="bi bi-arrow-up-short"></i> Normal range';
-                    metricTrends[0].className = 'metric-trend up';
-
-                    metricTitles[1].textContent = 'Average (30 days)';
-                    metricValues[1].textContent = '97.5%';
-                    metricTrends[1].innerHTML = '<i class="bi bi-dash"></i> Stable';
-                    metricTrends[1].className = 'metric-trend neutral';
-                    break;
-            }
-        }
-
-        function updateTableHeaders(metricType) {
-            const tableHeaders = document.querySelector('#entriesTable thead tr');
-            const tableRows = document.querySelector('#entriesTable tbody');
-
-            // Update table headers and sample data based on metric type
-            switch(metricType) {
-                case 'blood-pressure':
-                    tableHeaders.innerHTML = `
-                        <th>Date & Time</th>
-                        <th>Reading</th>
-                        <th>Status</th>
-                        <th>Notes</th>
-                        <th>Actions</th>
-                    `;
-                    tableRows.innerHTML = `
-                        <tr>
-                            <td>Jun 15, 2024 08:30 AM</td>
-                            <td>120/80 mmHg</td>
-                            <td><span class="badge-pill badge-normal">Normal</span></td>
-                            <td>Morning reading before breakfast</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary edit-entry" data-id="1">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger delete-entry" data-id="1">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Jun 14, 2024 09:15 PM</td>
-                            <td>118/78 mmHg</td>
-                            <td><span class="badge-pill badge-normal">Normal</span></td>
-                            <td>Evening reading after walk</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary edit-entry" data-id="2">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger delete-entry" data-id="2">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Jun 14, 2024 08:45 AM</td>
-                            <td>122/82 mmHg</td>
-                            <td><span class="badge-pill badge-normal">Normal</span></td>
-                            <td>Morning reading</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary edit-entry" data-id="3">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger delete-entry" data-id="3">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    break;
-                case 'blood-glucose':
-                    tableHeaders.innerHTML = `
-                        <th>Date & Time</th>
-                        <th>Reading</th>
-                        <th>Status</th>
-                        <th>Notes</th>
-                        <th>Actions</th>
-                    `;
-                    tableRows.innerHTML = `
-                        <tr>
-                            <td>Jun 15, 2024 08:30 AM</td>
-                            <td>98 mg/dL</td>
-                            <td><span class="badge-pill badge-normal">Normal</span></td>
-                            <td>Fasting</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary edit-entry" data-id="1">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger delete-entry" data-id="1">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Jun 14, 2024 01:15 PM</td>
-                            <td>125 mg/dL</td>
-                            <td><span class="badge-pill badge-normal">Normal</span></td>
-                            <td>After lunch</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary edit-entry" data-id="2">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger delete-entry" data-id="2">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Jun 14, 2024 08:45 AM</td>
-                            <td>94 mg/dL</td>
-                            <td><span class="badge-pill badge-normal">Normal</span></td>
-                            <td>Fasting</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary edit-entry" data-id="3">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger delete-entry" data-id="3">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    break;
-                default:
-                    // For other metric types, use a similar structure with appropriate units
-                    const unit = metricType === 'heart-rate' ? 'bpm' :
-                        metricType === 'weight' ? 'lbs' :
-                            metricType === 'temperature' ? '°F' : '%';
-
-                    tableHeaders.innerHTML = `
-                        <th>Date & Time</th>
-                        <th>Reading</th>
-                        <th>Status</th>
-                        <th>Notes</th>
-                        <th>Actions</th>
-                    `;
-
-                    // Generate sample data based on metric type
-                    let sampleData = '';
-                    if (metricType === 'heart-rate') {
-                        sampleData = `
-                            <tr>
-                                <td>Jun 15, 2024 08:30 AM</td>
-                                <td>72 ${unit}</td>
-                                <td><span class="badge-pill badge-normal">Normal</span></td>
-                                <td>Resting</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-entry" data-id="1">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-entry" data-id="1">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Jun 14, 2024 06:15 PM</td>
-                                <td>85 ${unit}</td>
-                                <td><span class="badge-pill badge-normal">Normal</span></td>
-                                <td>After exercise</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-entry" data-id="2">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-entry" data-id="2">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Jun 14, 2024 08:45 AM</td>
-                                <td>70 ${unit}</td>
-                                <td><span class="badge-pill badge-normal">Normal</span></td>
-                                <td>Morning reading</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-entry" data-id="3">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-entry" data-id="3">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    } else if (metricType === 'weight') {
-                        sampleData = `
-                            <tr>
-                                <td>Jun 15, 2024 08:30 AM</td>
-                                <td>165 ${unit}</td>
-                                <td><span class="badge-pill badge-normal">Normal</span></td>
-                                <td>Morning weight</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-entry" data-id="1">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-entry" data-id="1">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Jun 14, 2024 08:15 AM</td>
-                                <td>166 ${unit}</td>
-                                <td><span class="badge-pill badge-normal">Normal</span></td>
-                                <td>Morning weight</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-entry" data-id="2">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-entry" data-id="2">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Jun 13, 2024 08:30 AM</td>
-                                <td>167 ${unit}</td>
-                                <td><span class="badge-pill badge-normal">Normal</span></td>
-                                <td>Morning weight</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-entry" data-id="3">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-entry" data-id="3">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    } else {
-                        // For temperature and oxygen
-                        const value = metricType === 'temperature' ? '98.6' : '98';
-                        sampleData = `
-                            <tr>
-                                <td>Jun 15, 2024 08:30 AM</td>
-                                <td>${value} ${unit}</td>
-                                <td><span class="badge-pill badge-normal">Normal</span></td>
-                                <td>Morning reading</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-entry" data-id="1">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-entry" data-id="1">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Jun 14, 2024 08:15 PM</td>
-                                <td>${value} ${unit}</td>
-                                <td><span class="badge-pill badge-normal">Normal</span></td>
-                                <td>Evening reading</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-entry" data-id="2">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-entry" data-id="2">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Jun 14, 2024 08:45 AM</td>
-                                <td>${value} ${unit}</td>
-                                <td><span class="badge-pill badge-normal">Normal</span></td>
-                                <td>Morning reading</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary edit-entry" data-id="3">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-entry" data-id="3">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
                     }
+                }
+            });
+        }
 
-                    tableRows.innerHTML = sampleData;
-                    break;
-            }
+        function loadData() {
+            if (!currentPatientId) return;
 
-            // Reattach event listeners for edit and delete buttons
-            attachActionListeners();
+            $('#chartLoading, #summaryLoading, #entriesLoading').show();
+
+            // Load chart and entries data
+            $.ajax({
+                url: 'http://localhost:8080/api/patient/health-metric/getPatientHealthMetric',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                },
+                data: {
+                    patientId: currentPatientId,
+                    stringHealthMetricType: currentMetricType
+                },
+                success: (response) => {
+                    if (response.code === 200) {
+                        updateChart(response.data);
+                        updateEntries(response.data);
+                        updateSummary(response.data);
+                    }
+                    $('#chartLoading, #summaryLoading, #entriesLoading').hide();
+                },
+                error: (xhr) => {
+                    // Handle 500 errors here
+                    const errorMessage = xhr.responseJSON?.message || 'Failed to load health data';
+                    showToast('Error', errorMessage, 'error');
+                    $('#chartLoading, #summaryLoading, #entriesLoading').hide();
+                }
+            });
+
+
+
+
+
+
+
         }
 
         // Form submission
-        const healthMetricForm = document.getElementById('healthMetricForm');
-        healthMetricForm.addEventListener('submit', function(e) {
+        $('#healthMetricForm').on('submit', function(e) {
             e.preventDefault();
 
-            // Get active metric type
-            const activeMetricType = document.querySelector('.metric-type-btn.active').getAttribute('data-metric-type');
+            // Clear previous values
+            let formData = {
+                type: currentMetricType,
+                timestamp: $('#metricDate').val(),
+                notes: $('#metricNote').val().trim(),
+                patientId: currentPatientId
+            };
 
-            // Get form values
-            let reading = '';
-            if (activeMetricType === 'blood-pressure') {
-                const systolic = document.getElementById('systolic').value;
-                const diastolic = document.getElementById('diastolic').value;
-                reading = `${systolic}/${diastolic} mmHg`;
+            // Handle blood pressure specifically
+            if (currentMetricType === 'BLOOD_PRESSURE') {
+                formData = {
+                    ...formData,
+                    systolic: parseInt($('#systolic').val()),
+                    diastolic: parseInt($('#diastolic').val()),
+                    value: null // Explicitly null for blood pressure
+                };
             } else {
-                const value = document.getElementById('metricValue').value;
-                const unit = activeMetricType === 'heart-rate' ? 'bpm' :
-                    activeMetricType === 'weight' ? 'lbs' :
-                        activeMetricType === 'temperature' ? '°F' : '%';
-                reading = `${value} ${unit}`;
+                formData = {
+                    ...formData,
+                    value: parseFloat($('#metricValue').val()),
+                    systolic: null,
+                    diastolic: null
+                };
             }
 
-            const date = document.getElementById('metricDate').value;
-            const note = document.getElementById('metricNote').value;
-
-            // Format date for display
-            const formattedDate = new Date(date).toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true
+            // Submit data
+            $.ajax({
+                url: 'http://localhost:8080/api/patient/health-metric/addHealthMetric',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken,
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(formData),
+                success: (response) => {
+                    if (response.code === 201) {
+                        // Reset form fields after successful submission
+                        $('input').val('');
+                        $('#metricNote').val('');
+                        loadData();
+                    }
+                },
+                error: (xhr) => {
+                    handleError(xhr, 'Failed to add entry');
+                }
             });
+        });
+        function updateChart(metrics) {
+            // Clear existing data
+            healthMetricChart.data.labels = [];
+            healthMetricChart.data.datasets = [];
 
-            // Create new table row
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>${formattedDate}</td>
-                <td>${reading}</td>
+            // Add new data only if metrics exist
+            if (metrics && metrics.length > 0) {
+                const chartData = {
+                    labels: metrics.map(m => new Date(m.timestamp).toLocaleDateString()),
+                    datasets: [{
+                        label: currentMetricType.replace('_', ' '),
+                        data: metrics.map(m => currentMetricType === 'BLOOD_PRESSURE' ? m.systolic : m.value),
+                        borderColor: '#4895ef',
+                        backgroundColor: 'rgba(72, 149, 239, 0.1)'
+                    }]
+                };
+
+                if (currentMetricType === 'BLOOD_PRESSURE') {
+                    chartData.datasets.push({
+                        label: 'Diastolic',
+                        data: metrics.map(m => m.diastolic),
+                        borderColor: '#3a0ca3',
+                        backgroundColor: 'rgba(58, 12, 163, 0.1)'
+                    });
+                }
+
+                healthMetricChart.data = chartData;
+            }
+
+            healthMetricChart.update();
+        }
+
+        function updateSummary(metrics) {
+            // Clear previous summary
+            $('#summaryContainer').empty();
+
+            // Check if metrics exist and have entries
+            if (!metrics || metrics.length === 0) {
+                $('#summaryContainer').html(`
+            <div class="alert alert-info">
+                No health metric entries found for this category
+            </div>
+        `);
+                return;
+            }
+
+            const latest = metrics[0];
+            const summaryHtml = `
+        <div class="metric-card">
+            <div class="metric-title">Latest Reading</div>
+            <div class="metric-value">${formatReading(latest)}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Average</div>
+            <div class="metric-value">${calculateAverage(metrics, currentMetricType)}</div>
+        </div>
+    `;
+            $('#summaryContainer').html(summaryHtml);
+        }
+
+        function updateEntries(metrics) {
+            const entriesHtml = metrics && metrics.length > 0
+                ? metrics.map(metric => `
+            <tr>
+                <td>${new Date(metric.timestamp).toLocaleString()}</td>
+                <td>${formatReading(metric)}</td>
                 <td><span class="badge-pill badge-normal">Normal</span></td>
-                <td>${note}</td>
+                <td>${metric.notes || ''}</td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary edit-entry" data-id="new">
+                        <button class="btn btn-outline-primary edit-entry" data-id="${metric.id}">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-outline-danger delete-entry" data-id="new">
+                        <button class="btn btn-outline-danger delete-entry" data-id="${metric.id}">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
                 </td>
-            `;
+            </tr>
+        `).join('')
+                : `<tr><td colspan="5" class="text-center text-muted py-4">No entries found</td></tr>`;
 
-            // Add new row to table
-            const tableBody = document.querySelector('#entriesTable tbody');
-            tableBody.insertBefore(newRow, tableBody.firstChild);
-
-            // Reset form
-            healthMetricForm.reset();
-
-            // Set current date and time
-            document.getElementById('metricDate').value = localISOTime;
-
-            // Show success message
-            alert('Health metric entry added successfully!');
-
-            // Reattach event listeners
+            $('#entriesTable tbody').html(entriesHtml);
             attachActionListeners();
-        });
-
-        // Edit and Delete functionality
+        }
+        // Edit/Delete handlers
         function attachActionListeners() {
-            // Edit buttons
-            const editButtons = document.querySelectorAll('.edit-entry');
-            editButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const entryId = this.getAttribute('data-id');
-                    const row = this.closest('tr');
-                    const cells = row.querySelectorAll('td');
+            $('.edit-entry').on('click', function () {
+                const entryId = $(this).data('id');
 
-                    // Get values from row
-                    const dateTime = cells[0].textContent;
-                    const reading = cells[1].textContent;
-                    const note = cells[3].textContent;
+                // Show loading state in modal
+                $('#editEntryModal').modal('show');
+                $('#editEntryModal .modal-body').addClass('loading');
 
-                    // Set values in edit form
-                    document.getElementById('editEntryId').value = entryId;
+                // Fetch entry data
+                $.ajax({
+                    url: `http://localhost:8080/api/patient/health-metric/entry/${entryId}`,
+                    type: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + jwtToken
+                    },
+                    success: (response) => {
+                        if (response.code === 200) {
+                            const entry = response.data;
 
-                    // Parse date and time
-                    const dateObj = new Date(dateTime);
-                    const offset = dateObj.getTimezoneOffset() * 60000;
-                    const localISOTime = (new Date(dateObj.getTime() - offset)).toISOString().slice(0, 16);
-                    document.getElementById('editMetricDate').value = localISOTime;
+                            // Set form values
+                            $('#editEntryId').val(entryId);
+                            $('#editMetricDate').val(entry.timestamp.replace(' ', 'T'));
+                            $('#editMetricNote').val(entry.notes);
 
-                    // Set reading values based on metric type
-                    const activeMetricType = document.querySelector('.metric-type-btn.active').getAttribute('data-metric-type');
-                    if (activeMetricType === 'blood-pressure') {
-                        const [systolic, diastolic] = reading.split('/')[0].trim().split(' ')[0].split('/');
-                        document.getElementById('editSystolic').value = systolic;
-                        document.getElementById('editDiastolic').value = diastolic;
-                    } else {
-                        const value = reading.split(' ')[0];
-                        document.getElementById('editMetricValue').value = value;
+                            // Handle metric-specific values
+                            if (currentMetricType === 'BLOOD_PRESSURE') {
+                                $('#editSystolic').val(entry.systolic);
+                                $('#editDiastolic').val(entry.diastolic);
+                            } else {
+                                $('#editMetricValue').val(entry.value);
+                            }
+                        }
+                        $('#editEntryModal .modal-body').removeClass('loading');
+                    },
+                    error: (xhr) => {
+                        handleError(xhr, 'Failed to load entry');
+                        $('#editEntryModal').modal('hide');
                     }
-
-                    document.getElementById('editMetricNote').value = note;
-
-                    // Show edit modal
-                    const editModal = new bootstrap.Modal(document.getElementById('editEntryModal'));
-                    editModal.show();
                 });
             });
 
-            // Delete buttons
-            const deleteButtons = document.querySelectorAll('.delete-entry');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const entryId = this.getAttribute('data-id');
-                    document.getElementById('deleteEntryId').value = entryId;
-
-                    // Show delete confirmation modal
-                    const deleteModal = new bootstrap.Modal(document.getElementById('deleteEntryModal'));
-                    deleteModal.show();
-                });
+            $('.delete-entry').on('click', function () {
+                const entryId = $(this).data('id');
+                $("#deleteEntryModal").modal('show');
+                $('#deleteEntryId').val(entryId);
             });
         }
 
-        // Initial attachment of event listeners
-        attachActionListeners();
+        $('#saveEditBtn').on('click', function() {
+            const entryId = $('#editEntryId').val();
 
-        // Save edit changes
-        document.getElementById('saveEditBtn').addEventListener('click', function() {
-            const entryId = document.getElementById('editEntryId').value;
-            const row = document.querySelector(`.edit-entry[data-id="${entryId}"]`).closest('tr');
-            const cells = row.querySelectorAll('td');
+            const formData = {
+                id: entryId,
+                type: currentMetricType,
+                timestamp: $('#editMetricDate').val(),
+                notes: $('#editMetricNote').val(),
+                patientId: currentPatientId
+            };
 
-            // Get values from edit form
-            const date = document.getElementById('editMetricDate').value;
-            const note = document.getElementById('editMetricNote').value;
-
-            // Format date for display
-            const formattedDate = new Date(date).toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true
-            });
-
-            // Get reading based on metric type
-            const activeMetricType = document.querySelector('.metric-type-btn.active').getAttribute('data-metric-type');
-            let reading = '';
-            if (activeMetricType === 'blood-pressure') {
-                const systolic = document.getElementById('editSystolic').value;
-                const diastolic = document.getElementById('editDiastolic').value;
-                reading = `${systolic}/${diastolic} mmHg`;
+            // Add metric-specific values
+            if (currentMetricType === 'BLOOD_PRESSURE') {
+                formData.systolic = $('#editSystolic').val();
+                formData.diastolic = $('#editDiastolic').val();
             } else {
-                const value = document.getElementById('editMetricValue').value;
-                const unit = activeMetricType === 'heart-rate' ? 'bpm' :
-                    activeMetricType === 'weight' ? 'lbs' :
-                        activeMetricType === 'temperature' ? '°F' : '%';
-                reading = `${value} ${unit}`;
+                formData.value = $('#editMetricValue').val();
             }
 
-            // Update row
-            cells[0].textContent = formattedDate;
-            cells[1].textContent = reading;
-            cells[3].textContent = note;
+            // Show loading state
+            $('#saveEditBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Saving...');
 
-            // Hide modal
-            const editModal = bootstrap.Modal.getInstance(document.getElementById('editEntryModal'));
-            editModal.hide();
-
-            // Show success message
-            alert('Health metric entry updated successfully!');
+            $.ajax({
+                url: `http://localhost:8080/api/patient/health-metric/update?id=${entryId}`,
+                type: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken,
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(formData),
+                success: (response) => {
+                    if (response.code === 200) {
+                        $('#editEntryModal').modal('hide');
+                        showToast('Success', 'Entry updated successfully', 'success');
+                        loadData();
+                    }
+                    $('#saveEditBtn').prop('disabled', false).html('Save Changes');
+                },
+                error: (xhr) => {
+                    handleError(xhr, 'Update failed');
+                    $('#saveEditBtn').prop('disabled', false).html('Save Changes');
+                }
+            });
         });
+
+        function validateForm(metricType) {
+            let isValid = true;
+
+            if (metricType === 'BLOOD_PRESSURE') {
+                const systolic = $('#systolic').val();
+                const diastolic = $('#diastolic').val();
+
+                if (!systolic || !diastolic) {
+                    showToast('Error', 'Both systolic and diastolic values are required', 'error');
+                    isValid = false;
+                }
+            } else {
+                const value = $('#metricValue').val();
+                if (!value) {
+                    showToast('Error', 'Value is required for this metric type', 'error');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
 
         // Confirm delete
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            const entryId = document.getElementById('deleteEntryId').value;
-            const row = document.querySelector(`.delete-entry[data-id="${entryId}"]`).closest('tr');
+        $('#confirmDeleteBtn').on('click', function() {
+            const entryId = $('#deleteEntryId').val();
 
-            // Remove row
-            row.remove();
+            // Simulate AJAX request with setTimeout
+            setTimeout(function() {
+                $.ajax({
+                    url: `/api/patient/health-metric/delete?id=${entryId}`,
+                    type: 'DELETE',
+                    dataType: 'json',
+                    success: function(response) {
+                        // Hide modal
+                        $('#deleteEntryModal').modal('hide');
 
-            // Hide modal
-            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteEntryModal'));
-            deleteModal.hide();
+                        // Show success message
+                        showToast('Success', 'Health metric entry deleted successfully!', 'success');
 
-            // Show success message
-            alert('Health metric entry deleted successfully!');
+                        // Reload data
+                        loadData();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error deleting entry:', error);
+                        showToast('Error', 'Failed to delete entry. Please try again.', 'error');
+                    }
+                });
+            }, 800); // Simulate network delay
         });
+
+        // View All button
+        $('#viewAllBtn').on('click', function() {
+            // Simulate AJAX request with setTimeout
+            $('#entriesLoading').show();
+
+            setTimeout(function() {
+                $.ajax({
+                    url: 'api/health-metrics/entries/all',
+                    type: 'GET',
+                    data: { type: currentMetricType },
+                    dataType: 'json',
+                    success: function(response) {
+                        updateEntries(response);
+                        $('#entriesLoading').hide();
+                        showToast('Info', 'Showing all entries for ' + getMetricTypeLabel(currentMetricType), 'info');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading all entries:', error);
+                        showToast('Error', 'Failed to load all entries. Please try again.', 'error');
+                        $('#entriesLoading').hide();
+                    }
+                });
+            }, 1000); // Simulate network delay
+        });
+
+        // Helper function to show toast notifications
+        function showToast(title, message, type) {
+            // Set toast content
+            $('#toastTitle').text(title);
+            $('#toastMessage').text(message);
+
+            // Set toast type
+            const toast = $('#notificationToast');
+            toast.removeClass('bg-success bg-danger bg-info');
+
+            if (type === 'success') {
+                toast.addClass('bg-success text-white');
+            } else if (type === 'error') {
+                toast.addClass('bg-danger text-white');
+            } else if (type === 'info') {
+                toast.addClass('bg-info text-white');
+            }
+
+            // Show toast
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+
+        // Helper function to get metric type label
+        function getMetricTypeLabel(type) {
+            const labels = {
+                'blood_pressure': 'Blood Pressure',
+                'blood_glucose': 'Blood Glucose',
+                'heart_rate': 'Heart Rate',
+                'weight': 'Weight',
+                'temperature': 'Temperature',
+                'oxygen': 'Oxygen Level'
+            };
+
+            return labels[type] || type;
+        }
+        function handleError(xhr, message) {
+            const errorMsg = xhr.responseJSON?.message || message;
+            showToast('Error', errorMsg, 'error');
+        }
+
+
+
     });
+
+
 </script>
 </body>
 </html>
