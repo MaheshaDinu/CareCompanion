@@ -689,19 +689,19 @@
         <!-- Sidebar -->
         <div class="col-lg-2 bg-white sidebar">
             <nav class="nav nav-pills flex-column">
-                <a class="nav-link" href="patient-dashboard.html">
+                <a class="nav-link" href="/CareCompanion/CareCompanion_Front_End/pages/patient/patient-dashboard.html">
                     <i class="bi bi-speedometer2"></i>Dashboard
                 </a>
-                <a class="nav-link" href="health-metrics.html">
+                <a class="nav-link" href="/CareCompanion/CareCompanion_Front_End/pages/patient/health-metrics.html">
                     <i class="bi bi-heart-pulse"></i>Health Data
                 </a>
-                <a class="nav-link" href="appointments.html">
+                <a class="nav-link" href="/CareCompanion/CareCompanion_Front_End/pages/patient/patient-appointments.html">
                     <i class="bi bi-calendar-check"></i>Appointments
                 </a>
                 <a class="nav-link" href="#">
                     <i class="bi bi-capsule"></i>Medications
                 </a>
-                <a class="nav-link active" href="#">
+                <a class="nav-link active" href="CareCompanion/CareCompanion_Front_End/pages/patient/patient-symptom-diary.html">
                     <i class="bi bi-journal-text"></i>Symptom Diary
                 </a>
                 <a class="nav-link" href="#">
@@ -932,7 +932,7 @@
         // Load patient data
         function loadPatientData() {
             $.ajax({
-                url: 'http://localhost:8080/patient/symptom/getPatient',
+                url: 'http://localhost:8080/api/patient/symptom/getPatient',
                 type: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + jwtToken
@@ -978,6 +978,7 @@
             }
 
             const symptomData = {
+                patientId: currentPatientId,
                 description: $('#symptomDescription').val().trim(),
                 severity: $('input[name="severity"]:checked').val(),
                 date: $('#symptomDate').val(),
@@ -990,7 +991,7 @@
             }
 
             $.ajax({
-                url: 'http://localhost:8080/patient/symptom/addSymptom',
+                url: 'http://localhost:8080/api/patient/symptom/addSymptom',
                 type: 'POST',
                 headers: {
                     'Authorization': 'Bearer ' + jwtToken
@@ -1017,7 +1018,7 @@
             selectedSymptomId = $(this).data('id');
 
             $.ajax({
-                url: `http://localhost:8080/api/patient/symptoms/${selectedSymptomId}`,
+                url: `http://localhost:8080/api/patient/symptom/getById/${selectedSymptomId}`,
                 type: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + jwtToken
@@ -1038,7 +1039,7 @@
             $('#symptomDetailsModal').modal('hide');
 
             $.ajax({
-                url: `http://localhost:8080/api/patient/symptoms/${selectedSymptomId}`,
+                url: `http://localhost:8080/api/patient/symptom/getById/${selectedSymptomId}`,
                 type: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + jwtToken
@@ -1058,6 +1059,7 @@
         // Save edited symptom
         $('#saveEditBtn').on('click', function() {
             const symptomData = {
+                id: selectedSymptomId,
                 description: $('#editSymptomDescription').val().trim(),
                 severity: $('input[name="editSeverity"]:checked').val(),
                 date: $('#editSymptomDate').val(),
@@ -1065,7 +1067,7 @@
             };
 
             $.ajax({
-                url: `http://localhost:8080/api/patient/symptoms/update/${selectedSymptomId}`,
+                url: `http://localhost:8080/api/patient/symptoms/update`,
                 type: 'PUT',
                 headers: {
                     'Authorization': 'Bearer ' + jwtToken
@@ -1113,7 +1115,7 @@
             $('#symptomsLoading').show();
 
             $.ajax({
-                url: 'http://localhost:8080/api/patient/symptoms/all',
+                url: `http://localhost:8080/api/patient/symptom/getAll/${currentPatientId}`,
                 type: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + jwtToken

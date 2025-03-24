@@ -9,4 +9,5 @@ public interface SymptomService {
     void update(SymptomDTO symptomDTO);
     void delete(int id);
     List<SymptomDTO> getSymptomsByPatientId(int patientId);
+    SymptomDTO getSymptomById(int id);
 }

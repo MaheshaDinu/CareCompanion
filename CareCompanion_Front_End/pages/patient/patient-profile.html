@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCompanion - Profile Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Flatpickr for Date Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        :root {
+            --primary: #4895ef;
+            --primary-light: rgba(72, 149, 239, 0.1);
+            --primary-dark: #3a75c4;
+            --secondary: #3a0ca3;
+            --success: #06d6a0;
+            --success-light: rgba(6, 214, 160, 0.1);
+            --light-bg: #f8f9fa;
+            --text-dark: #2d3436;
+            --danger: #ef476f;
+            --danger-light: rgba(239, 71, 111, 0.1);
+            --warning: #ffd166;
+            --warning-light: rgba(255, 209, 102, 0.1);
+            --gray: #adb5bd;
+            --gray-light: #e9ecef;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 8px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: var(--primary-light);
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 8px rgba(72, 149, 239, 0.2);
+        }
+
+        .nav-pills .nav-link i {
+            margin-right: 0.75rem;
+        }
+
+        .navbar {
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+        }
+
+        .sidebar {
+            height: calc(100vh - 70px);
+            position: sticky;
+            top: 70px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            transition: width 0.3s ease;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem var(--primary-light);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+            border-radius: 12px;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+
+        /* Profile Management Specific Styles */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            position: relative;
+        }
+
+        .profile-avatar i {
+            font-size: 3rem;
+            color: var(--primary);
+        }
+
+        .profile-avatar .edit-avatar {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+        }
+
+        .profile-info h2 {
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-info p {
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .profile-nav {
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-nav .nav-link {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-right: 0.5rem;
+        }
+
+        .profile-section {
+            margin-bottom: 2rem;
+        }
+
+        .profile-section-title {
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .form-hint {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-top: 0.25rem;
+        }
+
+        .password-strength {
+            height: 5px;
+            border-radius: 2.5px;
+            margin-top: 0.5rem;
+            background-color: var(--gray-light);
+            overflow: hidden;
+        }
+
+        .password-strength-meter {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .password-strength-meter.weak {
+            width: 33.33%;
+            background-color: var(--danger);
+        }
+
+        .password-strength-meter.medium {
+            width: 66.66%;
+            background-color: var(--warning);
+        }
+
+        .password-strength-meter.strong {
+            width: 100%;
+            background-color: var(--success);
+        }
+
+        .password-requirements {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .password-requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.25rem;
+            color: var(--gray);
+        }
+
+        .password-requirement i {
+            margin-right: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .password-requirement.met {
+            color: var(--success);
+        }
+
+        .security-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border: 1px solid var(--gray-light);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .security-option:hover {
+            border-color: var(--primary-light);
+            background-color: var(--primary-light);
+        }
+
+        .security-option-info h5 {
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .security-option-info p {
+            margin-bottom: 0;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .form-switch .form-check-input {
+            width: 2.5em;
+            height: 1.25em;
+        }
+
+        .activity-log-item {
+            display: flex;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .activity-log-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .activity-log-icon i {
+            color: var(--primary);
+        }
+
+        .activity-log-content h5 {
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .activity-log-content p {
+            margin-bottom: 0;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-avatar {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Large screens (1200px - 1919px) */
+        @media (min-width: 1200px) and (max-width: 1919px) {
+            .container-fluid {
+                max-width: 1800px;
+                margin: 0 auto;
+            }
+
+            .dashboard-card {
+                padding: 1.5rem !important;
+            }
+
+            h4 {
+                font-size: 1.6rem;
+            }
+
+            h5 {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Extra large screens (1920px - 2559px) */
+        @media (min-width: 1920px) and (max-width: 2559px) {
+            .container-fluid {
+                max-width: 1900px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.1rem;
+            }
+
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.6rem;
+            }
+
+            .sidebar {
+                padding: 2rem;
+                width: 300px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 0.8rem 1.2rem;
+                font-size: 1.2rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.3rem;
+            }
+
+            .main-content {
+                padding: 2rem;
+            }
+
+            .dashboard-card {
+                padding: 1.8rem !important;
+                border-radius: 16px;
+            }
+
+            h4 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            h5 {
+                font-size: 1.5rem;
+                margin-bottom: 1.2rem !important;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Ultra large screens (2560px and above) */
+        @media (min-width: 2560px) {
+            .container-fluid {
+                max-width: 2400px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.25rem;
+            }
+
+            .navbar {
+                padding: 1.25rem 2.5rem;
+            }
+
+            .navbar-brand {
+                font-size: 2rem;
+            }
+
+            .navbar-brand i {
+                font-size: 1.8rem;
+            }
+
+            .sidebar {
+                padding: 2.5rem;
+                width: 350px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 1rem 1.5rem;
+                font-size: 1.4rem;
+                margin-bottom: 1rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.5rem;
+                margin-right: 1rem;
+            }
+
+            .main-content {
+                padding: 2.5rem;
+            }
+
+            .dashboard-card {
+                padding: 2rem !important;
+                border-radius: 20px;
+                box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            }
+
+            h4 {
+                font-size: 2.2rem;
+                margin-bottom: 2rem !important;
+            }
+
+            h5 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 1.2rem;
+            }
+
+            .fw-semibold {
+                font-size: 1.3rem;
+            }
+
+            .text-muted {
+                font-size: 1.1rem;
+            }
+
+            .dropdown-menu {
+                font-size: 1.2rem;
+            }
+
+            .dropdown-item {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.4rem;
+            }
+
+            .form-label {
+                font-size: 1.2rem;
+            }
+
+            .form-control {
+                padding: 0.8rem 1.2rem;
+                font-size: 1.2rem;
+            }
+
+            .profile-avatar {
+                width: 150px;
+                height: 150px;
+            }
+
+            .profile-avatar i {
+                font-size: 4.5rem;
+            }
+
+            .profile-avatar .edit-avatar {
+                width: 48px;
+                height: 48px;
+            }
+
+            .profile-info h2 {
+                font-size: 2.5rem;
+            }
+
+            .profile-info p {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <i class="bi bi-heart-pulse me-2"></i>CareCompanion
+        </a>
+        <div class="d-flex align-items-center">
+            <div class="position-relative me-4">
+                <a href="#" class="text-dark">
+                    <i class="bi bi-bell fs-4"></i>
+                    <span class="notification-badge">3</span>
+                </a>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="d-block text-decoration-none dropdown-toggle"
+                   data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle fs-4"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item active" href="#">Profile</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 bg-white sidebar">
+            <nav class="nav nav-pills flex-column">
+                <a class="nav-link" href="patient-dashboard.html">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+                <a class="nav-link" href="health-metrics.html">
+                    <i class="bi bi-heart-pulse"></i>Health Data
+                </a>
+                <a class="nav-link" href="appointments.html">
+                    <i class="bi bi-calendar-check"></i>Appointments
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-capsule"></i>Medications
+                </a>
+                <a class="nav-link" href="symptom-diary.html">
+                    <i class="bi bi-journal-text"></i>Symptom Diary
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-file-earmark-text"></i>Reports
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-chat-left-dots"></i>Messages
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-10 main-content">
+            <div class="page-header">
+                <h1 class="page-title">Profile Management</h1>
+                <p class="page-subtitle">Update your personal information and security settings</p>
+            </div>
+
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="bi bi-person"></i>
+                    <div class="edit-avatar" title="Change profile picture">
+                        <i class="bi bi-pencil"></i>
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <h2 id="profileName">Loading...</h2>
+                    <p id="profileEmail">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Profile Navigation -->
+            <ul class="nav nav-tabs profile-nav" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal-tab-pane" type="button" role="tab" aria-controls="personal-tab-pane" aria-selected="true">
+                        <i class="bi bi-person me-2"></i>Personal Information
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-tab-pane" type="button" role="tab" aria-controls="security-tab-pane" aria-selected="false">
+                        <i class="bi bi-shield-lock me-2"></i>Security
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity-tab-pane" type="button" role="tab" aria-controls="activity-tab-pane" aria-selected="false">
+                        <i class="bi bi-clock-history me-2"></i>Activity
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="profileTabsContent">
+                <!-- Personal Information Tab -->
+                <div class="tab-pane fade show active" id="personal-tab-pane" role="tabpanel" aria-labelledby="personal-tab" tabindex="0">
+                    <div class="dashboard-card p-4 position-relative">
+                        <div class="loading-spinner" id="personalInfoLoading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+
+                        <form id="personalInfoForm">
+                            <div class="profile-section">
+                                <h4 class="profile-section-title">Basic Information</h4>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="firstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="firstName" placeholder="Enter your first name">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="lastName" placeholder="Enter your last name">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" placeholder="Enter your username" readonly>
+                                        <div class="form-hint">Username cannot be changed</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" placeholder="Enter your email address">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phoneNumber" placeholder="Enter your phone number">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="dob" class="form-label">Date of Birth</label>
+                                        <input type="text" class="form-control" id="dob" placeholder="Select your date of birth">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="age" class="form-label">Age</label>
+                                        <input type="number" class="form-control" id="age" placeholder="Enter your age" readonly>
+                                        <div class="form-hint">Age is calculated automatically from date of birth</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="gender" class="form-label">Gender</label>
+                                        <select class="form-select" id="gender">
+                                            <option value="">Select gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                            <option value="Prefer not to say">Prefer not to say</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="profile-section">
+                                <h4 class="profile-section-title">Medical Information</h4>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label for="medicalHistory" class="form-label">Medical History</label>
+                                        <textarea class="form-control" id="medicalHistory" rows="4" placeholder="Enter any relevant medical history or conditions"></textarea>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="provider" class="form-label">Primary Care Provider</label>
+                                        <input type="text" class="form-control" id="provider" readonly>
+                                        <div class="form-hint">To change your provider, please contact support</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="providerId" class="form-label">Provider ID</label>
+                                        <input type="text" class="form-control" id="providerId" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="button" class="btn btn-outline-secondary me-2" id="resetPersonalInfoBtn">Reset</button>
+                                <button type="submit" class="btn btn-primary" id="savePersonalInfoBtn">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div class="tab-pane fade" id="security-tab-pane" role="tabpanel" aria-labelledby="security-tab" tabindex="0">
+                    <div class="dashboard-card p-4">
+                        <div class="profile-section">
+                            <h4 class="profile-section-title">Change Password</h4>
+                            <form id="passwordForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="currentPassword" class="form-label">Current Password</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password">
+                                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="currentPassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6"></div>
+                                    <div class="col-md-6">
+                                        <label for="newPassword" class="form-label">New Password</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="newPassword" placeholder="Enter your new password">
+                                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="newPassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="password-strength">
+                                            <div class="password-strength-meter" id="passwordStrengthMeter"></div>
+                                        </div>
+                                        <div class="password-requirements">
+                                            <div class="password-requirement" id="lengthRequirement">
+                                                <i class="bi bi-circle"></i> At least 8 characters
+                                            </div>
+                                            <div class="password-requirement" id="uppercaseRequirement">
+                                                <i class="bi bi-circle"></i> At least one uppercase letter
+                                            </div>
+                                            <div class="password-requirement" id="lowercaseRequirement">
+                                                <i class="bi bi-circle"></i> At least one lowercase letter
+                                            </div>
+                                            <div class="password-requirement" id="numberRequirement">
+                                                <i class="bi bi-circle"></i> At least one number
+                                            </div>
+                                            <div class="password-requirement" id="specialRequirement">
+                                                <i class="bi bi-circle"></i> At least one special character
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your new password">
+                                            <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirmPassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div id="passwordMatchFeedback" class="form-hint"></div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end mt-4">
+                                    <button type="reset" class="btn btn-outline-secondary me-2">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Update Password</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="profile-section">
+                            <h4 class="profile-section-title">Security Settings</h4>
+                            <div class="security-option">
+                                <div class="security-option-info">
+                                    <h5>Two-Factor Authentication</h5>
+                                    <p>Add an extra layer of security to your account by requiring a verification code in addition to your password.</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="twoFactorSwitch">
+                                </div>
+                            </div>
+                            <div class="security-option">
+                                <div class="security-option-info">
+                                    <h5>Login Notifications</h5>
+                                    <p>Receive email notifications when someone logs into your account from a new device or location.</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="loginNotificationsSwitch" checked>
+                                </div>
+                            </div>
+                            <div class="security-option">
+                                <div class="security-option-info">
+                                    <h5>Authorized Devices</h5>
+                                    <p>Manage the devices that are currently authorized to access your account.</p>
+                                </div>
+                                <button class="btn btn-outline-primary btn-sm">Manage Devices</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Tab -->
+                <div class="tab-pane fade" id="activity-tab-pane" role="tabpanel" aria-labelledby="activity-tab" tabindex="0">
+                    <div class="dashboard-card p-4 position-relative">
+                        <div class="loading-spinner" id="activityLoading">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="profile-section">
+                            <h4 class="profile-section-title">Recent Activity</h4>
+                            <div id="activityLogContainer">
+                                <!-- Activity log will be loaded here via AJAX -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="notificationToast">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Operation completed successfully.
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    $(document).ready(function() {
+        // Initialize date picker
+        flatpickr("#dob", {
+            dateFormat: "Y-m-d",
+            maxDate: "today"
+        });
+
+        // Load user profile data
+        loadUserProfile();
+
+        // Load activity log
+        loadActivityLog();
+
+        // Toggle password visibility
+        $('.toggle-password').on('click', function() {
+            const targetId = $(this).data('target');
+            const input = $('#' + targetId);
+            const icon = $(this).find('i');
+
+            if (input.attr('type') === 'password') {
+                input.attr('type', 'text');
+                icon.removeClass('bi-eye').addClass('bi-eye-slash');
+            } else {
+                input.attr('type', 'password');
+                icon.removeClass('bi-eye-slash').addClass('bi-eye');
+            }
+        });
+
+        // Password strength checker
+        $('#newPassword').on('input', function() {
+            checkPasswordStrength($(this).val());
+        });
+
+        // Password match checker
+        $('#confirmPassword').on('input', function() {
+            const newPassword = $('#newPassword').val();
+            const confirmPassword = $(this).val();
+
+            if (confirmPassword === '') {
+                $('#passwordMatchFeedback').text('');
+            } else if (newPassword === confirmPassword) {
+                $('#passwordMatchFeedback').text('Passwords match').css('color', 'var(--success)');
+            } else {
+                $('#passwordMatchFeedback').text('Passwords do not match').css('color', 'var(--danger)');
+            }
+        });
+
+        // Personal info form submission
+        $('#personalInfoForm').on('submit', function(e) {
+            e.preventDefault();
+
+            // Show loading spinner
+            const saveBtn = $('#savePersonalInfoBtn');
+            saveBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...').prop('disabled', true);
+
+            // Gather form data
+            const userData = {
+                firstName: $('#firstName').val(),
+                lastName: $('#lastName').val(),
+                email: $('#email').val(),
+                phoneNumber: $('#phoneNumber').val(),
+                dob: $('#dob').val(),
+                gender: $('#gender').val(),
+                medicalHistory: $('#medicalHistory').val()
+            };
+
+            // Send AJAX request to update user profile
+            $.ajax({
+                url: '/api/patient/profile/update',
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(userData),
+                success: function(response) {
+                    // Update profile header
+                    $('#profileName').text(userData.firstName + ' ' + userData.lastName);
+                    $('#profileEmail').text(userData.email);
+
+                    // Show success message
+                    showToast('Success', 'Profile updated successfully!', 'success');
+
+                    // Reset button state
+                    saveBtn.html('Save Changes').prop('disabled', false);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating profile:', error);
+
+                    // Show error message
+                    showToast('Error', 'Failed to update profile. Please try again.', 'error');
+
+                    // Reset button state
+                    saveBtn.html('Save Changes').prop('disabled', false);
+
+                    // For demo purposes, simulate success
+                    $('#profileName').text(userData.firstName + ' ' + userData.lastName);
+                    $('#profileEmail').text(userData.email);
+                    showToast('Success', 'Profile updated successfully! (Demo)', 'success');
+                }
+            });
+        });
+
+        // Password form submission
+        $('#passwordForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const currentPassword = $('#currentPassword').val();
+            const newPassword = $('#newPassword').val();
+            const confirmPassword = $('#confirmPassword').val();
+
+            // Validate passwords
+            if (!currentPassword) {
+                showToast('Error', 'Please enter your current password.', 'error');
+                return;
+            }
+
+            if (!newPassword) {
+                showToast('Error', 'Please enter a new password.', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showToast('Error', 'New passwords do not match.', 'error');
+                return;
+            }
+
+            // Check password strength
+            if (!isPasswordStrong(newPassword)) {
+                showToast('Error', 'Password does not meet the requirements.', 'error');
+                return;
+            }
+
+            // Send AJAX request to update password
+            $.ajax({
+                url: '/api/patient/profile/update-password',
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    currentPassword: currentPassword,
+                    newPassword: newPassword
+                }),
+                success: function(response) {
+                    // Reset form
+                    $('#passwordForm')[0].reset();
+
+                    // Reset password strength meter
+                    $('#passwordStrengthMeter').removeClass('weak medium strong').css('width', '0');
+
+                    // Reset password requirements
+                    $('.password-requirement').removeClass('met');
+                    $('.password-requirement i').removeClass('bi-check-circle-fill').addClass('bi-circle');
+
+                    // Show success message
+                    showToast('Success', 'Password updated successfully!', 'success');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating password:', error);
+
+                    // Show error message
+                    showToast('Error', 'Failed to update password. Please check your current password and try again.', 'error');
+
+                    // For demo purposes, simulate success
+                    $('#passwordForm')[0].reset();
+                    $('#passwordStrengthMeter').removeClass('weak medium strong').css('width', '0');
+                    $('.password-requirement').removeClass('met');
+                    $('.password-requirement i').removeClass('bi-check-circle-fill').addClass('bi-circle');
+                    showToast('Success', 'Password updated successfully! (Demo)', 'success');
+                }
+            });
+        });
+
+        // Reset personal info form
+        $('#resetPersonalInfoBtn').on('click', function() {
+            loadUserProfile();
+        });
+
+        // Load user profile function
+        function loadUserProfile() {
+            // Show loading spinner
+            $('#personalInfoLoading').show();
+
+            // Send AJAX request to get user profile
+            $.ajax({
+                url: '/api/patient/profile',
+                type: 'GET',
+                success: function(response) {
+                    updateProfileForm(response);
+                    $('#personalInfoLoading').hide();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading profile:', error);
+
+                    // Show error message
+                    showToast('Error', 'Failed to load profile. Please refresh the page.', 'error');
+
+                    // Handle no data scenario
+                    $('#personalInfoLoading').hide();
+                    $('#personalInfoForm').html('<div class="alert alert-warning">Unable to load profile data. Please try refreshing the page.</div>');
+                }
+            });
+        }
+
+        // Update profile form with user data
+        function updateProfileForm(userData) {
+            // If no data is available, show message
+            if (!userData) {
+                $('#personalInfoForm').html('<div class="alert alert-warning">No profile data available. Please contact support.</div>');
+                return;
+            }
+
+            // Update profile header
+            $('#profileName').text(userData.firstName + ' ' + userData.lastName);
+            $('#profileEmail').text(userData.email);
+
+            // Update form fields
+            $('#firstName').val(userData.firstName);
+            $('#lastName').val(userData.lastName);
+            $('#username').val(userData.username);
+            $('#email').val(userData.email);
+            $('#phoneNumber').val(userData.phoneNumber);
+            $('#dob').val(userData.dob);
+            $('#age').val(userData.age);
+            $('#gender').val(userData.gender);
+            $('#medicalHistory').val(userData.medicalHistory);
+            $('#providerId').val(userData.providerId);
+
+            // For demo purposes, set provider name
+            $('#provider').val('Dr. Sarah Johnson');
+        }
+
+        // Load activity log function
+        function loadActivityLog() {
+            // Show loading spinner
+            $('#activityLoading').show();
+
+            // Send AJAX request to get activity log
+            $.ajax({
+                url: '/api/patient/activity-log',
+                type: 'GET',
+                success: function(response) {
+                    updateActivityLog(response);
+                    $('#activityLoading').hide();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading activity log:', error);
+
+                    // Handle no data scenario
+                    $('#activityLoading').hide();
+                    $('#activityLogContainer').html('<div class="alert alert-warning">Unable to load activity data. Please try refreshing the page.</div>');
+                }
+            });
+        }
+
+        // Update activity log with data
+        function updateActivityLog(activities) {
+            // If no data is available, show message
+            if (!activities || activities.length === 0) {
+                $('#activityLogContainer').html('<div class="alert alert-info">No activity data available.</div>');
+                return;
+            }
+
+            let html = '';
+
+            // Generate activity log items
+            activities.forEach(activity => {
+                let iconClass = 'bi-clock-history';
+
+                // Set icon based on activity type
+                if (activity.type === 'login') {
+                    iconClass = 'bi-box-arrow-in-right';
+                } else if (activity.type === 'profile_update') {
+                    iconClass = 'bi-pencil-square';
+                } else if (activity.type === 'password_change') {
+                    iconClass = 'bi-shield-lock';
+                }
+
+                html += `
+                    <div class="activity-log-item">
+                        <div class="activity-log-icon">
+                            <i class="bi ${iconClass}"></i>
+                        </div>
+                        <div class="activity-log-content">
+                            <h5>${activity.description}</h5>
+                            <p>${formatDateTime(activity.timestamp)} • ${activity.ipAddress || 'Unknown IP'}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            $('#activityLogContainer').html(html);
+        }
+
+        // Check password strength
+        function checkPasswordStrength(password) {
+            const lengthValid = password.length >= 8;
+            const uppercaseValid = /[A-Z]/.test(password);
+            const lowercaseValid = /[a-z]/.test(password);
+            const numberValid = /[0-9]/.test(password);
+            const specialValid = /[^A-Za-z0-9]/.test(password);
+
+            // Update requirement indicators
+            updateRequirement('lengthRequirement', lengthValid);
+            updateRequirement('uppercaseRequirement', uppercaseValid);
+            updateRequirement('lowercaseRequirement', lowercaseValid);
+            updateRequirement('numberRequirement', numberValid);
+            updateRequirement('specialRequirement', specialValid);
+
+            // Calculate strength score (0-5)
+            const score = [lengthValid, uppercaseValid, lowercaseValid, numberValid, specialValid].filter(Boolean).length;
+
+            // Update strength meter
+            const strengthMeter = $('#passwordStrengthMeter');
+            strengthMeter.removeClass('weak medium strong');
+
+            if (password === '') {
+                strengthMeter.css('width', '0');
+            } else if (score < 3) {
+                strengthMeter.addClass('weak').css('width', '33.33%');
+            } else if (score < 5) {
+                strengthMeter.addClass('medium').css('width', '66.66%');
+            } else {
+                strengthMeter.addClass('strong').css('width', '100%');
+            }
+        }
+
+        // Update password requirement indicator
+        function updateRequirement(id, isValid) {
+            const requirement = $('#' + id);
+
+            if (isValid) {
+                requirement.addClass('met');
+                requirement.find('i').removeClass('bi-circle').addClass('bi-check-circle-fill');
+            } else {
+                requirement.removeClass('met');
+                requirement.find('i').removeClass('bi-check-circle-fill').addClass('bi-circle');
+            }
+        }
+
+        // Check if password is strong enough
+        function isPasswordStrong(password) {
+            const lengthValid = password.length >= 8;
+            const uppercaseValid = /[A-Z]/.test(password);
+            const lowercaseValid = /[a-z]/.test(password);
+            const numberValid = /[0-9]/.test(password);
+            const specialValid = /[^A-Za-z0-9]/.test(password);
+
+            // Require at least 3 criteria to be met
+            const score = [lengthValid, uppercaseValid, lowercaseValid, numberValid, specialValid].filter(Boolean).length;
+            return score >= 3;
+        }
+
+        // Format date and time
+        function formatDateTime(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Helper function to show toast notifications
+        function showToast(title, message, type) {
+            // Set toast content
+            $('#toastTitle').text(title);
+            $('#toastMessage').text(message);
+
+            // Set toast type
+            const toast = $('#notificationToast');
+            toast.removeClass('bg-success bg-danger bg-info');
+
+            if (type === 'success') {
+                toast.addClass('bg-success text-white');
+            } else if (type === 'error') {
+                toast.addClass('bg-danger text-white');
+            } else if (type === 'info') {
+                toast.addClass('bg-info text-white');
+            }
+
+            // Show toast
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+    });
+</script>
+</body>
+</html>

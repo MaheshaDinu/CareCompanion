@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lk.ijse.carecompanion.enums.Severity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 @Entity
 public class Symptom {
@@ -24,7 +26,5 @@ public class Symptom {
     @JoinColumn(name = "patient_id",nullable = false)
     private Patient patient;
 
-    public Symptom() {
-        this.date = LocalDateTime.now();
-    }
+
 }

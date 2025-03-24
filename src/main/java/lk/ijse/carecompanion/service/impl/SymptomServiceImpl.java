@@ -43,4 +43,12 @@ public class SymptomServiceImpl implements SymptomService {
         List<Symptom> symptoms = symptomRepo.findByPatientId(patientId);
         return symptoms.stream().map(symptom -> modelMapper.map(symptom, SymptomDTO.class)).toList();
     }
+    public SymptomDTO getSymptomById(int id) {
+        Optional<Symptom> optSymptom = symptomRepo.findById(id);
+        if (!optSymptom.isPresent()) {
+            throw new RuntimeException("Symptom not found with id: " + id);
+        }
+        Symptom symptom = optSymptom.get();
+        return modelMapper.map(symptom, SymptomDTO.class);
+    }
 }

@@ -12,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/patient/symptom")
+@RequestMapping("/api/patient/symptom")
 public class PatientSymptomController {
     @Autowired
     PatientService patientService;
@@ -37,6 +39,24 @@ public class PatientSymptomController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200,"success",patientDTO));
 
     }
+    @GetMapping("getById/{id}")
+    public ResponseEntity<ResponseUtil> getSymptom(@RequestParam int id){
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200, "", symptomService.getSymptomById(id)));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
+
+    }
+    @GetMapping("/getAll/{patientId}")
+    public ResponseEntity<ResponseUtil> getAllSymptoms(@PathVariable int patientId){
+        try {
+            List<SymptomDTO> symptomDTOS = symptomService.getSymptomsByPatientId(patientId);
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200,"Symptoms Fetched Successfully",symptomDTOS));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
+    }
     @PostMapping("/addSymptom")
     public ResponseEntity<ResponseUtil> addSymptom(@RequestBody SymptomDTO symptomDTO){
         try {
@@ -46,4 +66,24 @@ public class PatientSymptomController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
         }
     }
+    @PutMapping("/update")
+    public ResponseEntity<ResponseUtil> updateSymptom(@RequestBody SymptomDTO symptomDTO){
+        try {
+            symptomService.update(symptomDTO);
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200,"Symptom Updated Successfully",null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ResponseUtil> deleteSymptom(@PathVariable int id){
+        try {
+            symptomService.delete(id);
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200,"Symptom Deleted Successfully",null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
+    }
+
 }
