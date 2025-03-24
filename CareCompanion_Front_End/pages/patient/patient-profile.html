@@ -935,6 +935,9 @@
 <!-- Custom JavaScript -->
 <script>
     $(document).ready(function() {
+        const jwtToken = localStorage.getItem('jwtToken');
+        let currentPatientId;
+        let currentProviderId;
         // Initialize date picker
         flatpickr("#dob", {
             dateFormat: "Y-m-d",
@@ -1002,8 +1005,11 @@
 
             // Send AJAX request to update user profile
             $.ajax({
-                url: '/api/patient/profile/update',
+                url: 'http://localhost:8080/api/patient/profile/update',
                 type: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                },
                 contentType: 'application/json',
                 data: JSON.stringify(userData),
                 success: function(response) {
@@ -1115,10 +1121,15 @@
 
             // Send AJAX request to get user profile
             $.ajax({
-                url: '/api/patient/profile',
+                url: 'http://localhost:8080/api/patient/profile/getPatient',
                 type: 'GET',
+                headers:{
+                    'Authorization': 'Bearer ' + jwtToken
+                },
                 success: function(response) {
-                    updateProfileForm(response);
+                    updateProfileForm(response.data);
+                    currentPatientId = response.data.id;
+                    currentProviderId = response.data.providerId;
                     $('#personalInfoLoading').hide();
                 },
                 error: function(xhr, status, error) {
@@ -1157,9 +1168,23 @@
             $('#gender').val(userData.gender);
             $('#medicalHistory').val(userData.medicalHistory);
             $('#providerId').val(userData.providerId);
+            let providerId = $('#providerId').val();
 
-            // For demo purposes, set provider name
-            $('#provider').val('Dr. Sarah Johnson');
+            $.ajax({
+                url: `http://localhost:8080/api/patient/profile/getProvider/${providerId}`,
+                method: "GET",
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                },
+                success: function(response) {
+                    $('#provider').val(response.data.firstName + ' ' + response.data.lastName);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading provider:', error);
+                }
+            })
+
+
         }
 
         // Load activity log function
