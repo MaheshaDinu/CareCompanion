@@ -169,7 +169,7 @@
                 <div class="col-12">
                     <h4 class="mb-4">Quick Actions</h4>
                     <div class="row g-4">
-                        <div class="col-md-6 col-lg-3">
+                        <a href="/CareCompanion/CareCompanion_Front_End/pages/patient/health-metric.html" class="col-md-6 col-lg-3 text-decoration-none">
                             <div class="quick-action">
                                 <div class="quick-action-icon bg-primary-light text-primary">
                                     <i class="bi bi-plus-lg"></i>
@@ -177,8 +177,8 @@
                                 <div class="quick-action-title">Log Health Data</div>
                                 <div class="quick-action-desc">Record your latest health metrics</div>
                             </div>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
+                        </a>
+                        <a href="/CareCompanion/CareCompanion_Front_End/pages/patient/patient-symptom-diary.html" class="col-md-6 col-lg-3 text-decoration-none">
                             <div class="quick-action">
                                 <div class="quick-action-icon bg-warning-light text-warning">
                                     <i class="bi bi-journal-plus"></i>
@@ -186,8 +186,8 @@
                                 <div class="quick-action-title">Log Symptoms</div>
                                 <div class="quick-action-desc">Track how you're feeling today</div>
                             </div>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
+                        </a>
+                        <a href="/CareCompanion/CareCompanion_Front_End/pages/patient/patient-appointments.html" class="col-md-6 col-lg-3 text-decoration-none">
                             <div class="quick-action">
                                 <div class="quick-action-icon bg-success-light text-success">
                                     <i class="bi bi-calendar-plus"></i>
@@ -195,8 +195,8 @@
                                 <div class="quick-action-title">Schedule Appointment</div>
                                 <div class="quick-action-desc">Book your next visit</div>
                             </div>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
+                        </a>
+                        <a href="/CareCompanion/CareCompanion_Front_End/pages/patient/reports.html" class="col-md-6 col-lg-3 text-decoration-none">
                             <div class="quick-action">
                                 <div class="quick-action-icon bg-danger-light text-danger">
                                     <i class="bi bi-file-earmark-bar-graph"></i>
@@ -204,7 +204,7 @@
                                 <div class="quick-action-title">View Reports</div>
                                 <div class="quick-action-desc">See detailed health analytics</div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
 
@@ -218,48 +218,8 @@
                             </a>
                         </div>
 
-                        <div class="list-group">
-                            <div class="list-group-item border-0 py-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="appointment-date">
-                                        <div class="day">15</div>
-                                        <div class="month">Jun</div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-semibold">Annual Checkup</div>
-                                        <small class="text-muted">10:30 AM • Dr. Sarah Johnson</small>
-                                    </div>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Details</a>
-                                </div>
-                            </div>
-
-                            <div class="list-group-item border-0 py-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="appointment-date">
-                                        <div class="day">22</div>
-                                        <div class="month">Jun</div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-semibold">Cardiology Follow-up</div>
-                                        <small class="text-muted">2:15 PM • Dr. Michael Chen</small>
-                                    </div>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Details</a>
-                                </div>
-                            </div>
-
-                            <div class="list-group-item border-0 py-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="appointment-date">
-                                        <div class="day">30</div>
-                                        <div class="month">Jun</div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-semibold">Lab Test</div>
-                                        <small class="text-muted">9:00 AM • City Medical Center</small>
-                                    </div>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Details</a>
-                                </div>
-                            </div>
+                        <div class="list-group" id="appointmentList">
+                            //dynamic
                         </div>
                     </div>
                 </div>
@@ -343,6 +303,7 @@
                 setBloodPressureValue(patientId);
                 setBloodGlucoseValue(patientId);
                 setHeartRateValue(patientId)
+                loadAppointments(patientId)
 
             }
 
@@ -462,6 +423,76 @@
                         )
                     })
                 }
+            }
+        })
+    }
+    function loadAppointments(patientId) {
+        $.ajax({
+            url:`http://localhost:8080/api/patient/dashboard/getPatientAppointments/${patientId}`
+            , method: "GET",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("jwtToken"));
+            },
+            success: function (response) {
+                const container = $("#appointmentList");
+                container.empty();
+
+                if (response.data.length === 0) {
+                    container.append(`<div class="text-center py-3 text-muted">No upcoming appointments</div>`);
+                    return;
+                }
+
+                response.data.forEach(appointment => {
+                    const providerId = appointment.providerId;
+                    const date = new Date(appointment.dateTime);
+                    const uniqueId = `provider-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+                    // Create temporary element with loading state
+                    const html = `
+    <div class="list-group-item border-0 py-3">
+        <div class="d-flex align-items-center">
+            <div class="appointment-date">
+                <div class="day">${date.getDate()}</div>
+                <div class="month">${date.toLocaleString('default', {month: 'short'})}</div>
+            </div>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">${appointment.purpose}</div>
+                <small class="text-muted provider-name" id="${uniqueId}">
+                    ${date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} •
+                    <span class="loading-text">Loading provider...</span>
+                </small>
+            </div>
+            <a href="#" class="btn btn-sm btn-outline-primary">Details</a>
+        </div>
+    </div>`;
+
+                    // Append first to show the card immediately
+                    container.append(html);
+
+                    // Then fetch provider data
+                    $.ajax({
+                        url: `http://localhost:8080/patient/appointment/getProvider/${providerId}`,
+                        type: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                        },
+                        success: (response) => {
+                            const providerName = response.data ?
+                                `Dr. ${response.data.firstName} ${response.data.lastName}` :
+                                'Unknown Provider';
+
+                            // Update specific provider name element
+                            $(`#${uniqueId} .loading-text`).replaceWith(
+                                document.createTextNode(providerName)
+                            );
+                        },
+                        error: (xhr) => {
+                            $(`#${uniqueId} .loading-text`).replaceWith(
+                                document.createTextNode('Provider information unavailable')
+                            );
+                        }
+                    });
+                });
             }
         })
     }

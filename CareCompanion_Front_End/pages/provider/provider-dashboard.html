@@ -2,9 +2,1675 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Provider Dashboard </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCompanion - Provider Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #4895ef;
+            --primary-light: rgba(72, 149, 239, 0.1);
+            --primary-dark: #3a75c4;
+            --secondary: #3a0ca3;
+            --success: #06d6a0;
+            --success-light: rgba(6, 214, 160, 0.1);
+            --light-bg: #f8f9fa;
+            --text-dark: #2d3436;
+            --danger: #ef476f;
+            --danger-light: rgba(239, 71, 111, 0.1);
+            --warning: #ffd166;
+            --warning-light: rgba(255, 209, 102, 0.1);
+            --gray: #adb5bd;
+            --gray-light: #e9ecef;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 8px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: var(--primary-light);
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 8px rgba(72, 149, 239, 0.2);
+        }
+
+        .nav-pills .nav-link i {
+            margin-right: 0.75rem;
+        }
+
+        .navbar {
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+        }
+
+        .sidebar {
+            height: calc(100vh - 70px);
+            position: sticky;
+            top: 70px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            transition: width 0.3s ease;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .icon-container {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem var(--primary-light);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge-pill {
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+
+        .badge-requested {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .badge-confirmed {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-cancelled {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+            border-radius: 12px;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+
+        /* Provider Dashboard Specific Styles */
+        .summary-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .summary-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .summary-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .summary-card-icon i {
+            font-size: 1.5rem;
+        }
+
+        .summary-card-title {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .summary-card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .summary-card-subtitle {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        .summary-card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-card-change {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .summary-card-change.positive {
+            color: var(--success);
+        }
+
+        .summary-card-change.negative {
+            color: var(--danger);
+        }
+
+        .summary-card-link {
+            font-size: 0.85rem;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .summary-card-link:hover {
+            text-decoration: underline;
+        }
+
+        .appointment-item {
+            display: flex;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-light);
+            transition: background-color 0.2s ease;
+        }
+
+        .appointment-item:last-child {
+            border-bottom: none;
+        }
+
+        .appointment-item:hover {
+            background-color: var(--primary-light);
+        }
+
+        .appointment-time {
+            width: 80px;
+            text-align: center;
+            padding-right: 1rem;
+            border-right: 1px solid var(--gray-light);
+            flex-shrink: 0;
+        }
+
+        .appointment-time .hour {
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .appointment-time .period {
+            font-size: 0.75rem;
+            color: var(--gray);
+            text-transform: uppercase;
+        }
+
+        .appointment-details {
+            flex-grow: 1;
+            padding: 0 1rem;
+        }
+
+        .appointment-patient {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .appointment-purpose {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .appointment-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-item {
+            display: flex;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-light);
+            transition: background-color 0.2s ease;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-item:hover {
+            background-color: var(--primary-light);
+        }
+
+        .alert-item.unread {
+            background-color: var(--primary-light);
+        }
+
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .alert-icon.warning {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .alert-icon.danger {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .alert-icon.info {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .alert-content {
+            flex-grow: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-message {
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-time {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        .critical-case-item {
+            display: flex;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-light);
+            transition: background-color 0.2s ease;
+        }
+
+        .critical-case-item:last-child {
+            border-bottom: none;
+        }
+
+        .critical-case-item:hover {
+            background-color: var(--primary-light);
+        }
+
+        .critical-case-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .critical-case-avatar i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .critical-case-info {
+            flex-grow: 1;
+        }
+
+        .critical-case-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .critical-case-details {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .critical-case-metric {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--danger);
+            margin-bottom: 0;
+        }
+
+        .critical-case-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 0.5rem;
+        }
+
+        .risk-assessment-card {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .risk-assessment-card:last-child {
+            border-bottom: none;
+        }
+
+        .risk-assessment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .risk-assessment-title {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .risk-assessment-chart {
+            height: 100px;
+        }
+
+        .risk-distribution {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .risk-category {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .risk-category-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .risk-category-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .risk-category.low .risk-category-value {
+            color: var(--success);
+        }
+
+        .risk-category.medium .risk-category-value {
+            color: var(--warning);
+        }
+
+        .risk-category.high .risk-category-value {
+            color: var(--danger);
+        }
+
+        .metric-comparison-table {
+            width: 100%;
+        }
+
+        .metric-comparison-table th,
+        .metric-comparison-table td {
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .metric-comparison-table th:first-child,
+        .metric-comparison-table td:first-child {
+            text-align: left;
+        }
+
+        .metric-comparison-table .value {
+            font-weight: 600;
+        }
+
+        .metric-comparison-table .value.normal {
+            color: var(--success);
+        }
+
+        .metric-comparison-table .value.warning {
+            color: var(--warning);
+        }
+
+        .metric-comparison-table .value.danger {
+            color: var(--danger);
+        }
+
+        .metric-comparison-table .trend {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .metric-comparison-table .trend.up {
+            color: var(--danger);
+        }
+
+        .metric-comparison-table .trend.down {
+            color: var(--success);
+        }
+
+        .metric-comparison-table .trend.stable {
+            color: var(--gray);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Large screens (1200px - 1919px) */
+        @media (min-width: 1200px) and (max-width: 1919px) {
+            .container-fluid {
+                max-width: 1800px;
+                margin: 0 auto;
+            }
+
+            .dashboard-card {
+                padding: 1.5rem !important;
+            }
+
+            .icon-container {
+                width: 48px;
+                height: 48px;
+            }
+
+            h4 {
+                font-size: 1.6rem;
+            }
+
+            h5 {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Extra large screens (1920px - 2559px) */
+        @media (min-width: 1920px) and (max-width: 2559px) {
+            .container-fluid {
+                max-width: 1900px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.1rem;
+            }
+
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.6rem;
+            }
+
+            .sidebar {
+                padding: 2rem;
+                width: 300px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 0.8rem 1.2rem;
+                font-size: 1.2rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.3rem;
+            }
+
+            .main-content {
+                padding: 2rem;
+            }
+
+            .dashboard-card {
+                padding: 1.8rem !important;
+                border-radius: 16px;
+            }
+
+            .icon-container {
+                width: 56px;
+                height: 56px;
+                border-radius: 12px;
+            }
+
+            .icon-container i {
+                font-size: 1.8rem !important;
+            }
+
+            h4 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            h5 {
+                font-size: 1.5rem;
+                margin-bottom: 1.2rem !important;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Ultra large screens (2560px and above) */
+        @media (min-width: 2560px) {
+            .container-fluid {
+                max-width: 2400px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.25rem;
+            }
+
+            .navbar {
+                padding: 1.25rem 2.5rem;
+            }
+
+            .navbar-brand {
+                font-size: 2rem;
+            }
+
+            .navbar-brand i {
+                font-size: 1.8rem;
+            }
+
+            .sidebar {
+                padding: 2.5rem;
+                width: 350px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 1rem 1.5rem;
+                font-size: 1.4rem;
+                margin-bottom: 1rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.5rem;
+                margin-right: 1rem;
+            }
+
+            .main-content {
+                padding: 2.5rem;
+            }
+
+            .dashboard-card {
+                padding: 2rem !important;
+                border-radius: 20px;
+                box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            }
+
+            .icon-container {
+                width: 70px;
+                height: 70px;
+                border-radius: 14px;
+            }
+
+            .icon-container i {
+                font-size: 2.2rem !important;
+            }
+
+            h4 {
+                font-size: 2.2rem;
+                margin-bottom: 2rem !important;
+            }
+
+            h5 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 1.2rem;
+            }
+
+            .fw-semibold {
+                font-size: 1.3rem;
+            }
+
+            .text-muted {
+                font-size: 1.1rem;
+            }
+
+            .dropdown-menu {
+                font-size: 1.2rem;
+            }
+
+            .dropdown-item {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.4rem;
+            }
+
+            .summary-card-icon {
+                width: 64px;
+                height: 64px;
+            }
+
+            .summary-card-icon i {
+                font-size: 2rem;
+            }
+
+            .summary-card-value {
+                font-size: 3rem;
+            }
+
+            .summary-card-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .appointment-time .hour {
+                font-size: 1.5rem;
+            }
+
+            .appointment-time .period {
+                font-size: 0.9rem;
+            }
+
+            .critical-case-avatar {
+                width: 64px;
+                height: 64px;
+            }
+
+            .critical-case-avatar i {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>Provider Dashboard</h1>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <i class="bi bi-heart-pulse me-2"></i>CareCompanion
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-plus-circle me-1"></i> New
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-plus me-2"></i>Appointment</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus me-2"></i>Patient</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-plus me-2"></i>Prescription</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-journal-plus me-2"></i>Note</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item position-relative me-3">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-bell fs-5"></i>
+                        <span class="notification-badge">8</span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="rounded-circle bg-primary-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                            <i class="bi bi-person-fill text-primary"></i>
+                        </div>
+                        <span>Dr. Sarah Johnson</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 bg-white sidebar">
+            <nav class="nav nav-pills flex-column">
+                <a class="nav-link active" href="#">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-calendar-check"></i>Appointments
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-calendar-week"></i>Schedule
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-people"></i>Patients
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-capsule"></i>Medications
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-heart-pulse"></i>Health Data
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-file-earmark-text"></i>Reports
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-chat-left-dots"></i>Messages
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-gear"></i>Settings
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-10 main-content">
+            <div class="page-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="page-title">Provider Dashboard</h1>
+                    <p class="page-subtitle">Welcome back, Dr. Sarah Johnson</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="dropdown me-2">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-calendar3 me-1"></i> Today
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Today</a></li>
+                            <li><a class="dropdown-item" href="#">This Week</a></li>
+                            <li><a class="dropdown-item" href="#">This Month</a></li>
+                            <li><a class="dropdown-item" href="#">Custom Range</a></li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary">
+                        <i class="bi bi-download me-1"></i> Export Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Cards Row -->
+            <div class="row g-4 mb-4">
+                <!-- Upcoming Appointments Card -->
+                <div class="col-md-6 col-xl-3">
+                    <div class="dashboard-card summary-card">
+                        <div class="summary-card-header">
+                            <div class="summary-card-icon bg-primary-light">
+                                <i class="bi bi-calendar-check text-primary"></i>
+                            </div>
+                            <h5 class="summary-card-title">Upcoming Appointments</h5>
+                        </div>
+                        <div class="summary-card-value">24</div>
+                        <p class="summary-card-subtitle">8 appointments today</p>
+                        <div class="summary-card-footer">
+                            <div class="summary-card-change positive">
+                                <i class="bi bi-arrow-up-short"></i> 12% from last week
+                            </div>
+                            <a href="#" class="summary-card-link">View All</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Alerts Card -->
+                <div class="col-md-6 col-xl-3">
+                    <div class="dashboard-card summary-card">
+                        <div class="summary-card-header">
+                            <div class="summary-card-icon bg-warning-light">
+                                <i class="bi bi-exclamation-triangle text-warning"></i>
+                            </div>
+                            <h5 class="summary-card-title">Recent Alerts</h5>
+                        </div>
+                        <div class="summary-card-value">8</div>
+                        <p class="summary-card-subtitle">3 critical alerts</p>
+                        <div class="summary-card-footer">
+                            <div class="summary-card-change negative">
+                                <i class="bi bi-arrow-up-short"></i> 3% from yesterday
+                            </div>
+                            <a href="#" class="summary-card-link">View All</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Count Card -->
+                <div class="col-md-6 col-xl-3">
+                    <div class="dashboard-card summary-card">
+                        <div class="summary-card-header">
+                            <div class="summary-card-icon bg-success-light">
+                                <i class="bi bi-people text-success"></i>
+                            </div>
+                            <h5 class="summary-card-title">Patient Count</h5>
+                        </div>
+                        <div class="summary-card-value">156</div>
+                        <p class="summary-card-subtitle">12 new this month</p>
+                        <div class="summary-card-footer">
+                            <div class="summary-card-change positive">
+                                <i class="bi bi-arrow-up-short"></i> 5% from last month
+                            </div>
+                            <a href="#" class="summary-card-link">View All</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Critical Cases Card -->
+                <div class="col-md-6 col-xl-3">
+                    <div class="dashboard-card summary-card">
+                        <div class="summary-card-header">
+                            <div class="summary-card-icon bg-danger-light">
+                                <i class="bi bi-clipboard2-pulse text-danger"></i>
+                            </div>
+                            <h5 class="summary-card-title">Critical Cases</h5>
+                        </div>
+                        <div class="summary-card-value">5</div>
+                        <p class="summary-card-subtitle">Require immediate attention</p>
+                        <div class="summary-card-footer">
+                            <div class="summary-card-change negative">
+                                <i class="bi bi-arrow-up-short"></i> 2 new since yesterday
+                            </div>
+                            <a href="#" class="summary-card-link">View All</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Content -->
+            <div class="row g-4">
+                <!-- Upcoming Appointments Section -->
+                <div class="col-lg-6">
+                    <div class="dashboard-card p-0 overflow-hidden">
+                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                            <h5 class="mb-0">Upcoming Appointments</h5>
+                            <a href="#" class="text-decoration-none">View All</a>
+                        </div>
+                        <div class="appointment-item">
+                            <div class="appointment-time">
+                                <div class="hour">9:00</div>
+                                <div class="period">AM</div>
+                            </div>
+                            <div class="appointment-details">
+                                <div class="appointment-patient">John Smith</div>
+                                <p class="appointment-purpose">Annual Physical Examination</p>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="appointment-item">
+                            <div class="appointment-time">
+                                <div class="hour">10:30</div>
+                                <div class="period">AM</div>
+                            </div>
+                            <div class="appointment-details">
+                                <div class="appointment-patient">Emily Johnson</div>
+                                <p class="appointment-purpose">Follow-up Consultation</p>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="appointment-item">
+                            <div class="appointment-time">
+                                <div class="hour">1:15</div>
+                                <div class="period">PM</div>
+                            </div>
+                            <div class="appointment-details">
+                                <div class="appointment-patient">Michael Chen</div>
+                                <p class="appointment-purpose">Diabetes Management</p>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="appointment-item">
+                            <div class="appointment-time">
+                                <div class="hour">3:00</div>
+                                <div class="period">PM</div>
+                            </div>
+                            <div class="appointment-details">
+                                <div class="appointment-patient">Sarah Williams</div>
+                                <p class="appointment-purpose">Prenatal Checkup</p>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Alerts Section -->
+                <div class="col-lg-6">
+                    <div class="dashboard-card p-0 overflow-hidden">
+                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                            <h5 class="mb-0">Recent Alerts</h5>
+                            <a href="#" class="text-decoration-none">View All</a>
+                        </div>
+                        <div class="alert-item unread">
+                            <div class="alert-icon danger">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">High Blood Pressure Alert</div>
+                                <p class="alert-message">Michael Chen's blood pressure reading is 160/95 mmHg, which is significantly above normal range.</p>
+                                <div class="alert-time">30 minutes ago</div>
+                            </div>
+                        </div>
+                        <div class="alert-item unread">
+                            <div class="alert-icon warning">
+                                <i class="bi bi-exclamation-circle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">Elevated Blood Glucose</div>
+                                <p class="alert-message">Emily Johnson's blood glucose level is 180 mg/dL, which is above the target range.</p>
+                                <div class="alert-time">1 hour ago</div>
+                            </div>
+                        </div>
+                        <div class="alert-item">
+                            <div class="alert-icon warning">
+                                <i class="bi bi-exclamation-circle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">Missed Medication</div>
+                                <p class="alert-message">Robert Garcia has missed his hypertension medication for 2 consecutive days.</p>
+                                <div class="alert-time">3 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="alert-item">
+                            <div class="alert-icon danger">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">Abnormal Heart Rate</div>
+                                <p class="alert-message">Sarah Williams reported an irregular heart rate of 120 BPM at rest.</p>
+                                <div class="alert-time">Yesterday</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Critical Cases Section -->
+                <div class="col-lg-6">
+                    <div class="dashboard-card p-0 overflow-hidden">
+                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                            <h5 class="mb-0">Critical Cases</h5>
+                            <a href="#" class="text-decoration-none">View All</a>
+                        </div>
+                        <div class="critical-case-item">
+                            <div class="critical-case-avatar">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div class="critical-case-info">
+                                <div class="critical-case-name">Michael Chen</div>
+                                <p class="critical-case-details">56 yrs • Diabetes, Hypertension</p>
+                                <p class="critical-case-metric">BP: 160/95 mmHg (Critical)</p>
+                            </div>
+                            <div class="critical-case-actions">
+                                <button class="btn btn-sm btn-danger">
+                                    <i class="bi bi-telephone"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="critical-case-item">
+                            <div class="critical-case-avatar">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div class="critical-case-info">
+                                <div class="critical-case-name">Emily Johnson</div>
+                                <p class="critical-case-details">42 yrs • Diabetes</p>
+                                <p class="critical-case-metric">Blood Glucose: 180 mg/dL (High)</p>
+                            </div>
+                            <div class="critical-case-actions">
+                                <button class="btn btn-sm btn-danger">
+                                    <i class="bi bi-telephone"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="critical-case-item">
+                            <div class="critical-case-avatar">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div class="critical-case-info">
+                                <div class="critical-case-name">Sarah Williams</div>
+                                <p class="critical-case-details">32 yrs • Pregnancy</p>
+                                <p class="critical-case-metric">Heart Rate: 120 BPM (Abnormal)</p>
+                            </div>
+                            <div class="critical-case-actions">
+                                <button class="btn btn-sm btn-danger">
+                                    <i class="bi bi-telephone"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="critical-case-item">
+                            <div class="critical-case-avatar">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div class="critical-case-info">
+                                <div class="critical-case-name">Robert Garcia</div>
+                                <p class="critical-case-details">68 yrs • Hypertension</p>
+                                <p class="critical-case-metric">Medication Adherence: 60% (Low)</p>
+                            </div>
+                            <div class="critical-case-actions">
+                                <button class="btn btn-sm btn-danger">
+                                    <i class="bi bi-telephone"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Metrics Chart -->
+                <div class="col-lg-6">
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0">Patient Health Metrics</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Blood Pressure
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Blood Pressure</a></li>
+                                    <li><a class="dropdown-item" href="#">Blood Glucose</a></li>
+                                    <li><a class="dropdown-item" href="#">Heart Rate</a></li>
+                                    <li><a class="dropdown-item" href="#">Weight</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="healthMetricsChart"></canvas>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(72, 149, 239, 0.5);"></div>
+                                <span>Systolic</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(58, 12, 163, 0.5);"></div>
+                                <span>Diastolic</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(239, 71, 111, 0.5);"></div>
+                                <span>High Threshold</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: rgba(6, 214, 160, 0.5);"></div>
+                                <span>Normal Range</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Assessment Section -->
+                <div class="col-lg-6">
+                    <div class="dashboard-card p-0 overflow-hidden">
+                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                            <h5 class="mb-0">Patient Risk Assessment</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    This Month
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">This Week</a></li>
+                                    <li><a class="dropdown-item" href="#">This Month</a></li>
+                                    <li><a class="dropdown-item" href="#">This Quarter</a></li>
+                                    <li><a class="dropdown-item" href="#">This Year</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="risk-assessment-card">
+                            <div class="risk-assessment-header">
+                                <div class="risk-assessment-title">Risk Distribution</div>
+                            </div>
+                            <div class="risk-assessment-chart">
+                                <canvas id="riskDistributionChart"></canvas>
+                            </div>
+                            <div class="risk-distribution">
+                                <div class="risk-category low">
+                                    <div class="risk-category-value">98</div>
+                                    <div class="risk-category-label">Low Risk</div>
+                                </div>
+                                <div class="risk-category medium">
+                                    <div class="risk-category-value">53</div>
+                                    <div class="risk-category-label">Medium Risk</div>
+                                </div>
+                                <div class="risk-category high">
+                                    <div class="risk-category-value">5</div>
+                                    <div class="risk-category-label">High Risk</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <h6 class="mb-3">Key Metrics Comparison</h6>
+                            <div class="table-responsive">
+                                <table class="metric-comparison-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Average</th>
+                                        <th>Trend</th>
+                                        <th>Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>Blood Pressure</td>
+                                        <td class="value warning">128/82 mmHg</td>
+                                        <td class="trend up"><i class="bi bi-arrow-up-short"></i> 2%</td>
+                                        <td><span class="badge bg-warning-light text-warning">Caution</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Blood Glucose</td>
+                                        <td class="value normal">112 mg/dL</td>
+                                        <td class="trend down"><i class="bi bi-arrow-down-short"></i> 3%</td>
+                                        <td><span class="badge bg-success-light text-success">Normal</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Heart Rate</td>
+                                        <td class="value normal">72 BPM</td>
+                                        <td class="trend stable"><i class="bi bi-dash"></i> 0%</td>
+                                        <td><span class="badge bg-success-light text-success">Normal</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>BMI</td>
+                                        <td class="value warning">27.4</td>
+                                        <td class="trend up"><i class="bi bi-arrow-up-short"></i> 1%</td>
+                                        <td><span class="badge bg-warning-light text-warning">Caution</span></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medication Adherence Chart -->
+                <div class="col-lg-6">
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0">Medication Adherence</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Last 30 Days
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                                    <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                                    <li><a class="dropdown-item" href="#">Last 90 Days</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="medicationAdherenceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Demographics Chart -->
+                <div class="col-lg-6">
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="mb-0">Patient Demographics</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Age Distribution
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Age Distribution</a></li>
+                                    <li><a class="dropdown-item" href="#">Gender Distribution</a></li>
+                                    <li><a class="dropdown-item" href="#">Condition Distribution</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="demographicsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="notificationToast">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Operation completed successfully.
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    $(document).ready(function() {
+        // Health Metrics Chart
+        const healthMetricsCtx = document.getElementById('healthMetricsChart').getContext('2d');
+        const healthMetricsChart = new Chart(healthMetricsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'Systolic',
+                        data: [125, 128, 130, 135, 132, 128, 125, 127, 130, 132, 135, 130],
+                        borderColor: 'rgba(72, 149, 239, 1)',
+                        backgroundColor: 'rgba(72, 149, 239, 0.5)',
+                        tension: 0.4,
+                        fill: false
+                    },
+                    {
+                        label: 'Diastolic',
+                        data: [82, 84, 85, 88, 86, 84, 82, 83, 85, 86, 88, 85],
+                        borderColor: 'rgba(58, 12, 163, 1)',
+                        backgroundColor: 'rgba(58, 12, 163, 0.5)',
+                        tension: 0.4,
+                        fill: false
+                    },
+                    {
+                        label: 'High Threshold',
+                        data: [140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140],
+                        borderColor: 'rgba(239, 71, 111, 1)',
+                        backgroundColor: 'rgba(239, 71, 111, 0.5)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Normal Range',
+                        data: [120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120],
+                        borderColor: 'rgba(6, 214, 160, 1)',
+                        backgroundColor: 'rgba(6, 214, 160, 0.5)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 60,
+                        max: 160,
+                        title: {
+                            display: true,
+                            text: 'Blood Pressure (mmHg)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Risk Distribution Chart
+        const riskDistributionCtx = document.getElementById('riskDistributionChart').getContext('2d');
+        const riskDistributionChart = new Chart(riskDistributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+                datasets: [{
+                    data: [98, 53, 5],
+                    backgroundColor: [
+                        'rgba(6, 214, 160, 0.7)',
+                        'rgba(255, 209, 102, 0.7)',
+                        'rgba(239, 71, 111, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(6, 214, 160, 1)',
+                        'rgba(255, 209, 102, 1)',
+                        'rgba(239, 71, 111, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Medication Adherence Chart
+        const medicationAdherenceCtx = document.getElementById('medicationAdherenceChart').getContext('2d');
+        const medicationAdherenceChart = new Chart(medicationAdherenceCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Hypertension', 'Diabetes', 'Cholesterol', 'Pain', 'Antibiotics'],
+                datasets: [{
+                    label: 'Adherence Rate',
+                    data: [85, 78, 92, 65, 95],
+                    backgroundColor: [
+                        'rgba(72, 149, 239, 0.7)',
+                        'rgba(255, 209, 102, 0.7)',
+                        'rgba(6, 214, 160, 0.7)',
+                        'rgba(239, 71, 111, 0.7)',
+                        'rgba(58, 12, 163, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(72, 149, 239, 1)',
+                        'rgba(255, 209, 102, 1)',
+                        'rgba(6, 214, 160, 1)',
+                        'rgba(239, 71, 111, 1)',
+                        'rgba(58, 12, 163, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Adherence Rate (%)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Demographics Chart
+        const demographicsCtx = document.getElementById('demographicsChart').getContext('2d');
+        const demographicsChart = new Chart(demographicsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['18-30', '31-45', '46-60', '61-75', '76+'],
+                datasets: [{
+                    label: 'Number of Patients',
+                    data: [24, 38, 52, 35, 7],
+                    backgroundColor: 'rgba(72, 149, 239, 0.7)',
+                    borderColor: 'rgba(72, 149, 239, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Patient Age Distribution'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Patients'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Age Groups'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>

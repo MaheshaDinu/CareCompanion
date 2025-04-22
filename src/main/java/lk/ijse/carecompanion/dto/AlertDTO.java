@@ -15,6 +15,6 @@ public class AlertDTO {
     private String status; // e.g., "REQUESTED", "CONFIRMED", "CANCELLED"
     private String purpose;
     // For simplicity, include only IDs for related users
-    private Long patientId;
-    private Long providerId;
+    private int patientId;
+    private int providerId;
 }
