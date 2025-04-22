@@ -110,4 +110,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .map(app -> modelMapper.map(app, AppointmentDTO.class))
                 .toList();
     }
+
+    @Override
+    public AppointmentDTO getAppointmentById(int id) {
+        Optional<Appointment> optAppointment = appointmentRepo.findById(id);
+        if (optAppointment.isEmpty()) {
+            throw new RuntimeException("Appointment not found with id: " + id);
+        }
+        return modelMapper.map(optAppointment.get(), AppointmentDTO.class);
+    }
 }

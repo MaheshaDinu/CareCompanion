@@ -1187,15 +1187,17 @@
         // Load patients for the select dropdown
         function loadPatients() {
             $.ajax({
-                url: '/api/patients',
+                url: 'http://localhost:8080/provider/appointment/getPatients',
                 type: 'GET',
-                data: { providerId: currentProviderId },
-                success: function(patients) {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
                     const select = $('#patientSelect');
                     select.empty();
                     select.append('<option value="" selected disabled>Select a patient</option>');
 
-                    patients.forEach(patient => {
+                    response.data.forEach(patient => {
                         select.append(`<option value="${patient.id}">${patient.firstName} ${patient.lastName}</option>`);
                     });
                 },
@@ -1223,7 +1225,7 @@
             const container = $(`#${view}AppointmentsList`);
             container.html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
 
-            let url = '/api/appointments';
+            let url = 'http://localhost:8080/provider/appointment/getAppointments';
             let params = { providerId: currentProviderId };
 
             // Add specific parameters based on view
@@ -1256,15 +1258,18 @@
                 url: url,
                 type: 'GET',
                 data: params,
-                success: function(appointments) {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
                     container.empty();
 
-                    if (!appointments || appointments.length === 0) {
+                    if (!response.data || response.data.length === 0) {
                         container.html('<div class="text-center py-3">No appointments found</div>');
                         return;
                     }
 
-                    appointments.forEach(appointment => {
+                    response.data.forEach(appointment => {
                         container.append(createAppointmentItem(appointment));
                     });
                 },
@@ -1360,17 +1365,24 @@
             currentAppointmentId = appointmentId;
 
             $.ajax({
-                url: `/api/appointments/${appointmentId}`,
+                url: `http://localhost:8080/provider/appointment/getAppointment/${appointmentId}`,
                 type: 'GET',
-                success: function(appointment) {
-                    displayAppointmentDetails(appointment);
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    if (response.code !== 200) {
+                        showError(response.message);
+                        return;
+                    }
+                    displayAppointmentDetails(response.data);
                 },
                 error: function() {
                     showError('Failed to load appointment details');
 
                     // For demo purposes, show sample details
                     const sampleAppointments = [...getSampleUpcomingAppointments(), ...getSampleRequestedAppointments()];
-                    const appointment = sampleAppointments.find(a => a.id == appointmentId);
+                    const appointment = sampleAppointments.find(a => a.id === appointmentId);
 
                     if (appointment) {
                         displayAppointmentDetails(appointment);
@@ -1454,10 +1466,13 @@
             };
 
             $.ajax({
-                url: '/api/appointments',
+                url: 'http://localhost:8080/provider/appointment/createAppointment',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(appointmentData),
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
                 success: function(result) {
                     showSuccess('Appointment scheduled successfully');
                     $('#newAppointmentModal').modal('hide');
@@ -1492,10 +1507,13 @@
 
             if (confirm('Are you sure you want to cancel this appointment?')) {
                 $.ajax({
-                    url: `/api/appointments/${currentAppointmentId}`,
+                    url: `http://localhost:8080/provider/appointment/updateAppointment/${currentAppointmentId}`,
                     type: 'PATCH',
                     contentType: 'application/json',
                     data: JSON.stringify({ status: 'CANCELLED' }),
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                    },
                     success: function() {
                         showSuccess('Appointment cancelled successfully');
                         $('#appointmentDetailsModal').modal('hide');
@@ -1528,10 +1546,13 @@
             if (!currentAppointmentId) return;
 
             $.ajax({
-                url: `/api/appointments/${currentAppointmentId}`,
+                url: `http://localhost:8080/provider/appointment/updateAppointment/${currentAppointmentId}`,
                 type: 'PATCH',
                 contentType: 'application/json',
                 data: JSON.stringify({ status: 'COMPLETED' }),
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
                 success: function() {
                     showSuccess('Appointment marked as completed');
                     $('#appointmentDetailsModal').modal('hide');
@@ -1570,7 +1591,7 @@
             }
 
             $.ajax({
-                url: `/api/appointments/${currentAppointmentId}`,
+                url: `http://localhost:8080/provider/appointment/reSchedule/${currentAppointmentId}`,
                 type: 'PATCH',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -1578,6 +1599,9 @@
                     notes: reason ? `Rescheduled: ${reason}` : undefined,
                     notifyPatient: notifyPatient
                 }),
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
                 success: function() {
                     showSuccess('Appointment rescheduled successfully');
                     $('#rescheduleModal').modal('hide');

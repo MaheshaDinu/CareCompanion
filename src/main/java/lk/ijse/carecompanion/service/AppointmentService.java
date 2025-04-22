@@ -12,4 +12,6 @@ public interface AppointmentService {
     List<AppointmentDTO> getAppointmentsByProviderId(int providerId);
 
     List<AppointmentDTO> getAppointmentsByProviderAndFilters(int id, String start, String end, String status, String date, Boolean future);
+
+    AppointmentDTO getAppointmentById(int id);
 }
