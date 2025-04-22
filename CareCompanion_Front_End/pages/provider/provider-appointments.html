@@ -958,6 +958,7 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-outline-success" id="confirmAppointmentBtn">Confirm Appointment</button>
                 <button type="button" class="btn btn-outline-danger" id="cancelAppointmentBtn">Cancel Appointment</button>
                 <button type="button" class="btn btn-outline-secondary" id="rescheduleAppointmentBtn" data-bs-toggle="modal" data-bs-target="#rescheduleModal">Reschedule</button>
                 <button type="button" class="btn btn-primary" id="completeAppointmentBtn">Mark as Completed</button>
@@ -1426,9 +1427,11 @@
 
             // Show/hide buttons based on status
             if (appointment.status === 'COMPLETED' || appointment.status === 'CANCELLED') {
-                $('#cancelAppointmentBtn, #rescheduleAppointmentBtn, #completeAppointmentBtn').hide();
-            } else {
-                $('#cancelAppointmentBtn, #rescheduleAppointmentBtn').show();
+                $('#confirmAppointmentBtn,#cancelAppointmentBtn, #rescheduleAppointmentBtn, #completeAppointmentBtn').hide();
+            } if (appointment.status === 'CONFIRMED') {
+                $("#confirmAppointmentBtn").hide();
+            }else {
+                $('#confirmAppointmentBtn,#cancelAppointmentBtn, #rescheduleAppointmentBtn').show();
                 $('#completeAppointmentBtn').toggle(appointment.status === 'CONFIRMED');
             }
 
@@ -1499,6 +1502,46 @@
                     loadAppointments('all');
                 }
             });
+        });
+
+        //Confirm appointment
+        $('#confirmAppointmentBtn').on('click', function() {
+            if (!currentAppointmentId) return;
+
+            if (confirm('Are you sure you want to confirm this appointment?')) {
+                $.ajax({
+                    url: `http://localhost:8080/provider/appointment/updateAppointment/${currentAppointmentId}`,
+                    type: 'PATCH',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ status: 'CONFIRMED' }),
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                    },
+                    success: function() {
+                        showSuccess('Appointment confirmed successfully');
+                        $('#appointmentDetailsModal').modal('hide');
+
+                        // Refresh data
+                        calendar.refetchEvents();
+                        loadAppointments('upcoming');
+                        loadAppointments('requested');
+                        loadAppointments('all');
+                    },
+                    error: function() {
+                        showError('Failed to confirm appointment');
+
+                        // For demo purposes, simulate success
+                        $('#appointmentDetailsModal').modal('hide');
+                        showSuccess('Appointment confirmed successfully (Demo)');
+
+                        // Refresh data
+                        calendar.refetchEvents();
+                        loadAppointments('upcoming');
+                        loadAppointments('requested');
+                        loadAppointments('all');
+                    }
+                });
+            }
         });
 
         // Cancel appointment
