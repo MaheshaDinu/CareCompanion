@@ -83,4 +83,13 @@ public class ProviderMedicationScheduleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500, e.getMessage(), null));
         }
     }
+    @PutMapping("updateMedicationSchedule/{id}")
+    public ResponseEntity<ResponseUtil> updateMedicationSchedule(@PathVariable int id, @RequestBody MedicationScheduleDTO medicationScheduleDTO) {
+        try {
+            medicationScheduleService.update(medicationScheduleDTO);
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200, "success", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500, e.getMessage(), null));
+        }
+    }
 }

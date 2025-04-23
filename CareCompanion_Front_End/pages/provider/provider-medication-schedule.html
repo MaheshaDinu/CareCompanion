@@ -559,16 +559,16 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="medicationName" class="form-label">Medication Name</label>
-                        <input type="text" class="form-control" id="medicationName" placeholder="Enter medication name" required>
+                        <label for="addMedicationName" class="form-label">Medication Name</label>
+                        <input type="text" class="form-control" id="addMedicationName" placeholder="Enter medication name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="dosage" class="form-label">Dosage</label>
-                        <input type="text" class="form-control" id="dosage" placeholder="e.g., 10mg, 1 tablet" required>
+                        <label for="addDosage" class="form-label">Dosage</label>
+                        <input type="text" class="form-control" id="addDosage" placeholder="e.g., 10mg, 1 tablet" required>
                     </div>
                     <div class="mb-3">
-                        <label for="frequency" class="form-label">Frequency</label>
-                        <select class="form-select" id="frequency" required>
+                        <label for="addFrequency" class="form-label">Frequency</label>
+                        <select class="form-select" id="addFrequency" required>
                             <option value="" selected disabled>Select frequency</option>
                             <option value="DAILY">Daily</option>
                             <option value="TWICE_A_DAY">Twice a Day</option>
@@ -577,17 +577,17 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="startDate" class="form-label">Start Date</label>
-                            <input type="date" class="form-control" id="startDate" required>
+                            <label for="addStartDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="addStartDate" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="endDate" class="form-label">End Date</label>
-                            <input type="date" class="form-control" id="endDate" required>
+                            <label for="addEndDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="addEndDate" required>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="reminderTime" class="form-label">Reminder Time</label>
-                        <input type="time" class="form-control" id="reminderTime" required>
+                        <label for="addReminderTime" class="form-label">Reminder Time</label>
+                        <input type="time" class="form-control" id="addReminderTime" required>
                     </div>
                 </form>
             </div>
@@ -786,8 +786,12 @@
         });
 
         // Update medication
+        console.log("updateButton binding")
         $('#updateMedicationBtn').on('click', function() {
-            if (!validateMedicationForm('edit')) return;
+            console.log("updateButton clicked")
+            if (!validateMedicationForm('edit')){console.log("updateButton returned")
+                return;}
+
 
             const medicationData = {
                 id: $('#editMedicationId').val(),
@@ -1107,7 +1111,7 @@
                     showToast('Success', 'Medication schedule added successfully!', 'success');
 
                     // If the medication is for the currently selected patient, refresh the list
-                    if (selectedPatientId == medicationData.patientId) {
+                    if (selectedPatientId === medicationData.patientId) {
                         loadMedicationSchedules(selectedPatientId);
                     }
 
@@ -1123,7 +1127,7 @@
                     showToast('Success', 'Medication schedule added successfully!', 'success');
 
                     // If the medication is for the currently selected patient, refresh the list
-                    if (selectedPatientId == medicationData.patientId) {
+                    if (selectedPatientId === medicationData.patientId) {
                         // Add the new medication to sample data
                         const sampleMedications = getSampleMedications(selectedPatientId);
                         medicationData.id = Date.now(); // Generate a unique ID
@@ -1139,8 +1143,9 @@
 
         // Function to update medication
         function updateMedication(medicationData) {
+            console.log("update func")
             $.ajax({
-                url: `/api/medication-schedules/${medicationData.id}`,
+                url: `http://localhost:8080/provider/medication-schedule/updateMedicationSchedule/${medicationData.id}`,
                 type: 'PUT',
                 contentType: 'application/json',
                 data: JSON.stringify(medicationData),
@@ -1206,12 +1211,12 @@
 
             // Check required fields
             const requiredFields = [
-                `${prefix}medicationName`,
-                `${prefix}dosage`,
-                `${prefix}frequency`,
-                `${prefix}startDate`,
-                `${prefix}endDate`,
-                `${prefix}reminderTime`
+                `${prefix}MedicationName`,
+                `${prefix}Dosage`,
+                `${prefix}Frequency`,
+                `${prefix}StartDate`,
+                `${prefix}EndDate`,
+                `${prefix}ReminderTime`
             ];
 
             if (formType === 'add') {
