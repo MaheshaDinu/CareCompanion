@@ -889,7 +889,7 @@
         // Function to load medication schedules for a patient
         function loadMedicationSchedules(patientId) {
             $.ajax({
-                url: `/api/patients/${patientId}/medication-schedules`,
+                url: `http://localhost:8080/provider/medication-schedule/getMedicationSchedulesByPatient/${patientId}`,
                 type: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
