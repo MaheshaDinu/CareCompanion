@@ -1090,7 +1090,7 @@
         // Function to save new medication
         function saveMedication(medicationData) {
             $.ajax({
-                url: '/api/medication-schedules',
+                url: 'http://localhost:8080/provider/medication-schedule/addMedicationSchedule',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(medicationData),

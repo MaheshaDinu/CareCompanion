@@ -74,4 +74,13 @@ public class ProviderMedicationScheduleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500, e.getMessage(), null));
         }
     }
+    @PostMapping("addMedicationSchedule")
+    public ResponseEntity<ResponseUtil> addMedicationSchedule(@RequestBody MedicationScheduleDTO medicationScheduleDTO) {
+        try {
+            medicationScheduleService.save(medicationScheduleDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseUtil(201, "success", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500, e.getMessage(), null));
+        }
+    }
 }
