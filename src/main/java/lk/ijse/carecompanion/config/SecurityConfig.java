@@ -66,7 +66,7 @@ public class SecurityConfig {
                 )
 
                 // DISABLE Basic & Form
-                .httpBasic(AbstractHttpConfigurer::disable)
+//                .httpBasic(Customizer.withDefaults())
                 .formLogin(AbstractHttpConfigurer::disable)
 
                 // **HOOK IN YOUR JWT FILTER HERE**
