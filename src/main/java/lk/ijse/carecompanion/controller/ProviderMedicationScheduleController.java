@@ -92,4 +92,14 @@ public class ProviderMedicationScheduleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500, e.getMessage(), null));
         }
     }
+
+    @DeleteMapping("deleteMedicationSchedule/{id}")
+    public ResponseEntity<ResponseUtil> deleteMedicationSchedule(@PathVariable int id) {
+        try {
+            medicationScheduleService.delete(id);
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200, "success", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500, e.getMessage(), null));
+        }
+    }
 }

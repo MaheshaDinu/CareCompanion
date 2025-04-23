@@ -774,12 +774,12 @@
 
             const medicationData = {
                 patientId: $('#patientSelect').val(),
-                medicationName: $('#medicationName').val(),
-                dosage: $('#dosage').val(),
-                frequency: $('#frequency').val(),
-                startDate: $('#startDate').val(),
-                endDate: $('#endDate').val(),
-                reminderTime: $('#reminderTime').val()
+                medicationName: $('#addMedicationName').val(),
+                dosage: $('#addDosage').val(),
+                frequency: $('#addFrequency').val(),
+                startDate: $('#addStartDate').val(),
+                endDate: $('#addEndDate').val(),
+                reminderTime: $('#addReminderTime').val()
             };
 
             saveMedication(medicationData);
@@ -1097,6 +1097,7 @@
 
         // Function to save new medication
         function saveMedication(medicationData) {
+            console.log(medicationData)
             console.log("saving method")
             $.ajax({
                 url: 'http://localhost:8080/provider/medication-schedule/addMedicationSchedule',
@@ -1179,7 +1180,7 @@
         // Function to delete medication
         function deleteMedication(medicationId) {
             $.ajax({
-                url: `/api/medication-schedules/${medicationId}`,
+                url: `http://localhost:8080/provider/medication-schedule/deleteMedicationSchedule/${medicationId}`,
                 type: 'DELETE',
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
@@ -1207,7 +1208,7 @@
 
         // Function to validate medication form
         function validateMedicationForm(formType) {
-            const prefix = formType === 'add' ? '' : 'edit';
+            const prefix = formType === 'add' ? 'add' : 'edit';
 
             // Check required fields
             const requiredFields = [
