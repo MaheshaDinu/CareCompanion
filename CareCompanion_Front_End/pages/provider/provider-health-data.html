@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCompanion - Health Data Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Date Range Picker -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+    <style>
+        :root {
+            --primary: #4895ef;
+            --primary-light: rgba(72, 149, 239, 0.1);
+            --primary-dark: #3a75c4;
+            --secondary: #3a0ca3;
+            --success: #06d6a0;
+            --success-light: rgba(6, 214, 160, 0.1);
+            --light-bg: #f8f9fa;
+            --text-dark: #2d3436;
+            --danger: #ef476f;
+            --danger-light: rgba(239, 71, 111, 0.1);
+            --warning: #ffd166;
+            --warning-light: rgba(255, 209, 102, 0.1);
+            --gray: #adb5bd;
+            --gray-light: #e9ecef;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 8px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: var(--primary-light);
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 8px rgba(72, 149, 239, 0.2);
+        }
+
+        .nav-pills .nav-link i {
+            margin-right: 0.75rem;
+        }
+
+        .navbar {
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+        }
+
+        .sidebar {
+            height: calc(100vh - 70px);
+            position: sticky;
+            top: 70px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            transition: width 0.3s ease;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem var(--primary-light);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge-pill {
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+            border-radius: 12px;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+
+        /* Health Data Management Specific Styles */
+        .patient-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .patient-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .patient-card.active {
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .patient-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .patient-avatar i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .metric-card {
+            border-left: 4px solid var(--primary);
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateX(3px);
+        }
+
+        .metric-card.blood-pressure {
+            border-left-color: var(--primary);
+        }
+
+        .metric-card.heart-rate {
+            border-left-color: var(--danger);
+        }
+
+        .metric-card.blood-sugar {
+            border-left-color: var(--warning);
+        }
+
+        .metric-card.temperature {
+            border-left-color: var(--success);
+        }
+
+        .metric-card.weight {
+            border-left-color: var(--secondary);
+        }
+
+        .metric-card.oxygen {
+            border-left-color: var(--info);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value.normal {
+            color: var(--success);
+        }
+
+        .metric-value.warning {
+            color: var(--warning);
+        }
+
+        .metric-value.danger {
+            color: var(--danger);
+        }
+
+        .metric-timestamp {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-notes {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .threshold-slider {
+            margin-top: 1rem;
+        }
+
+        .threshold-slider .form-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .threshold-slider .form-label span {
+            font-weight: 400;
+            color: var(--gray);
+        }
+
+        .threshold-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .search-input {
+            padding-left: 2.5rem;
+            border-radius: 50px;
+        }
+
+        .filter-dropdown {
+            margin-bottom: 1rem;
+        }
+
+        .date-range-picker {
+            margin-bottom: 1rem;
+        }
+
+        .date-range-picker .form-control {
+            border-radius: 50px;
+            padding-left: 2.5rem;
+        }
+
+        .date-range-picker i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .threshold-card {
+            border-radius: 12px;
+            border: 1px solid var(--gray-light);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .threshold-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .threshold-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .threshold-card-title {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .threshold-ranges {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .threshold-range {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .threshold-range-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .threshold-range-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .threshold-range.min .threshold-range-value {
+            color: var(--warning);
+        }
+
+        .threshold-range.max .threshold-range-value {
+            color: var(--danger);
+        }
+
+        .threshold-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--gray-light);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h5 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-content {
+            padding: 1rem 0;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--gray);
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+        }
+
+        .nav-tabs .nav-link:hover {
+            border-color: transparent;
+            color: var(--primary);
+        }
+
+        .nav-tabs .nav-link.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background-color: transparent;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <i class="bi bi-heart-pulse me-2"></i>CareCompanion
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-plus-circle me-1"></i> New
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addThresholdModal"><i class="bi bi-sliders me-2"></i>Threshold</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-plus me-2"></i>Appointment</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus me-2"></i>Patient</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-plus me-2"></i>Prescription</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item position-relative me-3">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-bell fs-5"></i>
+                        <span class="notification-badge">3</span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="rounded-circle bg-primary-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                            <i class="bi bi-person-fill text-primary"></i>
+                        </div>
+                        <span id="provider_name">Dr. Sarah Johnson</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 bg-white sidebar">
+            <nav class="nav nav-pills flex-column">
+                <a class="nav-link" href="provider-dashboard.html">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+                <a class="nav-link" href="provider-appointments.html">
+                    <i class="bi bi-calendar-check"></i>Appointments
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-calendar-week"></i>Schedule
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-people"></i>Patients
+                </a>
+                <a class="nav-link" href="provider-medication-schedule.html">
+                    <i class="bi bi-capsule"></i>Medications
+                </a>
+                <a class="nav-link active" href="provider-health-data.html">
+                    <i class="bi bi-heart-pulse"></i>Health Data
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-file-earmark-text"></i>Reports
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-chat-left-dots"></i>Messages
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="bi bi-gear"></i>Settings
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-10 main-content">
+            <div class="page-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="page-title">Health Data Management</h1>
+                    <p class="page-subtitle">Monitor patient health metrics and set thresholds</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addThresholdModal">
+                        <i class="bi bi-sliders me-1"></i> Set Threshold
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Patient List -->
+                <div class="col-lg-4">
+                    <div class="dashboard-card mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0">Patients</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="search-container p-3">
+                                <i class="bi bi-search"></i>
+                                <input type="text" class="form-control search-input" id="patientSearch" placeholder="Search patients...">
+                            </div>
+                            <div class="list-group list-group-flush" id="patientList">
+                                <!-- Patient list will be populated here -->
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Data Content -->
+                <div class="col-lg-8">
+                    <div class="dashboard-card">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0" id="healthDataPatientName">Select a patient</h5>
+                            <div class="dropdown filter-dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-funnel me-1"></i> Filter
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                    <li><a class="dropdown-item" href="#" data-filter="all">All Metrics</a></li>
+                                    <li><a class="dropdown-item" href="#" data-filter="BLOOD_PRESSURE">Blood Pressure</a></li>
+                                    <li><a class="dropdown-item" href="#" data-filter="HEART_RATE">Heart Rate</a></li>
+                                    <li><a class="dropdown-item" href="#" data-filter="BLOOD_SUGAR">Blood Sugar</a></li>
+                                    <li><a class="dropdown-item" href="#" data-filter="TEMPERATURE">Temperature</a></li>
+                                    <li><a class="dropdown-item" href="#" data-filter="WEIGHT">Weight</a></li>
+                                    <li><a class="dropdown-item" href="#" data-filter="OXYGEN_SATURATION">Oxygen Saturation</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" data-filter="normal">Normal</a></li>
+                                    <li><a class="dropdown-item" href="#" data-filter="warning">Warning</a></li>
+                                    <li><a class="dropdown-item" href="#" data-filter="danger">Critical</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Empty state -->
+                            <div class="empty-state" id="emptyState">
+                                <i class="bi bi-heart-pulse"></i>
+                                <h5>No Patient Selected</h5>
+                                <p>Please select a patient from the list to view their health metrics.</p>
+                            </div>
+
+                            <!-- Health data content will be shown here -->
+                            <div id="healthDataContent" class="d-none">
+                                <!-- Date Range Picker -->
+                                <div class="position-relative date-range-picker mb-4">
+                                    <i class="bi bi-calendar3"></i>
+                                    <input type="text" class="form-control" id="dateRangePicker" placeholder="Select date range">
+                                </div>
+
+                                <!-- Tabs -->
+                                <ul class="nav nav-tabs" id="healthDataTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="metrics-tab" data-bs-toggle="tab" data-bs-target="#metrics-tab-pane" type="button" role="tab" aria-controls="metrics-tab-pane" aria-selected="true">
+                                            Metrics
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts-tab-pane" type="button" role="tab" aria-controls="charts-tab-pane" aria-selected="false">
+                                            Charts
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="thresholds-tab" data-bs-toggle="tab" data-bs-target="#thresholds-tab-pane" type="button" role="tab" aria-controls="thresholds-tab-pane" aria-selected="false">
+                                            Thresholds
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="healthDataTabsContent">
+                                    <!-- Metrics Tab -->
+                                    <div class="tab-pane fade show active" id="metrics-tab-pane" role="tabpanel" aria-labelledby="metrics-tab" tabindex="0">
+                                        <div id="metricsContainer">
+                                            <!-- Metrics will be loaded here -->
+                                            <div class="text-center py-4">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Charts Tab -->
+                                    <div class="tab-pane fade" id="charts-tab-pane" role="tabpanel" aria-labelledby="charts-tab" tabindex="0">
+                                        <div class="mb-3">
+                                            <label for="chartMetricType" class="form-label">Metric Type</label>
+                                            <select class="form-select" id="chartMetricType">
+                                                <option value="BLOOD_PRESSURE">Blood Pressure</option>
+                                                <option value="HEART_RATE">Heart Rate</option>
+                                                <option value="BLOOD_SUGAR">Blood Sugar</option>
+                                                <option value="TEMPERATURE">Temperature</option>
+                                                <option value="WEIGHT">Weight</option>
+                                                <option value="OXYGEN_SATURATION">Oxygen Saturation</option>
+                                            </select>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="healthMetricChart"></canvas>
+                                        </div>
+                                    </div>
+
+                                    <!-- Thresholds Tab -->
+                                    <div class="tab-pane fade" id="thresholds-tab-pane" role="tabpanel" aria-labelledby="thresholds-tab" tabindex="0">
+                                        <div id="thresholdsContainer">
+                                            <!-- Thresholds will be loaded here -->
+                                            <div class="text-center py-4">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Threshold Modal -->
+<div class="modal fade" id="addThresholdModal" tabindex="-1" aria-labelledby="addThresholdModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addThresholdModalLabel">Set Threshold</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="thresholdForm">
+                    <input type="hidden" id="thresholdId">
+                    <div class="mb-3">
+                        <label for="thresholdPatient" class="form-label">Patient</label>
+                        <select class="form-select" id="thresholdPatient" required>
+                            <option value="" selected disabled>Select a patient</option>
+                            <!-- Patient options will be populated here -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="metricType" class="form-label">Metric Type</label>
+                        <select class="form-select" id="metricType" required>
+                            <option value="" selected disabled>Select metric type</option>
+                            <option value="BLOOD_PRESSURE">Blood Pressure</option>
+                            <option value="HEART_RATE">Heart Rate</option>
+                            <option value="BLOOD_SUGAR">Blood Sugar</option>
+                            <option value="TEMPERATURE">Temperature</option>
+                            <option value="WEIGHT">Weight</option>
+                            <option value="OXYGEN_SATURATION">Oxygen Saturation</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="bloodPressureFields">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="systolicMin" class="form-label">Systolic Min</label>
+                                <input type="number" class="form-control" id="systolicMin" placeholder="e.g., 90">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="systolicMax" class="form-label">Systolic Max</label>
+                                <input type="number" class="form-control" id="systolicMax" placeholder="e.g., 140">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="diastolicMin" class="form-label">Diastolic Min</label>
+                                <input type="number" class="form-control" id="diastolicMin" placeholder="e.g., 60">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="diastolicMax" class="form-label">Diastolic Max</label>
+                                <input type="number" class="form-control" id="diastolicMax" placeholder="e.g., 90">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="standardThresholdFields">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="minValue" class="form-label">Minimum Value</label>
+                                <input type="number" class="form-control" id="minValue" placeholder="Enter minimum value">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="maxValue" class="form-label">Maximum Value</label>
+                                <input type="number" class="form-control" id="maxValue" placeholder="Enter maximum value">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveThresholdBtn">Save Threshold</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Metric Details Modal -->
+<div class="modal fade" id="viewMetricModal" tabindex="-1" aria-labelledby="viewMetricModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewMetricModalLabel">Metric Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="metricDetailsContainer">
+                    <!-- Metric details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="notificationToast">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Operation completed successfully.
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    $(document).ready(function() {
+        // Current provider ID (would normally come from session/auth)
+        let currentProviderId = 1;
+        let selectedPatientId = null;
+        let currentFilter = 'all';
+        let healthMetricChart = null;
+        const providerName = document.getElementById("provider_name");
+
+        // Load provider details
+        loadProviderDetails();
+
+        // Initialize the page
+        loadPatients();
+
+        // Initialize date range picker
+        $('#dateRangePicker').daterangepicker({
+            opens: 'left',
+            maxDate: new Date(),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            startDate: moment().subtract(29, 'days'),
+            endDate: moment()
+        }, function(start, end, label) {
+            if (selectedPatientId) {
+                loadHealthMetrics(selectedPatientId);
+            }
+        });
+
+        // Search functionality for patients
+        $('#patientSearch').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            $('.patient-item').each(function() {
+                const patientName = $(this).find('.patient-name').text().toLowerCase();
+                if (patientName.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        // Filter functionality for metrics
+        $('.dropdown-item[data-filter]').on('click', function(e) {
+            e.preventDefault();
+            currentFilter = $(this).data('filter');
+            $('#filterDropdown').text($(this).text());
+            if (selectedPatientId) {
+                loadHealthMetrics(selectedPatientId);
+            }
+        });
+
+        // Handle patient selection
+        $(document).on('click', '.patient-item', function() {
+            $('.patient-item').removeClass('active');
+            $(this).addClass('active');
+            selectedPatientId = $(this).data('id');
+            const patientName = $(this).find('.patient-name').text();
+            $('#healthDataPatientName').text(`${patientName}'s Health Data`);
+
+            // Show health data content and hide empty state
+            $('#emptyState').addClass('d-none');
+            $('#healthDataContent').removeClass('d-none');
+
+            // Load health metrics for the selected patient
+            loadHealthMetrics(selectedPatientId);
+            loadPatientThresholds(selectedPatientId);
+        });
+
+        // Handle chart metric type change
+        $('#chartMetricType').on('change', function() {
+            if (selectedPatientId) {
+                loadHealthMetricChart(selectedPatientId, $(this).val());
+            }
+        });
+
+        // Handle metric type change in threshold form
+        $('#metricType').on('change', function() {
+            const metricType = $(this).val();
+            if (metricType === 'BLOOD_PRESSURE') {
+                $('#bloodPressureFields').show();
+                $('#standardThresholdFields').hide();
+            } else {
+                $('#bloodPressureFields').hide();
+                $('#standardThresholdFields').show();
+            }
+        });
+
+        // Save threshold
+        $('#saveThresholdBtn').on('click', function() {
+            if (!validateThresholdForm()) return;
+
+            const patientId = $('#thresholdPatient').val();
+            const metricType = $('#metricType').val();
+            let thresholdData = {
+                id: $('#thresholdId').val() || 0,
+                metricType: metricType,
+                patientId: patientId
+            };
+
+            if (metricType === 'BLOOD_PRESSURE') {
+                // For blood pressure, we need to store systolic and diastolic thresholds
+                // We'll store them as a JSON string in the minValue and maxValue fields
+                const systolicMin = $('#systolicMin').val();
+                const systolicMax = $('#systolicMax').val();
+                const diastolicMin = $('#diastolicMin').val();
+                const diastolicMax = $('#diastolicMax').val();
+
+                thresholdData.minValue = JSON.stringify({
+                    systolic: systolicMin,
+                    diastolic: diastolicMin
+                });
+
+                thresholdData.maxValue = JSON.stringify({
+                    systolic: systolicMax,
+                    diastolic: diastolicMax
+                });
+            } else {
+                // For other metrics, we just need min and max values
+                thresholdData.minValue = $('#minValue').val();
+                thresholdData.maxValue = $('#maxValue').val();
+            }
+
+            saveThreshold(thresholdData);
+        });
+
+        // Handle view metric details
+        $(document).on('click', '.view-metric', function() {
+            const metricId = $(this).data('id');
+            getMetricDetails(metricId);
+        });
+
+        // Handle edit threshold
+        $(document).on('click', '.edit-threshold', function() {
+            const thresholdId = $(this).data('id');
+            getThresholdDetails(thresholdId);
+        });
+
+        // function to get the current provider details
+        function loadProviderDetails() {
+            $.ajax({
+                url:"http://localhost:8080/provider/health-data/getProvider",
+                type:"GET",
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const provider = response.data;
+                        providerName.textContent = "Dr. " + provider.firstName + " " + provider.lastName;
+                        currentProviderId = provider.id;
+                    } else {
+                        showError(response.message)
+                    }
+                }
+            })
+
+        }
+        // Function to load patients
+        function loadPatients() {
+            $.ajax({
+                url: `http://localhost:8080/provider/health-data/getPatients`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    const patients = response.data || [];
+                    renderPatientList(patients);
+                    populatePatientSelect(patients);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading patients:', error);
+                    showToast('Error', 'Failed to load patients. Please try again.', 'error');
+
+                    // For demo purposes, load sample data
+                    const samplePatients = getSamplePatients();
+                    renderPatientList(samplePatients);
+                    populatePatientSelect(samplePatients);
+                }
+            });
+        }
+
+        // Function to render patient list
+        function renderPatientList(patients) {
+            const patientList = $('#patientList');
+            patientList.empty();
+
+            if (patients.length === 0) {
+                patientList.html('<div class="text-center py-4">No patients found</div>');
+                return;
+            }
+
+            patients.forEach(patient => {
+                const patientItem = `
+                <div class="list-group-item list-group-item-action patient-item" data-id="${patient.id}">
+                    <div class="d-flex align-items-center">
+                        <div class="patient-avatar">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 patient-name">${patient.firstName} ${patient.lastName}</h6>
+                            <small class="text-muted">${patient.age} years • ${patient.gender}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+                patientList.append(patientItem);
+            });
+        }
+
+        // Function to populate patient select dropdown
+        function populatePatientSelect(patients) {
+            const patientSelect = $('#thresholdPatient');
+            patientSelect.find('option:not(:first)').remove();
+
+            patients.forEach(patient => {
+                patientSelect.append(`<option value="${patient.id}">${patient.firstName} ${patient.lastName}</option>`);
+            });
+        }
+
+        // Function to load health metrics for a patient
+        function loadHealthMetrics(patientId) {
+            const dateRange = $('#dateRangePicker').val();
+            const dates = dateRange.split(' - ');
+            const startDate = dates[0];
+            const endDate = dates[1];
+
+            $.ajax({
+                url: `/api/patients/${patientId}/health-metrics`,
+                type: 'GET',
+                data: {
+                    startDate: startDate,
+                    endDate: endDate,
+                    sort: 'timestamp,desc'
+                },
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    const metrics = response.data || [];
+                    renderHealthMetrics(metrics);
+
+                    // Load chart for the first metric type
+                    const metricType = $('#chartMetricType').val();
+                    loadHealthMetricChart(patientId, metricType);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading health metrics:', error);
+                    showToast('Error', 'Failed to load health metrics. Please try again.', 'error');
+
+                    // For demo purposes, load sample data
+                    const sampleMetrics = getSampleHealthMetrics(patientId);
+                    renderHealthMetrics(sampleMetrics);
+
+                    // Load chart for the first metric type
+                    const metricType = $('#chartMetricType').val();
+                    loadHealthMetricChart(patientId, metricType);
+                }
+            });
+        }
+
+        // Function to render health metrics
+        function renderHealthMetrics(metrics) {
+            const metricsContainer = $('#metricsContainer');
+            metricsContainer.empty();
+
+            if (metrics.length === 0) {
+                metricsContainer.html(`
+                <div class="empty-state">
+                    <i class="bi bi-heart-pulse"></i>
+                    <h5>No Health Metrics Found</h5>
+                    <p>This patient doesn't have any health metrics recorded for the selected date range.</p>
+                </div>
+            `);
+                return;
+            }
+
+            // Filter metrics based on current filter
+            let filteredMetrics = metrics;
+
+            if (currentFilter !== 'all') {
+                if (['normal', 'warning', 'danger'].includes(currentFilter)) {
+                    // Filter by status
+                    filteredMetrics = metrics.filter(metric => {
+                        const status = getMetricStatus(metric);
+                        return status === currentFilter;
+                    });
+                } else {
+                    // Filter by metric type
+                    filteredMetrics = metrics.filter(metric => metric.type === currentFilter);
+                }
+            }
+
+            if (filteredMetrics.length === 0) {
+                metricsContainer.html(`
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No metrics match the selected filter.
+                </div>
+            `);
+                return;
+            }
+
+            // Group metrics by type
+            const groupedMetrics = {};
+            filteredMetrics.forEach(metric => {
+                if (!groupedMetrics[metric.type]) {
+                    groupedMetrics[metric.type] = [];
+                }
+                groupedMetrics[metric.type].push(metric);
+            });
+
+            // Render metrics by type
+            Object.keys(groupedMetrics).forEach(type => {
+                const typeMetrics = groupedMetrics[type];
+                const typeTitle = formatMetricType(type);
+                const typeClass = getMetricTypeClass(type);
+
+                const typeSection = $(`
+                <div class="mb-4">
+                    <h5 class="mb-3">${typeTitle}</h5>
+                    <div class="row" id="${type}-metrics"></div>
+                </div>
+            `);
+
+                const metricsRow = typeSection.find(`#${type}-metrics`);
+
+                typeMetrics.slice(0, 6).forEach(metric => {
+                    const status = getMetricStatus(metric);
+                    const formattedValue = formatMetricValue(metric);
+                    const formattedTime = formatDateTime(metric.timestamp);
+
+                    const metricCard = $(`
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card metric-card ${typeClass}">
+                            <div class="card-body">
+                                <div class="metric-header">
+                                    <h6 class="metric-title">${typeTitle}</h6>
+                                    <button class="btn btn-sm btn-outline-primary view-metric" data-id="${metric.id}">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="metric-value ${status}">${formattedValue}</div>
+                                <div class="metric-timestamp">
+                                    <i class="bi bi-clock me-1"></i> ${formattedTime}
+                                </div>
+                                ${metric.notes ? `<p class="metric-notes">${metric.notes}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+                    metricsRow.append(metricCard);
+                });
+
+                if (typeMetrics.length > 6) {
+                    const viewMoreBtn = $(`
+                    <div class="text-center mt-2">
+                        <button class="btn btn-outline-primary btn-sm view-more-metrics" data-type="${type}">
+                            View ${typeMetrics.length - 6} more ${typeTitle} metrics
+                        </button>
+                    </div>
+                `);
+
+                    typeSection.append(viewMoreBtn);
+                }
+
+                metricsContainer.append(typeSection);
+            });
+
+            // Handle view more metrics
+            $('.view-more-metrics').on('click', function() {
+                const type = $(this).data('type');
+                // Implement view more functionality
+                showToast('Info', 'This feature is not implemented in the demo.', 'info');
+            });
+        }
+
+        // Function to load health metric chart
+        function loadHealthMetricChart(patientId, metricType) {
+            const dateRange = $('#dateRangePicker').val();
+            const dates = dateRange.split(' - ');
+            const startDate = dates[0];
+            const endDate = dates[1];
+
+            $.ajax({
+                url: `/api/patients/${patientId}/health-metrics/chart`,
+                type: 'GET',
+                data: {
+                    metricType: metricType,
+                    startDate: startDate,
+                    endDate: endDate
+                },
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    const chartData = response.data || {};
+                    renderHealthMetricChart(chartData, metricType);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading health metric chart:', error);
+                    showToast('Error', 'Failed to load health metric chart. Please try again.', 'error');
+
+                    // For demo purposes, load sample data
+                    const sampleChartData = getSampleChartData(metricType);
+                    renderHealthMetricChart(sampleChartData, metricType);
+                }
+            });
+        }
+
+        // Function to render health metric chart
+        function renderHealthMetricChart(chartData, metricType) {
+            const ctx = document.getElementById('healthMetricChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (healthMetricChart) {
+                healthMetricChart.destroy();
+            }
+
+            // Get thresholds for the selected metric type
+            const thresholds = getThresholdsForMetricType(metricType);
+
+            // Create datasets based on metric type
+            let datasets = [];
+            let yAxisTitle = '';
+
+            if (metricType === 'BLOOD_PRESSURE') {
+                datasets = [
+                    {
+                        label: 'Systolic',
+                        data: chartData.systolic || [],
+                        borderColor: 'rgba(72, 149, 239, 1)',
+                        backgroundColor: 'rgba(72, 149, 239, 0.2)',
+                        fill: false,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Diastolic',
+                        data: chartData.diastolic || [],
+                        borderColor: 'rgba(58, 12, 163, 1)',
+                        backgroundColor: 'rgba(58, 12, 163, 0.2)',
+                        fill: false,
+                        tension: 0.4
+                    }
+                ];
+
+                // Add threshold lines if available
+                if (thresholds) {
+                    if (thresholds.systolicMax) {
+                        datasets.push({
+                            label: 'Systolic Max',
+                            data: Array(chartData.labels?.length || 0).fill(thresholds.systolicMax),
+                            borderColor: 'rgba(239, 71, 111, 1)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        });
+                    }
+
+                    if (thresholds.systolicMin) {
+                        datasets.push({
+                            label: 'Systolic Min',
+                            data: Array(chartData.labels?.length || 0).fill(thresholds.systolicMin),
+                            borderColor: 'rgba(255, 209, 102, 1)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        });
+                    }
+
+                    if (thresholds.diastolicMax) {
+                        datasets.push({
+                            label: 'Diastolic Max',
+                            data: Array(chartData.labels?.length || 0).fill(thresholds.diastolicMax),
+                            borderColor: 'rgba(239, 71, 111, 0.7)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        });
+                    }
+
+                    if (thresholds.diastolicMin) {
+                        datasets.push({
+                            label: 'Diastolic Min',
+                            data: Array(chartData.labels?.length || 0).fill(thresholds.diastolicMin),
+                            borderColor: 'rgba(255, 209, 102, 0.7)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        });
+                    }
+                }
+
+                yAxisTitle = 'Blood Pressure (mmHg)';
+            } else {
+                datasets = [
+                    {
+                        label: formatMetricType(metricType),
+                        data: chartData.values || [],
+                        borderColor: getMetricTypeColor(metricType),
+                        backgroundColor: getMetricTypeColor(metricType, 0.2),
+                        fill: false,
+                        tension: 0.4
+                    }
+                ];
+
+                // Add threshold lines if available
+                if (thresholds) {
+                    if (thresholds.max) {
+                        datasets.push({
+                            label: 'Maximum',
+                            data: Array(chartData.labels?.length || 0).fill(thresholds.max),
+                            borderColor: 'rgba(239, 71, 111, 1)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        });
+                    }
+
+                    if (thresholds.min) {
+                        datasets.push({
+                            label: 'Minimum',
+                            data: Array(chartData.labels?.length || 0).fill(thresholds.min),
+                            borderColor: 'rgba(255, 209, 102, 1)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        });
+                    }
+                }
+
+                yAxisTitle = `${formatMetricType(metricType)} (${getMetricUnit(metricType)})`;
+            }
+
+            healthMetricChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels || [],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: `${formatMetricType(metricType)} Over Time`
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: yAxisTitle
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to load patient thresholds
+        function loadPatientThresholds(patientId) {
+            $.ajax({
+                url: `/api/patients/${patientId}/thresholds`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    const thresholds = response.data || [];
+                    renderPatientThresholds(thresholds);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading patient thresholds:', error);
+                    showToast('Error', 'Failed to load patient thresholds. Please try again.', 'error');
+
+                    // For demo purposes, load sample data
+                    const sampleThresholds = getSampleThresholds(patientId);
+                    renderPatientThresholds(sampleThresholds);
+                }
+            });
+        }
+
+        // Function to render patient thresholds
+        function renderPatientThresholds(thresholds) {
+            const thresholdsContainer = $('#thresholdsContainer');
+            thresholdsContainer.empty();
+
+            if (thresholds.length === 0) {
+                thresholdsContainer.html(`
+                <div class="empty-state">
+                    <i class="bi bi-sliders"></i>
+                    <h5>No Thresholds Set</h5>
+                    <p>This patient doesn't have any thresholds set for their health metrics.</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addThresholdModal">
+                        <i class="bi bi-sliders me-1"></i> Set Threshold
+                    </button>
+                </div>
+            `);
+                return;
+            }
+
+            thresholds.forEach(threshold => {
+                const thresholdCard = createThresholdCard(threshold);
+                thresholdsContainer.append(thresholdCard);
+            });
+        }
+
+        // Function to create threshold card
+        function createThresholdCard(threshold) {
+            const metricType = threshold.metricType;
+            const typeTitle = formatMetricType(metricType);
+
+            let thresholdContent = '';
+
+            if (metricType === 'BLOOD_PRESSURE') {
+                // Parse min and max values from JSON strings
+                let minValues = { systolic: 0, diastolic: 0 };
+                let maxValues = { systolic: 0, diastolic: 0 };
+
+                try {
+                    if (threshold.minValue) {
+                        minValues = JSON.parse(threshold.minValue);
+                    }
+                    if (threshold.maxValue) {
+                        maxValues = JSON.parse(threshold.maxValue);
+                    }
+                } catch (e) {
+                    console.error('Error parsing blood pressure thresholds:', e);
+                }
+
+                thresholdContent = `
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="threshold-range min">
+                            <div class="threshold-range-value">${minValues.systolic || 'N/A'}</div>
+                            <div class="threshold-range-label">Systolic Min</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="threshold-range max">
+                            <div class="threshold-range-value">${maxValues.systolic || 'N/A'}</div>
+                            <div class="threshold-range-label">Systolic Max</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="threshold-range min">
+                            <div class="threshold-range-value">${minValues.diastolic || 'N/A'}</div>
+                            <div class="threshold-range-label">Diastolic Min</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="threshold-range max">
+                            <div class="threshold-range-value">${maxValues.diastolic || 'N/A'}</div>
+                            <div class="threshold-range-label">Diastolic Max</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            } else {
+                thresholdContent = `
+                <div class="threshold-ranges">
+                    <div class="threshold-range min">
+                        <div class="threshold-range-value">${threshold.minValue || 'N/A'}</div>
+                        <div class="threshold-range-label">Minimum</div>
+                    </div>
+                    <div class="threshold-range normal">
+                        <div class="threshold-range-value">
+                            <i class="bi bi-arrow-left-right"></i>
+                        </div>
+                        <div class="threshold-range-label">Normal Range</div>
+                    </div>
+                    <div class="threshold-range max">
+                        <div class="threshold-range-value">${threshold.maxValue || 'N/A'}</div>
+                        <div class="threshold-range-label">Maximum</div>
+                    </div>
+                </div>
+                <div class="text-center text-muted small mt-2">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Unit: ${getMetricUnit(metricType)}
+                </div>
+            `;
+            }
+
+            return `
+            <div class="threshold-card">
+                <div class="threshold-card-header">
+                    <h6 class="threshold-card-title">${typeTitle}</h6>
+                    <div class="threshold-actions">
+                        <button class="btn btn-sm btn-outline-primary edit-threshold" data-id="${threshold.id}">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                    </div>
+                </div>
+                ${thresholdContent}
+            </div>
+        `;
+        }
+
+        // Function to get metric details
+        function getMetricDetails(metricId) {
+            $.ajax({
+                url: `/api/health-metrics/${metricId}`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    const metric = response.data;
+                    showMetricDetails(metric);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error getting metric details:', error);
+                    showToast('Error', 'Failed to load metric details. Please try again.', 'error');
+
+                    // For demo purposes, get sample metric
+                    const sampleMetrics = getSampleHealthMetrics(selectedPatientId);
+                    const metric = sampleMetrics.find(m => m.id == metricId);
+                    if (metric) {
+                        showMetricDetails(metric);
+                    }
+                }
+            });
+        }
+
+        // Function to show metric details
+        function showMetricDetails(metric) {
+            const metricType = metric.type;
+            const typeTitle = formatMetricType(metricType);
+            const formattedValue = formatMetricValue(metric);
+            const formattedTime = formatDateTime(metric.timestamp);
+            const status = getMetricStatus(metric);
+
+            let detailsHtml = `
+            <div class="mb-3">
+                <h6>Metric Type</h6>
+                <p>${typeTitle}</p>
+            </div>
+            <div class="mb-3">
+                <h6>Value</h6>
+                <p class="${status}">${formattedValue}</p>
+            </div>
+            <div class="mb-3">
+                <h6>Timestamp</h6>
+                <p>${formattedTime}</p>
+            </div>
+        `;
+
+            if (metric.notes) {
+                detailsHtml += `
+                <div class="mb-3">
+                    <h6>Notes</h6>
+                    <p>${metric.notes}</p>
+                </div>
+            `;
+            }
+
+            // Add threshold information if available
+            const thresholds = getThresholdsForMetricType(metricType);
+            if (thresholds) {
+                detailsHtml += `<hr><div class="mb-3"><h6>Thresholds</h6>`;
+
+                if (metricType === 'BLOOD_PRESSURE') {
+                    detailsHtml += `
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">Systolic Min:</small>
+                            <p>${thresholds.systolicMin || 'Not set'}</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Systolic Max:</small>
+                            <p>${thresholds.systolicMax || 'Not set'}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">Diastolic Min:</small>
+                            <p>${thresholds.diastolicMin || 'Not set'}</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Diastolic Max:</small>
+                            <p>${thresholds.diastolicMax || 'Not set'}</p>
+                        </div>
+                    </div>
+                `;
+                } else {
+                    detailsHtml += `
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">Minimum:</small>
+                            <p>${thresholds.min || 'Not set'}</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Maximum:</small>
+                            <p>${thresholds.max || 'Not set'}</p>
+                        </div>
+                    </div>
+                `;
+                }
+
+                detailsHtml += `</div>`;
+            }
+
+            $('#metricDetailsContainer').html(detailsHtml);
+            $('#viewMetricModal').modal('show');
+        }
+
+        // Function to get threshold details
+        function getThresholdDetails(thresholdId) {
+            $.ajax({
+                url: `/api/thresholds/${thresholdId}`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    const threshold = response.data;
+                    populateThresholdForm(threshold);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error getting threshold details:', error);
+                    showToast('Error', 'Failed to load threshold details. Please try again.', 'error');
+
+                    // For demo purposes, get sample threshold
+                    const sampleThresholds = getSampleThresholds(selectedPatientId);
+                    const threshold = sampleThresholds.find(t => t.id == thresholdId);
+                    if (threshold) {
+                        populateThresholdForm(threshold);
+                    }
+                }
+            });
+        }
+
+        // Function to populate threshold form
+        function populateThresholdForm(threshold) {
+            $('#thresholdId').val(threshold.id);
+            $('#thresholdPatient').val(threshold.patientId);
+            $('#metricType').val(threshold.metricType).trigger('change');
+
+            if (threshold.metricType === 'BLOOD_PRESSURE') {
+                // Parse min and max values from JSON strings
+                let minValues = { systolic: 0, diastolic: 0 };
+                let maxValues = { systolic: 0, diastolic: 0 };
+
+                try {
+                    if (threshold.minValue) {
+                        minValues = JSON.parse(threshold.minValue);
+                    }
+                    if (threshold.maxValue) {
+                        maxValues = JSON.parse(threshold.maxValue);
+                    }
+                } catch (e) {
+                    console.error('Error parsing blood pressure thresholds:', e);
+                }
+
+                $('#systolicMin').val(minValues.systolic || '');
+                $('#systolicMax').val(maxValues.systolic || '');
+                $('#diastolicMin').val(minValues.diastolic || '');
+                $('#diastolicMax').val(maxValues.diastolic || '');
+            } else {
+                $('#minValue').val(threshold.minValue || '');
+                $('#maxValue').val(threshold.maxValue || '');
+            }
+
+            $('#addThresholdModal').modal('show');
+        }
+
+        // Function to save threshold
+        function saveThreshold(thresholdData) {
+            const isUpdate = thresholdData.id > 0;
+            const url = isUpdate ? `/api/thresholds/${thresholdData.id}` : '/api/thresholds';
+            const method = isUpdate ? 'PUT' : 'POST';
+
+            $.ajax({
+                url: url,
+                type: method,
+                contentType: 'application/json',
+                data: JSON.stringify(thresholdData),
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    $('#addThresholdModal').modal('hide');
+                    showToast('Success', `Threshold ${isUpdate ? 'updated' : 'saved'} successfully!`, 'success');
+
+                    // If the threshold is for the currently selected patient, refresh the list
+                    if (selectedPatientId === thresholdData.patientId) {
+                        loadPatientThresholds(selectedPatientId);
+
+                        // Also refresh the chart if it's showing the same metric type
+                        const chartMetricType = $('#chartMetricType').val();
+                        if (chartMetricType === thresholdData.metricType) {
+                            loadHealthMetricChart(selectedPatientId, chartMetricType);
+                        }
+                    }
+
+                    // Reset form
+                    $('#thresholdForm')[0].reset();
+                    $('#thresholdId').val('');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error saving threshold:', error);
+                    showToast('Error', 'Failed to save threshold. Please try again.', 'error');
+
+                    // For demo purposes, simulate success
+                    $('#addThresholdModal').modal('hide');
+                    showToast('Success', `Threshold ${isUpdate ? 'updated' : 'saved'} successfully! (Demo)`, 'success');
+
+                    // If the threshold is for the currently selected patient, refresh the list
+                    if (selectedPatientId === thresholdData.patientId) {
+                        // Add/update the threshold in sample data
+                        const sampleThresholds = getSampleThresholds(selectedPatientId);
+
+                        if (isUpdate) {
+                            const index = sampleThresholds.findIndex(t => t.id == thresholdData.id);
+                            if (index !== -1) {
+                                sampleThresholds[index] = thresholdData;
+                            }
+                        } else {
+                            thresholdData.id = Date.now(); // Generate a unique ID
+                            sampleThresholds.push(thresholdData);
+                        }
+
+                        renderPatientThresholds(sampleThresholds);
+
+                        // Also refresh the chart if it's showing the same metric type
+                        const chartMetricType = $('#chartMetricType').val();
+                        if (chartMetricType === thresholdData.metricType) {
+                            loadHealthMetricChart(selectedPatientId, chartMetricType);
+                        }
+                    }
+
+                    // Reset form
+                    $('#thresholdForm')[0].reset();
+                    $('#thresholdId').val('');
+                }
+            });
+        }
+
+        // Function to validate threshold form
+        function validateThresholdForm() {
+            const patientId = $('#thresholdPatient').val();
+            const metricType = $('#metricType').val();
+
+            if (!patientId || !metricType) {
+                showToast('Error', 'Please select a patient and metric type.', 'error');
+                return false;
+            }
+
+            if (metricType === 'BLOOD_PRESSURE') {
+                const systolicMin = $('#systolicMin').val();
+                const systolicMax = $('#systolicMax').val();
+                const diastolicMin = $('#diastolicMin').val();
+                const diastolicMax = $('#diastolicMax').val();
+
+                if (systolicMin && systolicMax && parseInt(systolicMin) >= parseInt(systolicMax)) {
+                    showToast('Error', 'Systolic minimum must be less than maximum.', 'error');
+                    return false;
+                }
+
+                if (diastolicMin && diastolicMax && parseInt(diastolicMin) >= parseInt(diastolicMax)) {
+                    showToast('Error', 'Diastolic minimum must be less than maximum.', 'error');
+                    return false;
+                }
+            } else {
+                const minValue = $('#minValue').val();
+                const maxValue = $('#maxValue').val();
+
+                if (minValue && maxValue && parseFloat(minValue) >= parseFloat(maxValue)) {
+                    showToast('Error', 'Minimum value must be less than maximum value.', 'error');
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Function to get thresholds for a metric type
+        function getThresholdsForMetricType(metricType) {
+            // In a real application, this would come from the patient's thresholds
+            // For demo purposes, we'll return some sample thresholds
+            if (metricType === 'BLOOD_PRESSURE') {
+                return {
+                    systolicMin: 90,
+                    systolicMax: 140,
+                    diastolicMin: 60,
+                    diastolicMax: 90
+                };
+            } else if (metricType === 'HEART_RATE') {
+                return {
+                    min: 60,
+                    max: 100
+                };
+            } else if (metricType === 'BLOOD_SUGAR') {
+                return {
+                    min: 70,
+                    max: 140
+                };
+            } else if (metricType === 'TEMPERATURE') {
+                return {
+                    min: 97,
+                    max: 99
+                };
+            } else if (metricType === 'WEIGHT') {
+                // Weight thresholds would be personalized
+                return null;
+            } else if (metricType === 'OXYGEN_SATURATION') {
+                return {
+                    min: 95,
+                    max: 100
+                };
+            }
+
+            return null;
+        }
+
+        // Function to get metric status (normal, warning, danger)
+        function getMetricStatus(metric) {
+            const thresholds = getThresholdsForMetricType(metric.type);
+
+            if (!thresholds) {
+                return 'normal';
+            }
+
+            if (metric.type === 'BLOOD_PRESSURE') {
+                const systolic = metric.systolic;
+                const diastolic = metric.diastolic;
+
+                if (systolic > thresholds.systolicMax || diastolic > thresholds.diastolicMax) {
+                    return 'danger';
+                } else if (systolic < thresholds.systolicMin || diastolic < thresholds.diastolicMin) {
+                    return 'warning';
+                } else {
+                    return 'normal';
+                }
+            } else {
+                const value = metric.value;
+
+                if (value > thresholds.max) {
+                    return 'danger';
+                } else if (value < thresholds.min) {
+                    return 'warning';
+                } else {
+                    return 'normal';
+                }
+            }
+        }
+
+        // Function to format metric value
+        function formatMetricValue(metric) {
+            if (metric.type === 'BLOOD_PRESSURE') {
+                return `${metric.systolic}/${metric.diastolic} mmHg`;
+            } else {
+                return `${metric.value} ${getMetricUnit(metric.type)}`;
+            }
+        }
+
+        // Function to format metric type
+        function formatMetricType(type) {
+            switch (type) {
+                case 'BLOOD_PRESSURE':
+                    return 'Blood Pressure';
+                case 'HEART_RATE':
+                    return 'Heart Rate';
+                case 'BLOOD_SUGAR':
+                    return 'Blood Sugar';
+                case 'TEMPERATURE':
+                    return 'Temperature';
+                case 'WEIGHT':
+                    return 'Weight';
+                case 'OXYGEN_SATURATION':
+                    return 'Oxygen Saturation';
+                default:
+                    return type;
+            }
+        }
+
+        // Function to get metric unit
+        function getMetricUnit(type) {
+            switch (type) {
+                case 'BLOOD_PRESSURE':
+                    return 'mmHg';
+                case 'HEART_RATE':
+                    return 'bpm';
+                case 'BLOOD_SUGAR':
+                    return 'mg/dL';
+                case 'TEMPERATURE':
+                    return '°F';
+                case 'WEIGHT':
+                    return 'lbs';
+                case 'OXYGEN_SATURATION':
+                    return '%';
+                default:
+                    return '';
+            }
+        }
+
+        // Function to get metric type class for styling
+        function getMetricTypeClass(type) {
+            switch (type) {
+                case 'BLOOD_PRESSURE':
+                    return 'blood-pressure';
+                case 'HEART_RATE':
+                    return 'heart-rate';
+                case 'BLOOD_SUGAR':
+                    return 'blood-sugar';
+                case 'TEMPERATURE':
+                    return 'temperature';
+                case 'WEIGHT':
+                    return 'weight';
+                case 'OXYGEN_SATURATION':
+                    return 'oxygen';
+                default:
+                    return '';
+            }
+        }
+
+        // Function to get metric type color for charts
+        function getMetricTypeColor(type, alpha = 1) {
+            switch (type) {
+                case 'BLOOD_PRESSURE':
+                    return `rgba(72, 149, 239, ${alpha})`;
+                case 'HEART_RATE':
+                    return `rgba(239, 71, 111, ${alpha})`;
+                case 'BLOOD_SUGAR':
+                    return `rgba(255, 209, 102, ${alpha})`;
+                case 'TEMPERATURE':
+                    return `rgba(6, 214, 160, ${alpha})`;
+                case 'WEIGHT':
+                    return `rgba(58, 12, 163, ${alpha})`;
+                case 'OXYGEN_SATURATION':
+                    return `rgba(17, 138, 178, ${alpha})`;
+                default:
+                    return `rgba(72, 149, 239, ${alpha})`;
+            }
+        }
+
+        // Function to format date and time
+        function formatDateTime(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return date.toLocaleString();
+        }
+
+        // Function to show toast notification
+        function showToast(title, message, type) {
+            $('#toastTitle').text(title);
+            $('#toastMessage').text(message);
+
+            const toast = $('#notificationToast');
+
+            // Set toast color based on type
+            toast.removeClass('bg-success bg-danger bg-warning bg-info');
+            switch(type) {
+                case 'success':
+                    toast.addClass('bg-success text-white');
+                    break;
+                case 'error':
+                    toast.addClass('bg-danger text-white');
+                    break;
+                case 'warning':
+                    toast.addClass('bg-warning');
+                    break;
+                case 'info':
+                    toast.addClass('bg-info text-white');
+                    break;
+            }
+
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+
+        // Sample data for demo purposes
+        function getSamplePatients() {
+            return [
+                {
+                    id: 1,
+                    firstName: 'John',
+                    lastName: 'Smith',
+                    age: 45,
+                    gender: 'Male',
+                    dob: '1978-05-15',
+                    medicalHistory: 'Hypertension, Diabetes'
+                },
+                {
+                    id: 2,
+                    firstName: 'Emily',
+                    lastName: 'Johnson',
+                    age: 32,
+                    gender: 'Female',
+                    dob: '1991-09-23',
+                    medicalHistory: 'Asthma'
+                },
+                {
+                    id: 3,
+                    firstName: 'Michael',
+                    lastName: 'Chen',
+                    age: 56,
+                    gender: 'Male',
+                    dob: '1967-11-08',
+                    medicalHistory: 'Heart Disease, Arthritis'
+                },
+                {
+                    id: 4,
+                    firstName: 'Sarah',
+                    lastName: 'Williams',
+                    age: 28,
+                    gender: 'Female',
+                    dob: '1995-03-17',
+                    medicalHistory: 'Migraine'
+                }
+            ];
+        }
+
+        function getSampleHealthMetrics(patientId) {
+            const now = new Date();
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            const twoDaysAgo = new Date(now);
+            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+            const threeDaysAgo = new Date(now);
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+            if (patientId == 1) {
+                return [
+                    {
+                        id: 101,
+                        type: 'BLOOD_PRESSURE',
+                        systolic: 145,
+                        diastolic: 92,
+                        timestamp: now.toISOString(),
+                        notes: 'Measured after morning walk',
+                        patientId: 1
+                    },
+                    {
+                        id: 102,
+                        type: 'BLOOD_PRESSURE',
+                        systolic: 138,
+                        diastolic: 88,
+                        timestamp: yesterday.toISOString(),
+                        notes: 'Measured before bed',
+                        patientId: 1
+                    },
+                    {
+                        id: 103,
+                        type: 'HEART_RATE',
+                        value: 78,
+                        timestamp: now.toISOString(),
+                        notes: 'Resting heart rate',
+                        patientId: 1
+                    },
+                    {
+                        id: 104,
+                        type: 'BLOOD_SUGAR',
+                        value: 142,
+                        timestamp: now.toISOString(),
+                        notes: 'After breakfast',
+                        patientId: 1
+                    },
+                    {
+                        id: 105,
+                        type: 'WEIGHT',
+                        value: 185,
+                        timestamp: yesterday.toISOString(),
+                        notes: '',
+                        patientId: 1
+                    }
+                ];
+            } else if (patientId == 2) {
+                return [
+                    {
+                        id: 201,
+                        type: 'BLOOD_PRESSURE',
+                        systolic: 118,
+                        diastolic: 75,
+                        timestamp: now.toISOString(),
+                        notes: '',
+                        patientId: 2
+                    },
+                    {
+                        id: 202,
+                        type: 'HEART_RATE',
+                        value: 68,
+                        timestamp: now.toISOString(),
+                        notes: 'Resting heart rate',
+                        patientId: 2
+                    },
+                    {
+                        id: 203,
+                        type: 'OXYGEN_SATURATION',
+                        value: 97,
+                        timestamp: now.toISOString(),
+                        notes: 'Measured during asthma check-up',
+                        patientId: 2
+                    }
+                ];
+            } else if (patientId == 3) {
+                return [
+                    {
+                        id: 301,
+                        type: 'BLOOD_PRESSURE',
+                        systolic: 152,
+                        diastolic: 94,
+                        timestamp: now.toISOString(),
+                        notes: 'Measured during morning check-up',
+                        patientId: 3
+                    },
+                    {
+                        id: 302,
+                        type: 'HEART_RATE',
+                        value: 82,
+                        timestamp: now.toISOString(),
+                        notes: '',
+                        patientId: 3
+                    },
+                    {
+                        id: 303,
+                        type: 'BLOOD_SUGAR',
+                        value: 130,
+                        timestamp: now.toISOString(),
+                        notes: 'Fasting',
+                        patientId: 3
+                    },
+                    {
+                        id: 304,
+                        type: 'TEMPERATURE',
+                        value: 98.6,
+                        timestamp: now.toISOString(),
+                        notes: '',
+                        patientId: 3
+                    }
+                ];
+            } else if (patientId == 4) {
+                return [
+                    {
+                        id: 401,
+                        type: 'BLOOD_PRESSURE',
+                        systolic: 110,
+                        diastolic: 70,
+                        timestamp: now.toISOString(),
+                        notes: '',
+                        patientId: 4
+                    },
+                    {
+                        id: 402,
+                        type: 'HEART_RATE',
+                        value: 65,
+                        timestamp: now.toISOString(),
+                        notes: 'After yoga session',
+                        patientId: 4
+                    },
+                    {
+                        id: 403,
+                        type: 'TEMPERATURE',
+                        value: 99.1,
+                        timestamp: now.toISOString(),
+                        notes: 'Slight fever during migraine episode',
+                        patientId: 4
+                    }
+                ];
+            }
+
+            return [];
+        }
+
+        function getSampleChartData(metricType) {
+            const dates = [];
+            const today = new Date();
+
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                dates.push(date.toLocaleDateString());
+            }
+
+            if (metricType === 'BLOOD_PRESSURE') {
+                return {
+                    labels: dates,
+                    systolic: [142, 138, 145, 140, 135, 142, 138],
+                    diastolic: [92, 88, 94, 90, 85, 88, 86]
+                };
+            } else if (metricType === 'HEART_RATE') {
+                return {
+                    labels: dates,
+                    values: [78, 76, 80, 75, 82, 79, 77]
+                };
+            } else if (metricType === 'BLOOD_SUGAR') {
+                return {
+                    labels: dates,
+                    values: [135, 142, 128, 138, 145, 132, 140]
+                };
+            } else if (metricType === 'TEMPERATURE') {
+                return {
+                    labels: dates,
+                    values: [98.6, 98.4, 98.7, 98.9, 98.6, 98.5, 98.6]
+                };
+            } else if (metricType === 'WEIGHT') {
+                return {
+                    labels: dates,
+                    values: [185, 184.5, 184, 183.5, 183, 182.5, 182]
+                };
+            } else if (metricType === 'OXYGEN_SATURATION') {
+                return {
+                    labels: dates,
+                    values: [97, 98, 97, 96, 98, 97, 98]
+                };
+            }
+
+            return {
+                labels: dates,
+                values: []
+            };
+        }
+
+        function getSampleThresholds(patientId) {
+            if (patientId == 1) {
+                return [
+                    {
+                        id: 1001,
+                        metricType: 'BLOOD_PRESSURE',
+                        minValue: JSON.stringify({ systolic: 90, diastolic: 60 }),
+                        maxValue: JSON.stringify({ systolic: 140, diastolic: 90 }),
+                        patientId: 1
+                    },
+                    {
+                        id: 1002,
+                        metricType: 'BLOOD_SUGAR',
+                        minValue: 70,
+                        maxValue: 140,
+                        patientId: 1
+                    },
+                    {
+                        id: 1003,
+                        metricType: 'HEART_RATE',
+                        minValue: 60,
+                        maxValue: 100,
+                        patientId: 1
+                    }
+                ];
+            } else if (patientId == 2) {
+                return [
+                    {
+                        id: 2001,
+                        metricType: 'BLOOD_PRESSURE',
+                        minValue: JSON.stringify({ systolic: 90, diastolic: 60 }),
+                        maxValue: JSON.stringify({ systolic: 130, diastolic: 85 }),
+                        patientId: 2
+                    },
+                    {
+                        id: 2002,
+                        metricType: 'OXYGEN_SATURATION',
+                        minValue: 95,
+                        maxValue: 100,
+                        patientId: 2
+                    }
+                ];
+            } else if (patientId == 3) {
+                return [
+                    {
+                        id: 3001,
+                        metricType: 'BLOOD_PRESSURE',
+                        minValue: JSON.stringify({ systolic: 100, diastolic: 65 }),
+                        maxValue: JSON.stringify({ systolic: 150, diastolic: 95 }),
+                        patientId: 3
+                    },
+                    {
+                        id: 3002,
+                        metricType: 'HEART_RATE',
+                        minValue: 60,
+                        maxValue: 90,
+                        patientId: 3
+                    },
+                    {
+                        id: 3003,
+                        metricType: 'BLOOD_SUGAR',
+                        minValue: 80,
+                        maxValue: 130,
+                        patientId: 3
+                    }
+                ];
+            } else if (patientId == 4) {
+                return [
+                    {
+                        id: 4001,
+                        metricType: 'TEMPERATURE',
+                        minValue: 97,
+                        maxValue: 99,
+                        patientId: 4
+                    }
+                ];
+            }
+
+            return [];
+        }
+
+        // Initialize the page
+        $('#bloodPressureFields').hide();
+    });
+</script>
+</body>
+</html>
