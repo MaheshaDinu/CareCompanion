@@ -826,7 +826,7 @@
         // Function to load patients
         function loadPatients() {
             $.ajax({
-                url: `/api/providers/${currentProviderId}/patients`,
+                url: `http://localhost:8080/provider/medication-schedule/getPatients`,
                 type: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
