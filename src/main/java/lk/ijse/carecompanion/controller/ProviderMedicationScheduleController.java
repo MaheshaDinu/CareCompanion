@@ -65,4 +65,13 @@ public class ProviderMedicationScheduleController {
         }
 
     }
+    @GetMapping("getMedicationSchedule/{id}")
+    public ResponseEntity<ResponseUtil> getMedicationSchedule(@PathVariable int id) {
+        try {
+            MedicationScheduleDTO medicationScheduleDTO = medicationScheduleService.getMedicationScheduleById(id);
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200, "success", medicationScheduleDTO));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500, e.getMessage(), null));
+        }
+    }
 }

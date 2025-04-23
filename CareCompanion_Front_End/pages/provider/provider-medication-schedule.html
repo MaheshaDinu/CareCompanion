@@ -1051,7 +1051,7 @@
         // Function to get medication details for editing
         function getMedicationDetails(medicationId) {
             $.ajax({
-                url: `/api/medication-schedules/${medicationId}`,
+                url: `http://localhost:8080/provider/medication-schedule/getMedicationSchedule/${medicationId}`,
                 type: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")

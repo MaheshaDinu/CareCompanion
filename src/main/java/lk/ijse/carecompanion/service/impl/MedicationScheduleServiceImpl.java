@@ -44,4 +44,10 @@ public class MedicationScheduleServiceImpl implements MedicationScheduleService 
         List<MedicationSchedule> medicationSchedules = medicationScheduleRepo.findByPatientId(patientId);
         return medicationSchedules.stream().map(medicationSchedule -> modelMapper.map(medicationSchedule, MedicationScheduleDTO.class)).toList();
     }
+
+    @Override
+    public MedicationScheduleDTO getMedicationScheduleById(int id) {
+        MedicationSchedule medicationSchedule = medicationScheduleRepo.findById(id).orElse(null);
+        return modelMapper.map(medicationSchedule, MedicationScheduleDTO.class);
+    }
 }

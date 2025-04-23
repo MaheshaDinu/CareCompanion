@@ -9,4 +9,6 @@ public interface MedicationScheduleService {
     void update(MedicationScheduleDTO medicationScheduleDTO);
     void delete(int id);
     List<MedicationScheduleDTO> getMedicationSchedulesByPatientId(int patientId);
+
+    MedicationScheduleDTO getMedicationScheduleById(int id);
 }
