@@ -13,10 +13,12 @@ import lk.ijse.carecompanion.service.AppointmentService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,7 +68,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentDTO> getAppointmentsByProviderAndFilters(int id, String start, String end, String status, String date, Boolean future) {
+    public List<AppointmentDTO> getAppointmentsByProviderAndFilters(int id, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    OffsetDateTime start, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    OffsetDateTime end, String status, String date, Boolean future) {
         Specification<Appointment> spec = (root, query, cb) -> {
             List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
 
@@ -75,11 +79,11 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             // Date range filters
             if (start != null) {
-                LocalDateTime startDt = LocalDate.parse(start).atStartOfDay();
+                LocalDateTime startDt = start.toLocalDate().atStartOfDay();
                 predicates.add(cb.greaterThanOrEqualTo(root.get("dateTime"), startDt));
             }
             if (end != null) {
-                LocalDateTime endDt = LocalDate.parse(end).atTime(23, 59, 59);
+                LocalDateTime endDt = end.toLocalDate().atTime(23, 59, 59);
                 predicates.add(cb.lessThanOrEqualTo(root.get("dateTime"), endDt));
             }
 

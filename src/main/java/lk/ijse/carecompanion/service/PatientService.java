@@ -14,4 +14,6 @@ public interface PatientService {
 
     AuthTokenDTO verifyPatient(UserLoginDTO userDTO);
     List<HealthMetricDTO> getHealthMetricsByPatientId(int patientId, HealthMetricType type);
+
+    PatientDTO getPatientById(int id);
 }

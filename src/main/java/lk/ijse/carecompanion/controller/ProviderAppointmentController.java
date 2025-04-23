@@ -1,19 +1,21 @@
 package lk.ijse.carecompanion.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lk.ijse.carecompanion.dto.AppointmentDTO;
-import lk.ijse.carecompanion.dto.ProviderDTO;
-import lk.ijse.carecompanion.dto.ReScheduleReQuestDTO;
+import lk.ijse.carecompanion.dto.*;
 import lk.ijse.carecompanion.enums.AppointmentStatus;
 import lk.ijse.carecompanion.service.AppointmentService;
 import lk.ijse.carecompanion.service.JWTService;
+import lk.ijse.carecompanion.service.PatientService;
 import lk.ijse.carecompanion.service.ProviderService;
 import lk.ijse.carecompanion.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -25,6 +27,8 @@ public class ProviderAppointmentController {
     JWTService jwtService;
     @Autowired
     ProviderService providerService;
+    @Autowired
+    PatientService patientService;
 
 
     @GetMapping("/getProvider")
@@ -44,13 +48,21 @@ public class ProviderAppointmentController {
     @GetMapping("/getAppointments")
     public ResponseEntity<ResponseUtil> getAppointments(
             HttpServletRequest request,
-            @RequestParam(required = false) String start,
-            @RequestParam(required = false) String end,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            OffsetDateTime start,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            OffsetDateTime end,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String date,
             @RequestParam(required = false) Boolean future) {
 
+
+
         String authHeader = request.getHeader("Authorization");
+        System.out.println("🔐 Authorization header: " + authHeader);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ResponseUtil(401, "Unauthorized", null));
@@ -73,8 +85,21 @@ public class ProviderAppointmentController {
                 date,
                 future
         );
+        List<AppointmentResponseDTO> appointmentResponseDTOS = new ArrayList<>();
+        for (AppointmentDTO appointment : appointments) {
+            AppointmentResponseDTO appointmentResponseDTO = new AppointmentResponseDTO();
+            appointmentResponseDTO.setId(appointment.getId());
+            appointmentResponseDTO.setPurpose(appointment.getPurpose());
+            appointmentResponseDTO.setStatus(appointment.getStatus());
+            PatientDTO patient = patientService.getPatientById(appointment.getPatientId());
+            appointmentResponseDTO.setPatientName(patient.getFirstName()+" "+patient.getLastName());
+            appointmentResponseDTO.setProviderId(appointment.getProviderId());
+            appointmentResponseDTO.setDateTime(appointment.getDateTime());
+            appointmentResponseDTO.setPatientId(patient.getId());
+            appointmentResponseDTOS.add(appointmentResponseDTO);
+        }
 
-        return ResponseEntity.ok(new ResponseUtil(200, "Success", appointments));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200, "Success", appointmentResponseDTOS));
     }
 
     @GetMapping("/getPatients")
@@ -233,6 +258,15 @@ public class ProviderAppointmentController {
                     .body(new ResponseUtil(500, e.getMessage(), null));
         }
 
+    }
+    @GetMapping("getPatientName/{id}")
+    public ResponseEntity<ResponseUtil> getPatientName(@PathVariable int id){
+        try {
+            PatientDTO patientDTO = patientService.getPatientById(id);
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200,"",patientDTO));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
     }
 
 }

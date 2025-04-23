@@ -15,4 +15,7 @@ public interface ProviderService {
     List<PatientDTO> getPatientsByProviderId(int providerId);
 
     ProviderDTO getById(int id);
+    public DashboardSummaryDTO getDashboardSummary(int providerId);
+
+    List<AppointmentDTO> getUpcomingAppointments(int id, int limit);
 }

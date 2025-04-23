@@ -1,9 +1,11 @@
 package lk.ijse.carecompanion.config;
 
 import lk.ijse.carecompanion.filter.JwtFilter;
+import lk.ijse.carecompanion.service.MyUserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -31,28 +33,49 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
     @Autowired
-    private UserDetailsService userDetailsService;
+    private MyUserDetailService userDetailsService;
     @Autowired
     private JwtFilter jwtFilter;
 
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-
-        return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-        .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/login/verify","/api/register/provider","/api/register/patient","/api/register/getAllProviders","/test/login","/swagger-ui/**",
-                        "/swagger-ui.html").permitAll()
-                .anyRequest().authenticated())
-        .formLogin(Customizer.withDefaults())
-        .httpBasic(Customizer.withDefaults())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
 
+                // STATeless session
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
 
+                // PLUG YOUR DaoAuthenticationProvider
+                .authenticationProvider(authenticationProvider())
+
+                // URL rules
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(
+                                "/auth/login/verify",
+                                "/api/register/**",
+                                "/test/login",
+                                "/swagger-ui/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+
+                // DISABLE Basic & Form
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+
+                // **HOOK IN YOUR JWT FILTER HERE**
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
+
+
+
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

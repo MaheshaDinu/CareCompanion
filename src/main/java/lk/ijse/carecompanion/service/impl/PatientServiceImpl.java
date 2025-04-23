@@ -114,4 +114,9 @@ public class PatientServiceImpl implements PatientService {
 
     }
 
+    @Override
+    public PatientDTO getPatientById(int id) {
+        return modelMapper.map(patientRepo.findById(id),PatientDTO.class);
+    }
+
 }

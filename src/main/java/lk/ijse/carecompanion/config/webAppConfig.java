@@ -20,4 +20,5 @@ public class webAppConfig {
     public JwtFilter jwtFilter() {
         return new JwtFilter();
     }
+
 }

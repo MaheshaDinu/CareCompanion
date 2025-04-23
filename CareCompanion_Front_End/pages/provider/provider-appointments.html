@@ -715,7 +715,7 @@
                 <a class="nav-link" href="provider-dashboard.html">
                     <i class="bi bi-speedometer2"></i>Dashboard
                 </a>
-                <a class="nav-link active" href="provider-appointments.html">
+                <a class="nav-link active" href="/pages/provider/provider-appointments.html">
                     <i class="bi bi-calendar-check"></i>Appointments
                 </a>
                 <a class="nav-link" href="#">
@@ -1091,6 +1091,7 @@
                 return [`fc-event-${arg.event.extendedProps.status}`];
             },
             events: function(fetchInfo, successCallback, failureCallback) {
+                console.log(localStorage.getItem("jwtToken"))
                 // Fetch appointments for the calendar
                 $.ajax({
                     url: 'http://localhost:8080/provider/appointment/getAppointments',
@@ -1109,11 +1110,11 @@
                             const events = response.data.map(appointment => {
                                 return {
                                     id: appointment.id,
-                                    title: `${appointment.patient.firstName} ${appointment.patient.lastName} - ${appointment.purpose}`,
+                                    title: `${appointment.patientName} - ${appointment.purpose}`,
                                     start: appointment.dateTime,
                                     extendedProps: {
                                         status: appointment.status,
-                                        patientId: appointment.patient.id,
+                                        patientId: appointment.patientId,
                                         purpose: appointment.purpose
                                     }
                                 };
@@ -1125,7 +1126,7 @@
 
                     },
                     error: function(xhr, status, error) {
-                        showError('Failed to load appointments for calendar');
+                        showError('Failed to load appointments for calendar'+xhr.status+' '+error);
                         failureCallback(error);
 
                         // For demo purposes, show some sample events
@@ -1328,9 +1329,9 @@
             const displayHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
 
             // Get patient name
-            const patientName = appointment.patient ?
-                `${appointment.patient.firstName || ''} ${appointment.patient.lastName || ''}`.trim() :
-                'Unknown Patient';
+
+
+            const patientName =  appointment.patientName;
 
             const item = $('<div></div>')
                 .addClass('appointment-item')

@@ -897,7 +897,7 @@
                         <i class="bi bi-plus-circle me-1"></i> New
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-plus me-2"></i>Appointment</a></li>
+                        <li><a class="dropdown-item" href="/pages/provider/provider-appointments.html"><i class="bi bi-calendar-plus me-2"></i>Appointment</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus me-2"></i>Patient</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-plus me-2"></i>Prescription</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-journal-plus me-2"></i>Note</a></li>
@@ -936,7 +936,7 @@
                 <a class="nav-link active" href="#">
                     <i class="bi bi-speedometer2"></i>Dashboard
                 </a>
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="/CareCompanion/CareCompanion_Front_End/pages/provider/provider-appointments.html">
                     <i class="bi bi-calendar-check"></i>Appointments
                 </a>
                 <a class="nav-link" href="#">
@@ -1010,25 +1010,7 @@
                     </div>
                 </div>
 
-                <!-- Recent Alerts Card -->
-                <div class="col-md-6 col-xl-3">
-                    <div class="dashboard-card summary-card">
-                        <div class="summary-card-header">
-                            <div class="summary-card-icon bg-warning-light">
-                                <i class="bi bi-exclamation-triangle text-warning"></i>
-                            </div>
-                            <h5 class="summary-card-title">Recent Alerts</h5>
-                        </div>
-                        <div class="summary-card-value">8</div>
-                        <p class="summary-card-subtitle">3 critical alerts</p>
-                        <div class="summary-card-footer">
-                            <div class="summary-card-change negative">
-                                <i class="bi bi-arrow-up-short"></i> 3% from yesterday
-                            </div>
-                            <a href="#" class="summary-card-link">View All</a>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Patient Count Card -->
                 <div class="col-md-6 col-xl-3">
@@ -1155,55 +1137,7 @@
                     </div>
                 </div>
 
-                <!-- Recent Alerts Section -->
-                <div class="col-lg-6">
-                    <div class="dashboard-card p-0 overflow-hidden">
-                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                            <h5 class="mb-0">Recent Alerts</h5>
-                            <a href="#" class="text-decoration-none">View All</a>
-                        </div>
-                        <div class="alert-item unread">
-                            <div class="alert-icon danger">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </div>
-                            <div class="alert-content">
-                                <div class="alert-title">High Blood Pressure Alert</div>
-                                <p class="alert-message">Michael Chen's blood pressure reading is 160/95 mmHg, which is significantly above normal range.</p>
-                                <div class="alert-time">30 minutes ago</div>
-                            </div>
-                        </div>
-                        <div class="alert-item unread">
-                            <div class="alert-icon warning">
-                                <i class="bi bi-exclamation-circle"></i>
-                            </div>
-                            <div class="alert-content">
-                                <div class="alert-title">Elevated Blood Glucose</div>
-                                <p class="alert-message">Emily Johnson's blood glucose level is 180 mg/dL, which is above the target range.</p>
-                                <div class="alert-time">1 hour ago</div>
-                            </div>
-                        </div>
-                        <div class="alert-item">
-                            <div class="alert-icon warning">
-                                <i class="bi bi-exclamation-circle"></i>
-                            </div>
-                            <div class="alert-content">
-                                <div class="alert-title">Missed Medication</div>
-                                <p class="alert-message">Robert Garcia has missed his hypertension medication for 2 consecutive days.</p>
-                                <div class="alert-time">3 hours ago</div>
-                            </div>
-                        </div>
-                        <div class="alert-item">
-                            <div class="alert-icon danger">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </div>
-                            <div class="alert-content">
-                                <div class="alert-title">Abnormal Heart Rate</div>
-                                <p class="alert-message">Sarah Williams reported an irregular heart rate of 120 BPM at rest.</p>
-                                <div class="alert-time">Yesterday</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Critical Cases Section -->
                 <div class="col-lg-6">
@@ -1477,199 +1411,768 @@
 
 <!-- Custom JavaScript -->
 <script>
+    // Replace the existing script section at the bottom of the file with this enhanced version
+    // Find the line that starts with <script>$(document).ready(function() {
+
     $(document).ready(function() {
-        // Health Metrics Chart
-        const healthMetricsCtx = document.getElementById('healthMetricsChart').getContext('2d');
-        const healthMetricsChart = new Chart(healthMetricsCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [
-                    {
-                        label: 'Systolic',
-                        data: [125, 128, 130, 135, 132, 128, 125, 127, 130, 132, 135, 130],
+        // Current provider ID (would normally come from session/auth)
+        let currentProviderId = 0;
+
+        // Load provider information
+        loadProviderInfo();
+
+        // Load dashboard summary data
+        loadDashboardSummary();
+
+        // Load upcoming appointments
+        loadUpcomingAppointments();
+
+        // Load recent alerts
+        loadRecentAlerts();
+
+        // Load critical cases
+        loadCriticalCases();
+
+        // Initialize charts
+        initializeCharts();
+
+        // Function to load provider information
+        function loadProviderInfo() {
+            $.ajax({
+                url: `http://localhost:8080/provider/dashboard/getProvider`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    // Update provider name in navbar and welcome message
+                    const providerName = `Dr. ${response.data.firstName} ${response.data.lastName}`;
+                    currentProviderId = response.data.id;
+                    $('.navbar .dropdown-toggle span').text(providerName);
+                    $('.page-subtitle').text(`Welcome back, ${providerName}`);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading provider info:', error);
+                    // Keep default data for demo purposes
+                }
+            });
+        }
+
+        // Function to load dashboard summary data
+        function loadDashboardSummary() {
+            $.ajax({
+                url: `http://localhost:8080/provider/dashboard/summary`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(summary) {
+                    // Update appointment count
+                    $('.summary-card:eq(0) .summary-card-value').text(summary.data.upcomingAppointmentsCount || 0);
+                    $('.summary-card:eq(0) .summary-card-subtitle').text(`${summary.todayAppointmentsCount || 0} appointments today`);
+
+
+
+
+                    // Update patient count
+                    $('.summary-card:eq(1) .summary-card-value').text(summary.data.patientCount || 0);
+                    $('.summary-card:eq(1) .summary-card-subtitle').text(`${summary.data.newPatientsCount || 0} new this month`);
+
+                    // Update critical cases count
+                    $('.summary-card:eq(2) .summary-card-value').text(summary.data.criticalCasesCount || 0);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading dashboard summary:', error);
+                    // Keep default data for demo purposes
+                }
+            });
+        }
+
+        // Function to load upcoming appointments
+        function loadUpcomingAppointments() {
+            $.ajax({
+                url: `/api/appointments`,
+                type: 'GET',
+                data: {
+                    providerId: currentProviderId,
+                    future: true,
+                    limit: 4,
+                    sort: 'dateTime,asc'
+                },
+                success: function(appointments) {
+                    const container = $('.dashboard-card:eq(4) .appointment-item').parent();
+                    container.empty();
+
+                    if (!appointments || appointments.length === 0) {
+                        container.html('<div class="text-center py-3">No upcoming appointments</div>');
+                        return;
+                    }
+
+                    appointments.forEach(function(appointment) {
+                        // Parse the dateTime string to a Date object
+                        const dateTime = new Date(appointment.dateTime);
+
+                        // Format time
+                        const hours = dateTime.getHours();
+                        const minutes = dateTime.getMinutes().toString().padStart(2, '0');
+                        const period = hours >= 12 ? 'PM' : 'AM';
+                        const displayHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+
+                        // Get patient name
+                        const patientName = appointment.patient ?
+                            `${appointment.patient.firstName || ''} ${appointment.patient.lastName || ''}`.trim() :
+                            'Unknown Patient';
+
+                        const appointmentItem = `
+                        <div class="appointment-item" data-id="${appointment.id}">
+                            <div class="appointment-time">
+                                <div class="hour">${displayHours}:${minutes}</div>
+                                <div class="period">${period}</div>
+                            </div>
+                            <div class="appointment-details">
+                                <div class="appointment-patient">${patientName}</div>
+                                <p class="appointment-purpose">${appointment.purpose || 'No purpose specified'}</p>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="btn btn-sm btn-outline-primary view-appointment" data-id="${appointment.id}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary edit-appointment" data-id="${appointment.id}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                        container.append(appointmentItem);
+                    });
+
+                    // Add click handlers for appointment actions
+                    $('.view-appointment').on('click', function(e) {
+                        e.stopPropagation();
+                        const appointmentId = $(this).data('id');
+                        window.location.href = `provider-appointments.html?id=${appointmentId}`;
+                    });
+
+                    $('.edit-appointment').on('click', function(e) {
+                        e.stopPropagation();
+                        const appointmentId = $(this).data('id');
+                        window.location.href = `provider-appointments.html?id=${appointmentId}&edit=true`;
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading upcoming appointments:', error);
+                    // Keep default data for demo purposes
+                }
+            });
+        }
+
+        // Function to load recent alerts
+        function loadRecentAlerts() {
+            $.ajax({
+                url: `/api/providers/${currentProviderId}/alerts`,
+                type: 'GET',
+                data: {
+                    limit: 4
+                },
+                success: function(alerts) {
+                    const container = $('.dashboard-card:eq(5) .alert-item').parent();
+                    container.empty();
+
+                    if (!alerts || alerts.length === 0) {
+                        container.html('<div class="text-center py-3">No recent alerts</div>');
+                        return;
+                    }
+
+                    alerts.forEach(function(alert) {
+                        // Determine alert type and icon
+                        let alertTypeClass = 'info';
+                        let alertIcon = 'bi-info-circle';
+
+                        if (alert.type === 'CRITICAL') {
+                            alertTypeClass = 'danger';
+                            alertIcon = 'bi-exclamation-triangle';
+                        } else if (alert.type === 'WARNING') {
+                            alertTypeClass = 'warning';
+                            alertIcon = 'bi-exclamation-circle';
+                        }
+
+                        // Format time
+                        const alertTime = new Date(alert.timestamp);
+                        const timeAgo = getTimeAgo(alertTime);
+
+                        const alertItem = `
+                        <div class="alert-item ${alert.read ? '' : 'unread'}" data-id="${alert.id}">
+                            <div class="alert-icon ${alertTypeClass}">
+                                <i class="bi ${alertIcon}"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">${alert.title}</div>
+                                <p class="alert-message">${alert.message}</p>
+                                <div class="alert-time">${timeAgo}</div>
+                            </div>
+                        </div>
+                    `;
+
+                        container.append(alertItem);
+                    });
+
+                    // Add click handler to mark alerts as read
+                    $('.alert-item').on('click', function() {
+                        const alertId = $(this).data('id');
+                        $(this).removeClass('unread');
+
+                        $.ajax({
+                            url: `/api/alerts/${alertId}/read`,
+                            type: 'POST',
+                            error: function(xhr, status, error) {
+                                console.error('Error marking alert as read:', error);
+                            }
+                        });
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading recent alerts:', error);
+                    // Keep default data for demo purposes
+                }
+            });
+        }
+
+        // Function to load critical cases
+        function loadCriticalCases() {
+            $.ajax({
+                url: `/api/providers/${currentProviderId}/critical-cases`,
+                type: 'GET',
+                data: {
+                    limit: 4
+                },
+                success: function(cases) {
+                    const container = $('.dashboard-card:eq(6) .critical-case-item').parent();
+                    container.empty();
+
+                    if (!cases || cases.length === 0) {
+                        container.html('<div class="text-center py-3">No critical cases</div>');
+                        return;
+                    }
+
+                    cases.forEach(function(criticalCase) {
+                        // Get patient info
+                        const patient = criticalCase.patient;
+                        const patientName = patient ?
+                            `${patient.firstName || ''} ${patient.lastName || ''}`.trim() :
+                            'Unknown Patient';
+
+                        // Get patient details
+                        const patientDetails = patient ?
+                            `${patient.age || '?'} yrs • ${patient.gender || '?'}` : '';
+
+                        // Get medical conditions
+                        const medicalConditions = patient && patient.medicalHistory ?
+                            patient.medicalHistory.split(',').slice(0, 2).join(', ') :
+                            'No conditions';
+
+                        // Get critical metric
+                        const metricName = criticalCase.metricType || '';
+                        const metricValue = criticalCase.metricValue || '';
+                        const metricUnit = getMetricUnit(criticalCase.metricType);
+
+                        const caseItem = `
+                        <div class="critical-case-item" data-id="${patient?.id}">
+                            <div class="critical-case-avatar">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div class="critical-case-info">
+                                <div class="critical-case-name">${patientName}</div>
+                                <p class="critical-case-details">${patientDetails} • ${medicalConditions}</p>
+                                <p class="critical-case-metric">${metricName}: ${metricValue} ${metricUnit} (Critical)</p>
+                            </div>
+                            <div class="critical-case-actions">
+                                <button class="btn btn-sm btn-danger call-patient" data-phone="${patient?.phoneNumber}">
+                                    <i class="bi bi-telephone"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary view-patient" data-id="${patient?.id}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                        container.append(caseItem);
+                    });
+
+                    // Add click handlers for patient actions
+                    $('.call-patient').on('click', function(e) {
+                        e.stopPropagation();
+                        const phoneNumber = $(this).data('phone');
+                        if (phoneNumber) {
+                            window.location.href = `tel:${phoneNumber}`;
+                        }
+                    });
+
+                    $('.view-patient').on('click', function(e) {
+                        e.stopPropagation();
+                        const patientId = $(this).data('id');
+                        window.location.href = `patient-details.html?id=${patientId}`;
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading critical cases:', error);
+                    // Keep default data for demo purposes
+                }
+            });
+        }
+
+        // Function to initialize charts with real data
+        function initializeCharts() {
+            // Health Metrics Chart
+            loadHealthMetricsData();
+
+            // Risk Distribution Chart
+            loadRiskDistributionData();
+
+            // Medication Adherence Chart
+            loadMedicationAdherenceData();
+
+            // Demographics Chart
+            loadDemographicsData();
+        }
+
+        // Function to load health metrics data
+        function loadHealthMetricsData() {
+            $.ajax({
+                url: `/api/providers/${currentProviderId}/health-metrics`,
+                type: 'GET',
+                data: {
+                    metricType: 'BLOOD_PRESSURE',
+                    period: 'YEAR'
+                },
+                success: function(data) {
+                    // Update the chart with real data
+                    if (data && data.labels && data.systolic && data.diastolic) {
+                        updateHealthMetricsChart(data.labels, data.systolic, data.diastolic);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading health metrics data:', error);
+                    // Keep default chart for demo purposes
+                }
+            });
+        }
+
+        // Function to update health metrics chart
+        function updateHealthMetricsChart(labels, systolicData, diastolicData) {
+            const healthMetricsCtx = document.getElementById('healthMetricsChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (window.healthMetricsChart) {
+                window.healthMetricsChart.destroy();
+            }
+
+            window.healthMetricsChart = new Chart(healthMetricsCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Systolic',
+                            data: systolicData,
+                            borderColor: 'rgba(72, 149, 239, 1)',
+                            backgroundColor: 'rgba(72, 149, 239, 0.5)',
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Diastolic',
+                            data: diastolicData,
+                            borderColor: 'rgba(58, 12, 163, 1)',
+                            backgroundColor: 'rgba(58, 12, 163, 0.5)',
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'High Threshold',
+                            data: Array(labels.length).fill(140),
+                            borderColor: 'rgba(239, 71, 111, 1)',
+                            backgroundColor: 'rgba(239, 71, 111, 0.5)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Normal Range',
+                            data: Array(labels.length).fill(120),
+                            borderColor: 'rgba(6, 214, 160, 1)',
+                            backgroundColor: 'rgba(6, 214, 160, 0.5)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 160,
+                            title: {
+                                display: true,
+                                text: 'Blood Pressure (mmHg)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to load risk distribution data
+        function loadRiskDistributionData() {
+            $.ajax({
+                url: `/api/providers/${currentProviderId}/risk-distribution`,
+                type: 'GET',
+                data: {
+                    period: 'MONTH'
+                },
+                success: function(data) {
+                    // Update the chart with real data
+                    if (data && data.lowRisk !== undefined && data.mediumRisk !== undefined && data.highRisk !== undefined) {
+                        updateRiskDistributionChart(data.lowRisk, data.mediumRisk, data.highRisk);
+
+                        // Update the risk category values
+                        $('.risk-category.low .risk-category-value').text(data.lowRisk);
+                        $('.risk-category.medium .risk-category-value').text(data.mediumRisk);
+                        $('.risk-category.high .risk-category-value').text(data.highRisk);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading risk distribution data:', error);
+                    // Keep default chart for demo purposes
+                }
+            });
+        }
+
+        // Function to update risk distribution chart
+        function updateRiskDistributionChart(lowRisk, mediumRisk, highRisk) {
+            const riskDistributionCtx = document.getElementById('riskDistributionChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (window.riskDistributionChart) {
+                window.riskDistributionChart.destroy();
+            }
+
+            window.riskDistributionChart = new Chart(riskDistributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+                    datasets: [{
+                        data: [lowRisk, mediumRisk, highRisk],
+                        backgroundColor: [
+                            'rgba(6, 214, 160, 0.7)',
+                            'rgba(255, 209, 102, 0.7)',
+                            'rgba(239, 71, 111, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(6, 214, 160, 1)',
+                            'rgba(255, 209, 102, 1)',
+                            'rgba(239, 71, 111, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // Function to load medication adherence data
+        function loadMedicationAdherenceData() {
+            $.ajax({
+                url: `/api/providers/${currentProviderId}/medication-adherence`,
+                type: 'GET',
+                data: {
+                    period: 'MONTH'
+                },
+                success: function(data) {
+                    // Update the chart with real data
+                    if (data && data.categories && data.adherenceRates) {
+                        updateMedicationAdherenceChart(data.categories, data.adherenceRates);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading medication adherence data:', error);
+                    // Keep default chart for demo purposes
+                }
+            });
+        }
+
+        // Function to update medication adherence chart
+        function updateMedicationAdherenceChart(categories, adherenceRates) {
+            const medicationAdherenceCtx = document.getElementById('medicationAdherenceChart').getContext('2d');
+
+            // Generate colors based on the number of categories
+            const backgroundColors = categories.map((_, index) => {
+                const colors = [
+                    'rgba(72, 149, 239, 0.7)',
+                    'rgba(255, 209, 102, 0.7)',
+                    'rgba(6, 214, 160, 0.7)',
+                    'rgba(239, 71, 111, 0.7)',
+                    'rgba(58, 12, 163, 0.7)'
+                ];
+                return colors[index % colors.length];
+            });
+
+            const borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
+
+            // Destroy existing chart if it exists
+            if (window.medicationAdherenceChart) {
+                window.medicationAdherenceChart.destroy();
+            }
+
+            window.medicationAdherenceChart = new Chart(medicationAdherenceCtx, {
+                type: 'bar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: 'Adherence Rate',
+                        data: adherenceRates,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Adherence Rate (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to load demographics data
+        function loadDemographicsData() {
+            $.ajax({
+                url: `/api/providers/${currentProviderId}/patient-demographics`,
+                type: 'GET',
+                data: {
+                    groupBy: 'AGE'
+                },
+                success: function(data) {
+                    // Update the chart with real data
+                    if (data && data.categories && data.counts) {
+                        updateDemographicsChart(data.categories, data.counts, data.title || 'Patient Age Distribution');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading demographics data:', error);
+                    // Keep default chart for demo purposes
+                }
+            });
+        }
+
+        // Function to update demographics chart
+        function updateDemographicsChart(categories, counts, title) {
+            const demographicsCtx = document.getElementById('demographicsChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (window.demographicsChart) {
+                window.demographicsChart.destroy();
+            }
+
+            window.demographicsChart = new Chart(demographicsCtx, {
+                type: 'bar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: 'Number of Patients',
+                        data: counts,
+                        backgroundColor: 'rgba(72, 149, 239, 0.7)',
                         borderColor: 'rgba(72, 149, 239, 1)',
-                        backgroundColor: 'rgba(72, 149, 239, 0.5)',
-                        tension: 0.4,
-                        fill: false
-                    },
-                    {
-                        label: 'Diastolic',
-                        data: [82, 84, 85, 88, 86, 84, 82, 83, 85, 86, 88, 85],
-                        borderColor: 'rgba(58, 12, 163, 1)',
-                        backgroundColor: 'rgba(58, 12, 163, 0.5)',
-                        tension: 0.4,
-                        fill: false
-                    },
-                    {
-                        label: 'High Threshold',
-                        data: [140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140],
-                        borderColor: 'rgba(239, 71, 111, 1)',
-                        backgroundColor: 'rgba(239, 71, 111, 0.5)',
-                        borderDash: [5, 5],
-                        fill: false,
-                        pointRadius: 0
-                    },
-                    {
-                        label: 'Normal Range',
-                        data: [120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120],
-                        borderColor: 'rgba(6, 214, 160, 1)',
-                        backgroundColor: 'rgba(6, 214, 160, 0.5)',
-                        borderDash: [5, 5],
-                        fill: false,
-                        pointRadius: 0
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false
-                    }
+                        borderWidth: 1
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: 60,
-                        max: 160,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
                         title: {
                             display: true,
-                            text: 'Blood Pressure (mmHg)'
+                            text: title
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Patients'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Age Groups'
+                            }
                         }
                     }
                 }
+            });
+        }
+
+        // Handle dropdown changes for charts
+        $('.dashboard-card .dropdown-item').on('click', function(e) {
+            e.preventDefault();
+            const chartType = $(this).closest('.dashboard-card').find('h5').text().trim();
+            const selectedOption = $(this).text().trim();
+
+            // Update dropdown button text
+            $(this).closest('.dropdown').find('.dropdown-toggle').text(selectedOption);
+
+            // Handle different chart type changes
+            if (chartType.includes('Health Metrics')) {
+                const metricType = getMetricTypeFromText(selectedOption);
+                loadHealthMetricsData(metricType);
+            } else if (chartType.includes('Risk Assessment')) {
+                const period = getPeriodFromText(selectedOption);
+                loadRiskDistributionData(period);
+            } else if (chartType.includes('Medication Adherence')) {
+                const period = getPeriodFromText(selectedOption);
+                loadMedicationAdherenceData(period);
+            } else if (chartType.includes('Patient Demographics')) {
+                const groupBy = getGroupByFromText(selectedOption);
+                loadDemographicsData(groupBy);
             }
         });
 
-        // Risk Distribution Chart
-        const riskDistributionCtx = document.getElementById('riskDistributionChart').getContext('2d');
-        const riskDistributionChart = new Chart(riskDistributionCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Low Risk', 'Medium Risk', 'High Risk'],
-                datasets: [{
-                    data: [98, 53, 5],
-                    backgroundColor: [
-                        'rgba(6, 214, 160, 0.7)',
-                        'rgba(255, 209, 102, 0.7)',
-                        'rgba(239, 71, 111, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(6, 214, 160, 1)',
-                        'rgba(255, 209, 102, 1)',
-                        'rgba(239, 71, 111, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                cutout: '70%'
-            }
-        });
+        // Helper function to get time ago string
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
 
-        // Medication Adherence Chart
-        const medicationAdherenceCtx = document.getElementById('medicationAdherenceChart').getContext('2d');
-        const medicationAdherenceChart = new Chart(medicationAdherenceCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Hypertension', 'Diabetes', 'Cholesterol', 'Pain', 'Antibiotics'],
-                datasets: [{
-                    label: 'Adherence Rate',
-                    data: [85, 78, 92, 65, 95],
-                    backgroundColor: [
-                        'rgba(72, 149, 239, 0.7)',
-                        'rgba(255, 209, 102, 0.7)',
-                        'rgba(6, 214, 160, 0.7)',
-                        'rgba(239, 71, 111, 0.7)',
-                        'rgba(58, 12, 163, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(72, 149, 239, 1)',
-                        'rgba(255, 209, 102, 1)',
-                        'rgba(6, 214, 160, 1)',
-                        'rgba(239, 71, 111, 1)',
-                        'rgba(58, 12, 163, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        title: {
-                            display: true,
-                            text: 'Adherence Rate (%)'
-                        }
-                    }
-                }
-            }
-        });
+            let interval = Math.floor(seconds / 31536000);
+            if (interval > 1) return interval + ' years ago';
+            if (interval === 1) return interval + ' year ago';
 
-        // Demographics Chart
-        const demographicsCtx = document.getElementById('demographicsChart').getContext('2d');
-        const demographicsChart = new Chart(demographicsCtx, {
-            type: 'bar',
-            data: {
-                labels: ['18-30', '31-45', '46-60', '61-75', '76+'],
-                datasets: [{
-                    label: 'Number of Patients',
-                    data: [24, 38, 52, 35, 7],
-                    backgroundColor: 'rgba(72, 149, 239, 0.7)',
-                    borderColor: 'rgba(72, 149, 239, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Patient Age Distribution'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Patients'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Age Groups'
-                        }
-                    }
-                }
+            interval = Math.floor(seconds / 2592000);
+            if (interval > 1) return interval + ' months ago';
+            if (interval === 1) return interval + ' month ago';
+
+            interval = Math.floor(seconds / 86400);
+            if (interval > 1) return interval + ' days ago';
+            if (interval === 1) return interval + ' day ago';
+
+            interval = Math.floor(seconds / 3600);
+            if (interval > 1) return interval + ' hours ago';
+            if (interval === 1) return interval + ' hour ago';
+
+            interval = Math.floor(seconds / 60);
+            if (interval > 1) return interval + ' minutes ago';
+            if (interval === 1) return interval + ' minute ago';
+
+            if (seconds < 10) return 'just now';
+
+            return Math.floor(seconds) + ' seconds ago';
+        }
+
+        // Helper function to get metric unit
+        function getMetricUnit(metricType) {
+            switch (metricType) {
+                case 'BLOOD_PRESSURE':
+                    return 'mmHg';
+                case 'BLOOD_GLUCOSE':
+                    return 'mg/dL';
+                case 'HEART_RATE':
+                    return 'BPM';
+                case 'TEMPERATURE':
+                    return '°F';
+                case 'WEIGHT':
+                    return 'kg';
+                case 'OXYGEN_SATURATION':
+                    return '%';
+                default:
+                    return '';
             }
-        });
+        }
+
+        // Helper function to get metric type from text
+        function getMetricTypeFromText(text) {
+            switch (text) {
+                case 'Blood Pressure':
+                    return 'BLOOD_PRESSURE';
+                case 'Blood Glucose':
+                    return 'BLOOD_GLUCOSE';
+                case 'Heart Rate':
+                    return 'HEART_RATE';
+                case 'Weight':
+                    return 'WEIGHT';
+                default:
+                    return 'BLOOD_PRESSURE';
+            }
+        }
+
+        // Helper function to get period from text
+        function getPeriodFromText(text) {
+            switch (text) {
+                case 'This Week':
+                    return 'WEEK';
+                case 'This Month':
+                    return 'MONTH';
+                case 'This Quarter':
+                    return 'QUARTER';
+                case 'This Year':
+                    return 'YEAR';
+                default:
+                    return 'MONTH';
+            }
+        }
+
+        // Helper function to get groupBy from text
+        function getGroupByFromText(text) {
+            switch (text) {
+                case 'Age Distribution':
+                    return 'AGE';
+                case 'Gender Distribution':
+                    return 'GENDER';
+                case 'Condition Distribution':
+                    return 'CONDITION';
+                default:
+                    return 'AGE';
+            }
+        }
     });
 </script>
 </body>
