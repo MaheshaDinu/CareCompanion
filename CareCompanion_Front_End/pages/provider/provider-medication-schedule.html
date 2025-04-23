@@ -765,8 +765,12 @@
         });
 
         // Save new medication
+        console.log('…binding save btn…');
         $('#saveMedicationBtn').on('click', function() {
-            if (!validateMedicationForm('add')) return;
+            console.log('Save button clicked!');
+            if (!validateMedicationForm('add')) {
+                console.log("returned");
+                return;}
 
             const medicationData = {
                 patientId: $('#patientSelect').val(),
@@ -1089,6 +1093,7 @@
 
         // Function to save new medication
         function saveMedication(medicationData) {
+            console.log("saving method")
             $.ajax({
                 url: 'http://localhost:8080/provider/medication-schedule/addMedicationSchedule',
                 type: 'POST',
@@ -1201,12 +1206,12 @@
 
             // Check required fields
             const requiredFields = [
-                `${prefix}MedicationName`,
-                `${prefix}Dosage`,
-                `${prefix}Frequency`,
-                `${prefix}StartDate`,
-                `${prefix}EndDate`,
-                `${prefix}ReminderTime`
+                `${prefix}medicationName`,
+                `${prefix}dosage`,
+                `${prefix}frequency`,
+                `${prefix}startDate`,
+                `${prefix}endDate`,
+                `${prefix}reminderTime`
             ];
 
             if (formType === 'add') {
