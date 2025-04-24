@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCompanion - Provider Patient Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Flatpickr for Date Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        :root {
+            --primary: #4895ef;
+            --primary-light: rgba(72, 149, 239, 0.1);
+            --primary-dark: #3a75c4;
+            --secondary: #3a0ca3;
+            --success: #06d6a0;
+            --success-light: rgba(6, 214, 160, 0.1);
+            --light-bg: #f8f9fa;
+            --text-dark: #2d3436;
+            --danger: #ef476f;
+            --danger-light: rgba(239, 71, 111, 0.1);
+            --warning: #ffd166;
+            --warning-light: rgba(255, 209, 102, 0.1);
+            --gray: #adb5bd;
+            --gray-light: #e9ecef;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 8px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: var(--primary-light);
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 8px rgba(72, 149, 239, 0.2);
+        }
+
+        .nav-pills .nav-link i {
+            margin-right: 0.75rem;
+        }
+
+        .navbar {
+            padding: 0.75rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+        }
+
+        .sidebar {
+            height: calc(100vh - 70px);
+            position: sticky;
+            top: 70px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            transition: width 0.3s ease;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem var(--primary-light);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+            border-radius: 12px;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+
+        /* Patient Management Specific Styles */
+        .patient-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .patient-card:hover {
+            border-left-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .patient-card.active {
+            border-left-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .patient-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .patient-avatar i {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .patient-info {
+            flex-grow: 1;
+        }
+
+        .patient-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .patient-details {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .patient-metrics {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .patient-metric {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .patient-metric i {
+            margin-right: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .patient-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-container .form-control {
+            padding-left: 2.5rem;
+            border-radius: 50px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .filter-btn:not(.active) {
+            background-color: var(--gray-light);
+            color: var(--text-dark);
+        }
+
+        .filter-btn:hover:not(.active) {
+            background-color: var(--gray);
+            color: white;
+        }
+
+        .patient-list {
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        .patient-detail-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .patient-detail-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .patient-detail-avatar i {
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        .patient-detail-info h2 {
+            margin-bottom: 0.25rem;
+        }
+
+        .patient-detail-info p {
+            color: var(--gray);
+            margin-bottom: 0;
+        }
+
+        .patient-detail-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .patient-detail-nav {
+            margin-bottom: 1.5rem;
+        }
+
+        .patient-detail-nav .nav-link {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-right: 0.5rem;
+        }
+
+        .patient-detail-section {
+            margin-bottom: 2rem;
+        }
+
+        .patient-detail-section-title {
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .symptom-card {
+            border-radius: 8px;
+            border: 1px solid var(--gray-light);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .symptom-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .symptom-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .symptom-title {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .symptom-severity {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .symptom-severity.LOW {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .symptom-severity.MEDIUM {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .symptom-severity.HIGH {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .symptom-date {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .symptom-notes {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        .symptom-empty {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+        }
+
+        .symptom-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .patient-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .patient-stat-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .patient-stat-title {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .patient-stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .patient-stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .patient-stat-icon i {
+            font-size: 1.25rem;
+        }
+
+        .patient-stat-icon.symptoms {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .patient-stat-icon.appointments {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .patient-stat-icon.medications {
+            background-color: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .patient-stat-icon.metrics {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .symptom-filter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .symptom-filter-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .symptom-sort {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .symptom-sort label {
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        .symptom-sort select {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--gray-light);
+            font-size: 0.85rem;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .patient-detail-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .patient-detail-avatar {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+
+            .patient-detail-actions {
+                margin-left: 0;
+                margin-top: 1rem;
+                justify-content: center;
+            }
+        }
+
+        /* Large screens (1200px - 1919px) */
+        @media (min-width: 1200px) and (max-width: 1919px) {
+            .container-fluid {
+                max-width: 1800px;
+                margin: 0 auto;
+            }
+
+            .dashboard-card {
+                padding: 1.5rem !important;
+            }
+
+            h4 {
+                font-size: 1.6rem;
+            }
+
+            h5 {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Extra large screens (1920px - 2559px) */
+        @media (min-width: 1920px) and (max-width: 2559px) {
+            .container-fluid {
+                max-width: 1900px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.1rem;
+            }
+
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.6rem;
+            }
+
+            .sidebar {
+                padding: 2rem;
+                width: 300px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 0.8rem 1.2rem;
+                font-size: 1.2rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.3rem;
+            }
+
+            .main-content {
+                padding: 2rem;
+            }
+
+            .dashboard-card {
+                padding: 1.8rem !important;
+                border-radius: 16px;
+            }
+
+            h4 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            h5 {
+                font-size: 1.5rem;
+                margin-bottom: 1.2rem !important;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Ultra large screens (2560px and above) */
+        @media (min-width: 2560px) {
+            .container-fluid {
+                max-width: 2400px;
+                margin: 0 auto;
+            }
+
+            body {
+                font-size: 1.25rem;
+            }
+
+            .navbar {
+                padding: 1.25rem 2.5rem;
+            }
+
+            .navbar-brand {
+                font-size: 2rem;
+            }
+
+            .navbar-brand i {
+                font-size: 1.8rem;
+            }
+
+            .sidebar {
+                padding: 2.5rem;
+                width: 350px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 1rem 1.5rem;
+                font-size: 1.4rem;
+                margin-bottom: 1rem;
+            }
+
+            .nav-pills .nav-link i {
+                font-size: 1.5rem;
+                margin-right: 1rem;
+            }
+
+            .main-content {
+                padding: 2.5rem;
+            }
+
+            .dashboard-card {
+                padding: 2rem !important;
+                border-radius: 20px;
+                box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            }
+
+            h4 {
+                font-size: 2.2rem;
+                margin-bottom: 2rem !important;
+            }
+
+            h5 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem !important;
+            }
+
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 1.2rem;
+            }
+
+            .fw-semibold {
+                font-size: 1.3rem;
+            }
+
+            .text-muted {
+                font-size: 1.1rem;
+            }
+
+            .dropdown-menu {
+                font-size: 1.2rem;
+            }
+
+            .dropdown-item {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .page-subtitle {
+                font-size: 1.4rem;
+            }
+
+            .patient-avatar {
+                width: 80px;
+                height: 80px;
+            }
+
+            .patient-avatar i {
+                font-size: 2.5rem;
+            }
+
+            .patient-detail-avatar {
+                width: 100px;
+                height: 100px;
+            }
+
+            .patient-detail-avatar i {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <i class="bi bi-heart-pulse me-2"></i>CareCompanion
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-plus-circle me-1"></i> New
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-plus me-2"></i>Appointment</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus me-2"></i>Patient</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-plus me-2"></i>Prescription</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-journal-plus me-2"></i>Note</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item position-relative me-3">
+                    <a class="nav-link" href="#">
+                        <i class="bi bi-bell fs-5"></i>
+                        <span class="notification-badge">5</span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="rounded-circle bg-primary-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                            <i class="bi bi-person-fill text-primary"></i>
+                        </div>
+                        <span id="provider_name">Dr. Sarah Johnson</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="../../index.html" onclick="localStorage.removeItem('jwtToken')"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 bg-white sidebar">
+            <nav class="nav nav-pills flex-column">
+                <a class="nav-link" href="provider-dashboard.html">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+                <a class="nav-link" href="provider-appointments.html">
+                    <i class="bi bi-calendar-check"></i>Appointments
+                </a>
+                <a class="nav-link active" href="provider-patients.html">
+                    <i class="bi bi-people"></i>Patients
+                </a>
+                <a class="nav-link" href="provider-medication-schedule.html">
+                    <i class="bi bi-capsule"></i>Medications
+                </a>
+                <a class="nav-link" href="provider-health-data.html">
+                    <i class="bi bi-heart-pulse"></i>Health Data
+                </a>
+
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-10 main-content">
+            <div class="page-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="page-title">Patient Management</h1>
+                    <p class="page-subtitle">Manage your assigned patients and their health data</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPatientModal">
+                        <i class="bi bi-person-plus me-1"></i> Add New Patient
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Patient List Section -->
+                <div class="col-lg-4">
+                    <div class="dashboard-card p-0 overflow-hidden">
+                        <div class="p-3 border-bottom">
+                            <div class="search-container">
+                                <i class="bi bi-search search-icon"></i>
+                                <input type="text" class="form-control" id="patientSearchInput" placeholder="Search patients...">
+                            </div>
+                            <div class="filter-container">
+                                <div class="filter-btn active" data-filter="all">All</div>
+                                <div class="filter-btn" data-filter="recent">Recent</div>
+                                <div class="filter-btn" data-filter="critical">Critical</div>
+                                <div class="filter-btn" data-filter="scheduled">Scheduled</div>
+                            </div>
+                        </div>
+                        <div class="patient-list" id="patientList">
+                            <!-- Patient list will be loaded here -->
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Detail Section -->
+                <div class="col-lg-8">
+                    <div class="dashboard-card p-4" id="patientDetailContainer">
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-person-circle" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">Select a patient to view details</h4>
+                            <p>Click on a patient from the list to view their detailed information and symptoms.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Patient Modal -->
+<div class="modal fade" id="addPatientModal" tabindex="-1" aria-labelledby="addPatientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPatientModalLabel">Add New Patient</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addPatientForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phoneNumber" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phoneNumber" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="dob" class="form-label">Date of Birth</label>
+                            <input type="text" class="form-control" id="dob" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="gender" class="form-label">Gender</label>
+                            <select class="form-select" id="gender" required>
+                                <option value="" selected disabled>Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="medicalHistory" class="form-label">Medical History</label>
+                        <textarea class="form-control" id="medicalHistory" rows="3" placeholder="Enter any relevant medical history or conditions"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="savePatientBtn">Add Patient</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="notificationToast">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Operation completed successfully.
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    $(document).ready(function() {
+        // Initialize date picker
+        flatpickr("#dob", {
+            dateFormat: "Y-m-d",
+            maxDate: "today"
+        });
+
+        // Current provider ID (would normally come from session/auth)
+        let currentProviderId = 1;
+        let providerName = document.getElementById("provider_name");
+
+
+        // Track current patient ID
+        let currentPatientId = null;
+        // Load provider details
+        loadProviderDetails();
+
+        // Load patients for the current provider
+        loadPatients();
+
+        // Initialize toast
+        const toast = new bootstrap.Toast(document.getElementById('notificationToast'));
+
+        // Patient search functionality
+        $('#patientSearchInput').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase();
+
+            $('.patient-card').each(function() {
+                const patientName = $(this).find('.patient-name').text().toLowerCase();
+                const patientDetails = $(this).find('.patient-details').text().toLowerCase();
+
+                if (patientName.includes(searchTerm) || patientDetails.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        // Patient filter functionality
+        $('.filter-btn').on('click', function() {
+            $('.filter-btn').removeClass('active');
+            $(this).addClass('active');
+
+            const filter = $(this).data('filter');
+
+            if (filter === 'all') {
+                $('.patient-card').show();
+            } else if (filter === 'recent') {
+                // Show patients with recent activity (last 7 days)
+                $('.patient-card').hide();
+                $('.patient-card[data-recent="true"]').show();
+            } else if (filter === 'critical') {
+                // Show patients with critical symptoms
+                $('.patient-card').hide();
+                $('.patient-card[data-critical="true"]').show();
+            } else if (filter === 'scheduled') {
+                // Show patients with upcoming appointments
+                $('.patient-card').hide();
+                $('.patient-card[data-scheduled="true"]').show();
+            }
+        });
+
+        // Add new patient
+        $('#savePatientBtn').on('click', function() {
+            const form = $('#addPatientForm')[0];
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const patientData = {
+                firstName: $('#firstName').val(),
+                lastName: $('#lastName').val(),
+                email: $('#email').val(),
+                phoneNumber: $('#phoneNumber').val(),
+                dob: $('#dob').val(),
+                gender: $('#gender').val(),
+                address: $('#address').val(),
+                medicalHistory: $('#medicalHistory').val(),
+                providerId: currentProviderId,
+                role: 'PATIENT'
+            };
+
+            // Calculate age from DOB
+            const dob = new Date(patientData.dob);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            patientData.age = age;
+
+            $.ajax({
+                url: '/api/patients',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(patientData),
+                success: function(result) {
+                    showSuccess('Patient added successfully');
+                    $('#addPatientModal').modal('hide');
+                    form.reset();
+
+                    // Reload patients
+                    loadPatients();
+                },
+                error: function() {
+                    showError('Failed to add patient');
+
+                    // For demo purposes, simulate success
+                    $('#addPatientModal').modal('hide');
+                    form.reset();
+                    showSuccess('Patient added successfully (Demo)');
+
+                    // Reload patients
+                    loadPatients();
+                }
+            });
+        });
+
+        //load provider details
+        function loadProviderDetails(){
+            $.ajax({
+                url:"http://localhost:8080/provider/patients/getProvider",
+                type:"GET",
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const provider = response.data;
+                        providerName.textContent = "Dr. " + provider.firstName + " " + provider.lastName;
+                        currentProviderId = provider.id;
+                    } else {
+                        showError(response.message)
+                    }
+                }
+            })
+        }
+
+        // Load patients function
+        function loadPatients() {
+            const container = $('#patientList');
+            container.html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+
+            $.ajax({
+                url: 'http://localhost:8080/provider/patients/getPatients',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+                },
+                data: { providerId: currentProviderId },
+                success: function(response) {
+                    updatePatientList(response.data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading patients:', error);
+
+                    // Show error message
+                    container.html(`
+                        <div class="text-center py-4">
+                            <div class="text-danger mb-2">Failed to load patients</div>
+                            <button class="btn btn-sm btn-outline-primary retry-btn">
+                                <i class="bi bi-arrow-clockwise"></i> Retry
+                            </button>
+                        </div>
+                    `);
+
+                    // Add retry button handler
+                    container.find('.retry-btn').on('click', loadPatients);
+
+                    // For demo purposes, show sample patients
+                    const samplePatients = getSamplePatients();
+                    updatePatientList(samplePatients);
+                }
+            });
+        }
+
+        // Update patient list with data
+        function updatePatientList(patients) {
+            const container = $('#patientList');
+            container.empty();
+
+            if (!patients || patients.length === 0) {
+                container.html('<div class="text-center py-3">No patients found</div>');
+                return;
+            }
+
+            patients.forEach(patient => {
+                // Check if patient has recent activity (last 7 days)
+                const hasRecentActivity = patient.symptoms && patient.symptoms.some(symptom => {
+                    const symptomDate = new Date(symptom.date);
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                    return symptomDate >= sevenDaysAgo;
+                });
+
+                // Check if patient has critical symptoms
+                const hasCriticalSymptoms = patient.symptoms && patient.symptoms.some(symptom =>
+                    symptom.severity === 'HIGH'
+                );
+
+                // Check if patient has upcoming appointments
+                const hasUpcomingAppointments = patient.appointmentsAsPatient && patient.appointmentsAsPatient.some(appointment => {
+                    const appointmentDate = new Date(appointment.dateTime);
+                    const today = new Date();
+                    return appointmentDate >= today;
+                });
+
+                // Count symptoms
+                const symptomsCount = patient.symptoms ? patient.symptoms.length : 0;
+
+                // Count appointments
+                const appointmentsCount = patient.appointmentsAsPatient ? patient.appointmentsAsPatient.length : 0;
+
+                // Count medications
+                const medicationsCount = patient.medicationSchedules ? patient.medicationSchedules.length : 0;
+
+                const patientCard = $('<div></div>')
+                    .addClass('patient-card p-3 d-flex align-items-center')
+                    .attr('data-id', patient.id)
+                    .attr('data-recent', hasRecentActivity)
+                    .attr('data-critical', hasCriticalSymptoms)
+                    .attr('data-scheduled', hasUpcomingAppointments);
+
+                patientCard.html(`
+                    <div class="patient-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="patient-info">
+                        <div class="patient-name">${patient.firstName} ${patient.lastName}</div>
+                        <p class="patient-details">${patient.age} yrs • ${patient.gender || 'Not specified'}</p>
+                        <div class="patient-metrics">
+                            <div class="patient-metric" title="Total Symptoms">
+                                <i class="bi bi-journal-medical text-danger"></i> ${symptomsCount}
+                            </div>
+                            <div class="patient-metric" title="High Severity Symptoms">
+                                <i class="bi bi-exclamation-triangle text-danger"></i> ${patient.symptoms ? patient.symptoms.filter(s => s.severity === 'HIGH').length : 0}
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+                // Add click handler to show patient details
+                patientCard.on('click', function() {
+                    const patientId = $(this).data('id');
+                    $('.patient-card').removeClass('active');
+                    $(this).addClass('active');
+                    loadPatientDetails(patientId);
+                });
+
+                container.append(patientCard);
+            });
+        }
+
+        // Load patient details function
+        function loadPatientDetails(patientId) {
+            if (!patientId) return;
+
+            currentPatientId = patientId;
+
+            const container = $('#patientDetailContainer');
+            container.html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+
+            $.ajax({
+                url: `http://localhost:8080/provider/patients/getPatient/${patientId}`,
+                type: 'GET',
+                success: function(response) {
+                    updatePatientDetails(response.data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading patient details:', error);
+
+                    // Show error message
+                    container.html(`
+                        <div class="text-center py-4">
+                            <div class="text-danger mb-2">Failed to load patient details</div>
+                            <button class="btn btn-sm btn-outline-primary retry-btn" data-id="${patientId}">
+                                <i class="bi bi-arrow-clockwise"></i> Retry
+                            </button>
+                        </div>
+                    `);
+
+                    // Add retry button handler
+                    container.find('.retry-btn').on('click', function() {
+                        const patientId = $(this).data('id');
+                        loadPatientDetails(patientId);
+                    });
+
+                    // For demo purposes, show sample patient details
+                    const samplePatients = getSamplePatients();
+                    const patient = samplePatients.find(p => p.id == patientId);
+                    if (patient) {
+                        updatePatientDetails(patient);
+                    }
+                }
+            });
+        }
+
+        // Update patient details with data
+        function updatePatientDetails(patient) {
+            const container = $('#patientDetailContainer');
+
+            // Count symptoms by severity
+            const lowSeverityCount = patient.symptoms ? patient.symptoms.filter(s => s.severity === 'LOW').length : 0;
+            const mediumSeverityCount = patient.symptoms ? patient.symptoms.filter(s => s.severity === 'MEDIUM').length : 0;
+            const highSeverityCount = patient.symptoms ? patient.symptoms.filter(s => s.severity === 'HIGH').length : 0;
+
+            // Format date of birth
+            const dob = patient.dob ? new Date(patient.dob).toLocaleDateString() : 'Not specified';
+
+            // Format created at date
+            const createdAt = patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : 'Not specified';
+
+            container.html(`
+                <div class="patient-detail-header">
+                    <div class="patient-detail-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="patient-detail-info">
+                        <h2>${patient.firstName} ${patient.lastName}</h2>
+                        <p>${patient.age} years old • ${patient.gender || 'Not specified'} • Patient since ${createdAt}</p>
+                    </div>
+                    <div class="patient-detail-actions">
+                        <button class="btn btn-outline-primary" id="scheduleAppointmentBtn">
+                            <i class="bi bi-journal-medical"></i> View Symptoms
+                        </button>
+                        <button class="btn btn-outline-secondary" id="editPatientBtn">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs patient-detail-nav" id="patientTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">
+                            <i class="bi bi-grid me-1"></i> Overview
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="symptoms-tab" data-bs-toggle="tab" data-bs-target="#symptoms-tab-pane" type="button" role="tab" aria-controls="symptoms-tab-pane" aria-selected="false">
+                            <i class="bi bi-journal-medical me-1"></i> Symptoms
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="patientTabsContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0">
+                        <div class="patient-stats">
+                            <div class="patient-stat-card">
+                                <div class="patient-stat-icon symptoms">
+                                    <i class="bi bi-journal-medical"></i>
+                                </div>
+                                <div class="patient-stat-title">Total Symptoms</div>
+                                <div class="patient-stat-value">${patient.symptoms ? patient.symptoms.length : 0}</div>
+                            </div>
+                            <div class="patient-stat-card">
+                                <div class="patient-stat-icon symptoms" style="background-color: var(--danger-light); color: var(--danger);">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </div>
+                                <div class="patient-stat-title">High Severity</div>
+                                <div class="patient-stat-value">${highSeverityCount}</div>
+                            </div>
+                            <div class="patient-stat-card">
+                                <div class="patient-stat-icon symptoms" style="background-color: var(--warning-light); color: var(--warning);">
+                                    <i class="bi bi-exclamation"></i>
+                                </div>
+                                <div class="patient-stat-title">Medium Severity</div>
+                                <div class="patient-stat-value">${mediumSeverityCount}</div>
+                            </div>
+                            <div class="patient-stat-card">
+                                <div class="patient-stat-icon symptoms" style="background-color: var(--success-light); color: var(--success);">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="patient-stat-title">Low Severity</div>
+                                <div class="patient-stat-value">${lowSeverityCount}</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="patient-detail-section">
+                                    <h5 class="patient-detail-section-title">Personal Information</h5>
+                                    <div class="mb-3">
+                                        <strong>Email:</strong> ${patient.email || 'Not provided'}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Phone:</strong> ${patient.phoneNumber || 'Not provided'}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Address:</strong> ${patient.address || 'Not provided'}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Date of Birth:</strong> ${dob}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="patient-detail-section">
+                                    <h5 class="patient-detail-section-title">Medical Information</h5>
+                                    <div class="mb-3">
+                                        <strong>Medical History:</strong>
+                                        <p>${patient.medicalHistory || 'No medical history recorded'}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Symptom Severity:</strong>
+                                        <div class="d-flex gap-3 mt-2">
+                                            <div>
+                                                <span class="badge bg-success-light text-success p-2">Low: ${lowSeverityCount}</span>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-warning-light text-warning p-2">Medium: ${mediumSeverityCount}</span>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-danger-light text-danger p-2">High: ${highSeverityCount}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="patient-detail-section">
+                            <h5 class="patient-detail-section-title">Recent Symptoms</h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentActivityTable">
+                                        ${getRecentActivityRows(patient)}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Symptoms Tab -->
+                    <div class="tab-pane fade" id="symptoms-tab-pane" role="tabpanel" aria-labelledby="symptoms-tab" tabindex="0">
+                        <div class="patient-detail-section">
+                            <div class="symptom-filter">
+                                <div class="symptom-filter-btns">
+                                    <div class="filter-btn active" data-symptom-filter="all">All</div>
+                                    <div class="filter-btn" data-symptom-filter="HIGH">High</div>
+                                    <div class="filter-btn" data-symptom-filter="MEDIUM">Medium</div>
+                                    <div class="filter-btn" data-symptom-filter="LOW">Low</div>
+                                </div>
+                                <div class="symptom-sort">
+                                    <label for="symptomSort">Sort by:</label>
+                                    <select id="symptomSort" class="form-select form-select-sm">
+                                        <option value="date-desc">Date (Newest)</option>
+                                        <option value="date-asc">Date (Oldest)</option>
+                                        <option value="severity-desc">Severity (High to Low)</option>
+                                        <option value="severity-asc">Severity (Low to High)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="symptomsList">
+                                ${getSymptomsList(patient.symptoms)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            // Add event handlers for symptom filtering
+            $('.symptom-filter-btns .filter-btn').on('click', function() {
+                $('.symptom-filter-btns .filter-btn').removeClass('active');
+                $(this).addClass('active');
+
+                const filter = $(this).data('symptom-filter');
+                filterSymptoms(filter, patient.symptoms);
+            });
+
+            // Add event handler for symptom sorting
+            $('#symptomSort').on('change', function() {
+                const sortValue = $(this).val();
+                sortSymptoms(sortValue, patient.symptoms);
+            });
+
+            // Add event handlers for buttons
+            $('#scheduleAppointmentBtn').on('click', function() {
+                // Switch to symptoms tab
+                $('#symptoms-tab').tab('show');
+            });
+
+            $('#editPatientBtn').on('click', function() {
+                // Open edit patient modal or redirect to edit page
+                alert('Edit patient functionality would open here');
+            });
+        }
+
+        // Filter symptoms based on severity
+        function filterSymptoms(filter, symptoms) {
+            if (filter === 'all') {
+                $('#symptomsList').html(getSymptomsList(symptoms));
+            } else {
+                const filteredSymptoms = symptoms ? symptoms.filter(s => s.severity === filter) : [];
+                $('#symptomsList').html(getSymptomsList(filteredSymptoms));
+            }
+        }
+
+        // Sort symptoms based on selected option
+        function sortSymptoms(sortOption, symptoms) {
+            if (!symptoms || symptoms.length === 0) return;
+
+            let sortedSymptoms = [...symptoms];
+
+            switch (sortOption) {
+                case 'date-desc':
+                    sortedSymptoms.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'date-asc':
+                    sortedSymptoms.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    break;
+                case 'severity-desc':
+                    sortedSymptoms.sort((a, b) => getSeverityValue(b.severity) - getSeverityValue(a.severity));
+                    break;
+                case 'severity-asc':
+                    sortedSymptoms.sort((a, b) => getSeverityValue(a.severity) - getSeverityValue(b.severity));
+                    break;
+            }
+
+            $('#symptomsList').html(getSymptomsList(sortedSymptoms));
+        }
+
+        // Helper function to get severity value for sorting
+        function getSeverityValue(severity) {
+            switch (severity) {
+                case 'HIGH': return 3;
+                case 'MEDIUM': return 2;
+                case 'LOW': return 1;
+                default: return 0;
+            }
+        }
+
+        // Generate symptoms list HTML
+        function getSymptomsList(symptoms) {
+            if (!symptoms || symptoms.length === 0) {
+                return `
+                    <div class="symptom-empty">
+                        <i class="bi bi-journal-medical"></i>
+                        <p>No symptoms recorded for this patient</p>
+                    </div>
+                `;
+            }
+
+            let html = '';
+
+            symptoms.forEach(symptom => {
+                const date = new Date(symptom.date).toLocaleString();
+
+                html += `
+                    <div class="symptom-card">
+                        <div class="symptom-header">
+                            <h6 class="symptom-title">${symptom.description}</h6>
+                            <span class="symptom-severity ${symptom.severity}">${symptom.severity}</span>
+                        </div>
+                        <div class="symptom-date">Reported on: ${date}</div>
+                        <p class="symptom-notes">${symptom.notes || 'No additional notes'}</p>
+                    </div>
+                `;
+            });
+
+            return html;
+        }
+
+        // Generate recent activity rows
+        function getRecentActivityRows(patient) {
+            // Only include symptoms for activity
+            let activities = [];
+
+            // Add symptoms to activities
+            if (patient.symptoms && patient.symptoms.length > 0) {
+                patient.symptoms.forEach(symptom => {
+                    activities.push({
+                        date: new Date(symptom.date),
+                        type: 'Symptom',
+                        description: `Reported ${symptom.description} (${symptom.severity} severity)`
+                    });
+                });
+            }
+
+            // Sort activities by date (newest first)
+            activities.sort((a, b) => b.date - a.date);
+
+            // Limit to 5 most recent activities
+            activities = activities.slice(0, 5);
+
+            if (activities.length === 0) {
+                return '<tr><td colspan="3" class="text-center">No symptoms reported</td></tr>';
+            }
+
+            let html = '';
+
+            activities.forEach(activity => {
+                const formattedDate = activity.date.toLocaleDateString();
+
+                html += `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        <td>${activity.type}</td>
+                        <td>${activity.description}</td>
+                    </tr>
+                `;
+            });
+
+            return html;
+        }
+
+        // Helper function to show success toast
+        function showSuccess(message) {
+            $('#toastTitle').text('Success');
+            $('#toastMessage').text(message);
+            toast.show();
+        }
+
+        // Helper function to show error toast
+        function showError(message) {
+            $('#toastTitle').text('Error');
+            $('#toastMessage').html(`
+                ${message}<br>
+                <small class="text-muted">Please try again later.</small>
+            `);
+            toast.show();
+        }
+
+        // Sample data for demo purposes
+        function getSamplePatients() {
+            return [
+                {
+                    id: 1,
+                    firstName: 'John',
+                    lastName: 'Smith',
+                    email: 'john.smith@example.com',
+                    phoneNumber: '(555) 123-4567',
+                    address: '123 Main St, Anytown, USA',
+                    age: 45,
+                    gender: 'Male',
+                    dob: '1978-05-15',
+                    medicalHistory: 'Hypertension, Type 2 Diabetes',
+                    createdAt: '2022-03-10T10:30:00',
+                    providerId: 1,
+                    symptoms: [
+                        {
+                            id: 1,
+                            description: 'Persistent headache',
+                            severity: 'MEDIUM',
+                            date: '2023-06-15T14:30:00',
+                            notes: 'Pain primarily on the right side of the head, lasting for several hours',
+                            patientId: 1
+                        },
+                        {
+                            id: 2,
+                            description: 'Fatigue',
+                            severity: 'LOW',
+                            date: '2023-06-10T09:15:00',
+                            notes: 'Feeling tired throughout the day despite adequate sleep',
+                            patientId: 1
+                        },
+                        {
+                            id: 3,
+                            description: 'Elevated blood pressure',
+                            severity: 'HIGH',
+                            date: '2023-06-05T16:45:00',
+                            notes: 'Blood pressure reading of 160/95 mmHg',
+                            patientId: 1
+                        }
+                    ],
+                    medicationSchedules: [
+                        {
+                            id: 1,
+                            medicationName: 'Metformin',
+                            dosage: '500mg',
+                            frequency: 'TWICE_DAILY',
+                            startDate: '2023-01-15',
+                            endDate: null,
+                            reminderTime: '08:00:00',
+                            patientId: 1
+                        },
+                        {
+                            id: 2,
+                            medicationName: 'Lisinopril',
+                            dosage: '10mg',
+                            frequency: 'DAILY',
+                            startDate: '2023-02-20',
+                            endDate: null,
+                            reminderTime: '08:00:00',
+                            patientId: 1
+                        }
+                    ],
+                    appointmentsAsPatient: [
+                        {
+                            id: 1,
+                            dateTime: '2023-06-20T10:00:00',
+                            purpose: 'Diabetes Follow-up',
+                            status: 'CONFIRMED',
+                            patientId: 1,
+                            providerId: 1
+                        },
+                        {
+                            id: 2,
+                            dateTime: '2023-05-10T14:30:00',
+                            purpose: 'Blood Pressure Check',
+                            status: 'COMPLETED',
+                            patientId: 1,
+                            providerId: 1
+                        }
+                    ],
+                    healthMetrics: []
+                },
+                {
+                    id: 2,
+                    firstName: 'Emily',
+                    lastName: 'Johnson',
+                    email: 'emily.johnson@example.com',
+                    phoneNumber: '(555) 987-6543',
+                    address: '456 Oak Ave, Somewhere, USA',
+                    age: 32,
+                    gender: 'Female',
+                    dob: '1991-09-22',
+                    medicalHistory: 'Asthma, Allergies',
+                    createdAt: '2022-05-18T14:15:00',
+                    providerId: 1,
+                    symptoms: [
+                        {
+                            id: 4,
+                            description: 'Shortness of breath',
+                            severity: 'HIGH',
+                            date: '2023-06-18T11:20:00',
+                            notes: 'Difficulty breathing after light exercise',
+                            patientId: 2
+                        },
+                        {
+                            id: 5,
+                            description: 'Wheezing',
+                            severity: 'MEDIUM',
+                            date: '2023-06-17T20:30:00',
+                            notes: 'Audible wheezing, especially at night',
+                            patientId: 2
+                        }
+                    ],
+                    medicationSchedules: [
+                        {
+                            id: 3,
+                            medicationName: 'Albuterol',
+                            dosage: '90mcg',
+                            frequency: 'AS_NEEDED',
+                            startDate: '2022-10-05',
+                            endDate: null,
+                            reminderTime: null,
+                            patientId: 2
+                        },
+                        {
+                            id: 4,
+                            medicationName: 'Fluticasone',
+                            dosage: '110mcg',
+                            frequency: 'TWICE_DAILY',
+                            startDate: '2022-10-05',
+                            endDate: null,
+                            reminderTime: '08:00:00',
+                            patientId: 2
+                        }
+                    ],
+                    appointmentsAsPatient: [
+                        {
+                            id: 3,
+                            dateTime: '2023-06-25T15:00:00',
+                            purpose: 'Asthma Review',
+                            status: 'CONFIRMED',
+                            patientId: 2,
+                            providerId: 1
+                        }
+                    ],
+                    healthMetrics: []
+                },
+                {
+                    id: 3,
+                    firstName: 'Michael',
+                    lastName: 'Chen',
+                    email: 'michael.chen@example.com',
+                    phoneNumber: '(555) 456-7890',
+                    address: '789 Pine St, Elsewhere, USA',
+                    age: 56,
+                    gender: 'Male',
+                    dob: '1967-03-08',
+                    medicalHistory: 'Coronary Artery Disease, Hyperlipidemia',
+                    createdAt: '2022-01-05T09:45:00',
+                    providerId: 1,
+                    symptoms: [
+                        {
+                            id: 6,
+                            description: 'Chest pain',
+                            severity: 'HIGH',
+                            date: '2023-06-14T08:10:00',
+                            notes: 'Sharp pain in the center of the chest, lasting about 5 minutes',
+                            patientId: 3
+                        }
+                    ],
+                    medicationSchedules: [
+                        {
+                            id: 5,
+                            medicationName: 'Atorvastatin',
+                            dosage: '40mg',
+                            frequency: 'DAILY',
+                            startDate: '2022-02-10',
+                            endDate: null,
+                            reminderTime: '20:00:00',
+                            patientId: 3
+                        },
+                        {
+                            id: 6,
+                            medicationName: 'Aspirin',
+                            dosage: '81mg',
+                            frequency: 'DAILY',
+                            startDate: '2022-02-10',
+                            endDate: null,
+                            reminderTime: '08:00:00',
+                            patientId: 3
+                        }
+                    ],
+                    appointmentsAsPatient: [
+                        {
+                            id: 4,
+                            dateTime: '2023-06-22T11:30:00',
+                            purpose: 'Cardiac Follow-up',
+                            status: 'CONFIRMED',
+                            patientId: 3,
+                            providerId: 1
+                        }
+                    ],
+                    healthMetrics: []
+                },
+                {
+                    id: 4,
+                    firstName: 'Sarah',
+                    lastName: 'Williams',
+                    email: 'sarah.williams@example.com',
+                    phoneNumber: '(555) 234-5678',
+                    address: '321 Elm St, Nowhere, USA',
+                    age: 28,
+                    gender: 'Female',
+                    dob: '1995-11-30',
+                    medicalHistory: 'Anxiety, Depression',
+                    createdAt: '2022-07-12T13:20:00',
+                    providerId: 1,
+                    symptoms: [
+                        {
+                            id: 7,
+                            description: 'Insomnia',
+                            severity: 'MEDIUM',
+                            date: '2023-06-16T22:45:00',
+                            notes: 'Difficulty falling asleep, waking up multiple times during the night',
+                            patientId: 4
+                        },
+                        {
+                            id: 8,
+                            description: 'Increased anxiety',
+                            severity: 'MEDIUM',
+                            date: '2023-06-15T14:00:00',
+                            notes: 'Feeling more anxious than usual, especially in social situations',
+                            patientId: 4
+                        }
+                    ],
+                    medicationSchedules: [
+                        {
+                            id: 7,
+                            medicationName: 'Sertraline',
+                            dosage: '50mg',
+                            frequency: 'DAILY',
+                            startDate: '2022-08-01',
+                            endDate: null,
+                            reminderTime: '08:00:00',
+                            patientId: 4
+                        }
+                    ],
+                    appointmentsAsPatient: [
+                        {
+                            id: 5,
+                            dateTime: '2023-06-30T13:00:00',
+                            purpose: 'Medication Review',
+                            status: 'CONFIRMED',
+                            patientId: 4,
+                            providerId: 1
+                        }
+                    ],
+                    healthMetrics: []
+                },
+                {
+                    id: 5,
+                    firstName: 'Robert',
+                    lastName: 'Garcia',
+                    email: 'robert.garcia@example.com',
+                    phoneNumber: '(555) 876-5432',
+                    address: '654 Maple Ave, Anywhere, USA',
+                    age: 68,
+                    gender: 'Male',
+                    dob: '1955-07-20',
+                    medicalHistory: 'Osteoarthritis, Hypertension',
+                    createdAt: '2021-11-08T10:10:00',
+                    providerId: 1,
+                    symptoms: [
+                        {
+                            id: 9,
+                            description: 'Joint pain',
+                            severity: 'MEDIUM',
+                            date: '2023-06-12T16:30:00',
+                            notes: 'Increased pain in knees and hips, especially in the morning',
+                            patientId: 5
+                        },
+                        {
+                            id: 10,
+                            description: 'Swelling in ankles',
+                            severity: 'LOW',
+                            date: '2023-06-10T18:45:00',
+                            notes: 'Mild swelling in both ankles at the end of the day',
+                            patientId: 5
+                        }
+                    ],
+                    medicationSchedules: [
+                        {
+                            id: 8,
+                            medicationName: 'Hydrochlorothiazide',
+                            dosage: '25mg',
+                            frequency: 'DAILY',
+                            startDate: '2021-12-01',
+                            endDate: null,
+                            reminderTime: '08:00:00',
+                            patientId: 5
+                        },
+                        {
+                            id: 9,
+                            medicationName: 'Acetaminophen',
+                            dosage: '500mg',
+                            frequency: 'AS_NEEDED',
+                            startDate: '2022-01-15',
+                            endDate: null,
+                            reminderTime: null,
+                            patientId: 5
+                        }
+                    ],
+                    appointmentsAsPatient: [
+                        {
+                            id: 6,
+                            dateTime: '2023-06-28T09:30:00',
+                            purpose: 'Blood Pressure Check',
+                            status: 'CONFIRMED',
+                            patientId: 5,
+                            providerId: 1
+                        }
+                    ],
+                    healthMetrics: []
+                }
+            ];
+        }
+    });
+</script>
+</body>
+</html>
