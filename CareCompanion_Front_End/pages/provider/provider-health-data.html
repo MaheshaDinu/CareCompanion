@@ -552,7 +552,7 @@
                         <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item text-danger" href="../../index.html" onclick="localStorage.removeItem('jwtToken')"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </li>
             </ul>
@@ -1592,7 +1592,7 @@
         // Function to get metric details
         function getMetricDetails(metricId) {
             $.ajax({
-                url: `/api/health-metrics/${metricId}`,
+                url: `http://localhost:8080/provider/health-data/getHealthMetric/${metricId}`,
                 type: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
@@ -1700,7 +1700,7 @@
         // Function to get threshold details
         function getThresholdDetails(thresholdId) {
             $.ajax({
-                url: `/api/thresholds/${thresholdId}`,
+                url: `http://localhost:8080/provider//health-data/getThreshold/${thresholdId}`,
                 type: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
@@ -1759,8 +1759,9 @@
 
         // Function to save threshold
         function saveThreshold(thresholdData) {
+            console.log(thresholdData)
             const isUpdate = thresholdData.id > 0;
-            const url = isUpdate ? `/api/thresholds/${thresholdData.id}` : '/api/thresholds';
+            const url = isUpdate ? `http://localhost:8080/provider/health-data/updateThreshold/${thresholdData.id}` : 'http://localhost:8080/provider/health-data/addThreshold';
             const method = isUpdate ? 'PUT' : 'POST';
 
             $.ajax({

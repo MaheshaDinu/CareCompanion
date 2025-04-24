@@ -45,4 +45,10 @@ public class PatientThresholdServiceImpl implements PatientThresholdService {
         List<PatientThreshold> patientThresholds = patientThresholdRepo.findByPatientId(patientId);
         return modelMapper.map(patientThresholds, new TypeToken<List<PatientThresholdDTO>>() {}.getType());
     }
+
+    @Override
+    public PatientThresholdDTO getPatientThresholdById(int id) {
+        Optional<PatientThreshold> optionalPatientThreshold = patientThresholdRepo.findById(id);
+        return optionalPatientThreshold.map(patientThreshold -> modelMapper.map(patientThreshold, PatientThresholdDTO.class)).orElse(null);
+    }
 }

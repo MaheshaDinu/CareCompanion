@@ -2,6 +2,7 @@ package lk.ijse.carecompanion.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lk.ijse.carecompanion.dto.HealthMetricChartDTO;
+import lk.ijse.carecompanion.dto.PatientThresholdDTO;
 import lk.ijse.carecompanion.dto.ProviderDTO;
 import lk.ijse.carecompanion.enums.HealthMetricType;
 import lk.ijse.carecompanion.service.HealthMetricService;
@@ -94,5 +95,41 @@ public class ProviderHealthDataController {
         return ResponseEntity.ok(
                 new ResponseUtil(200, "Chart data fetched", chart)
         );
+    }
+
+    @GetMapping("getHealthMetric/{id}")
+    public ResponseEntity<ResponseUtil> getHealthMetric(@PathVariable int id){
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200,"",healthMetricService.getHealthMetricById(id)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
+    }
+
+    @GetMapping("getThreshold/{id}")
+    public ResponseEntity<ResponseUtil> getThreshold(@PathVariable int id){
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200,"",patientThresholdService.getPatientThresholdById(id)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
+    }
+    @PutMapping("/updateThreshold/{id}")
+    public ResponseEntity<ResponseUtil> updateThreshold(@PathVariable int id,@RequestBody PatientThresholdDTO patientThresholdDTO){
+        try {
+            patientThresholdService.update(patientThresholdDTO);
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseUtil(200,"Threshold Updated Successfully",null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
+    }
+    @PostMapping("/addThreshold")
+    public ResponseEntity<ResponseUtil> addThreshold(@RequestBody PatientThresholdDTO patientThresholdDTO){
+        try {
+            patientThresholdService.save(patientThresholdDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseUtil(201,"Threshold Added Successfully",null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseUtil(500,e.getMessage(),null));
+        }
     }
 }

@@ -11,6 +11,7 @@ public interface PatientThresholdService {
     void update(PatientThresholdDTO patientThresholdDTO);
     void delete(int id);
     List<PatientThresholdDTO> getPatientThresholdsByPatientId(int patientId);
+    PatientThresholdDTO getPatientThresholdById(int id);
 
 
 }

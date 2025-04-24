@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareCompanion - My Medications</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #4895ef;
+      --primary-light: rgba(72, 149, 239, 0.1);
+      --primary-dark: #3a75c4;
+      --secondary: #3a0ca3;
+      --success: #06d6a0;
+      --success-light: rgba(6, 214, 160, 0.1);
+      --light-bg: #f8f9fa;
+      --text-dark: #2d3436;
+      --danger: #ef476f;
+      --danger-light: rgba(239, 71, 111, 0.1);
+      --warning: #ffd166;
+      --warning-light: rgba(255, 209, 102, 0.1);
+      --gray: #adb5bd;
+      --gray-light: #e9ecef;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system;
+      background-color: var(--light-bg);
+      color: var(--text-dark);
+    }
+
+    .navbar {
+      padding: 0.75rem 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .navbar-brand {
+      font-size: 1.4rem;
+    }
+
+    .sidebar {
+      height: calc(100vh - 70px);
+      position: sticky;
+      top: 70px;
+      padding: 1.5rem;
+      overflow-y: auto;
+      transition: width 0.3s ease;
+    }
+
+    .main-content {
+      padding: 1.5rem;
+    }
+
+    .nav-pills .nav-link {
+      border-radius: 8px;
+      color: var(--text-dark);
+      transition: all 0.2s ease;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-pills .nav-link:hover {
+      background-color: var(--primary-light);
+    }
+
+    .nav-pills .nav-link.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 8px rgba(72, 149, 239, 0.2);
+    }
+
+    .nav-pills .nav-link i {
+      margin-right: 0.75rem;
+    }
+
+    .page-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      color: var(--gray);
+      margin-bottom: 0;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 18px;
+      height: 18px;
+      background-color: var(--danger);
+      color: white;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .search-container i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray);
+    }
+
+    .search-input {
+      padding-left: 2.5rem;
+      border-radius: 50px;
+    }
+
+    .filter-dropdown {
+      margin-bottom: 1rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      color: var(--gray-light);
+      margin-bottom: 1rem;
+    }
+
+    .empty-state h5 {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+      color: var(--gray);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Medicine Package Card Styles */
+    .medicine-package {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      border: 1px solid var(--gray-light);
+    }
+
+    .medicine-package:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .medicine-header {
+      padding: 1rem;
+      border-bottom: 1px dashed var(--gray-light);
+      position: relative;
+    }
+
+    .medicine-header.daily {
+      background-color: var(--primary-light);
+      border-left: 5px solid var(--primary);
+    }
+
+    .medicine-header.twice {
+      background-color: var(--warning-light);
+      border-left: 5px solid var(--warning);
+    }
+
+    .medicine-header.weekly {
+      background-color: var(--success-light);
+      border-left: 5px solid var(--success);
+    }
+
+    .medicine-name {
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 0.25rem;
+      color: var(--text-dark);
+    }
+
+    .medicine-dosage {
+      font-size: 0.9rem;
+      color: var(--gray);
+      margin-bottom: 0;
+    }
+
+    .medicine-status {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .medicine-body {
+      padding: 1rem;
+    }
+
+    .medicine-info {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+
+    .medicine-info-item {
+      flex: 1 0 50%;
+      margin-bottom: 0.75rem;
+      min-width: 120px;
+    }
+
+    .medicine-info-label {
+      font-size: 0.8rem;
+      color: var(--gray);
+      margin-bottom: 0.25rem;
+    }
+
+    .medicine-info-value {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .medicine-reminder {
+      display: flex;
+      align-items: center;
+      background-color: var(--light-bg);
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-top: 0.5rem;
+    }
+
+    .medicine-reminder i {
+      font-size: 1.2rem;
+      margin-right: 0.75rem;
+      color: var(--primary);
+    }
+
+    .medicine-reminder-text {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .medicine-frequency {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .medicine-frequency.daily {
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .medicine-frequency.twice {
+      background-color: var(--warning-light);
+      color: var(--warning);
+    }
+
+    .medicine-frequency.weekly {
+      background-color: var(--success-light);
+      color: var(--success);
+    }
+
+    .section-title {
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--gray-light);
+    }
+
+    .medicine-section {
+      margin-bottom: 2rem;
+    }
+
+    .medicine-barcode {
+      text-align: center;
+      padding: 0.5rem 0;
+      border-top: 1px dashed var(--gray-light);
+    }
+
+    .medicine-barcode img {
+      height: 40px;
+      opacity: 0.7;
+    }
+
+    .medicine-barcode-text {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--gray);
+      margin-top: 0.25rem;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .sidebar {
+        height: auto;
+        position: relative;
+        top: 0;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold text-primary" href="#">
+      <i class="bi bi-heart-pulse me-2"></i>CareCompanion
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item position-relative me-3">
+          <a class="nav-link" href="#">
+            <i class="bi bi-bell fs-5"></i>
+            <span class="notification-badge">2</span>
+          </a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="rounded-circle bg-primary-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+              <i class="bi bi-person-fill text-primary"></i>
+            </div>
+            <span id="patient_name">John Smith</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="../../index.html" onclick="localStorage.removeItem('jwtToken')"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-2 bg-white sidebar">
+      <nav class="nav nav-pills flex-column">
+        <a class="nav-link" href="patient-dashboard.html">
+          <i class="bi bi-speedometer2"></i>Dashboard
+        </a>
+        <a class="nav-link" href="health-metric.html">
+          <i class="bi bi-heart-pulse"></i>Health Metrics
+        </a>
+
+        <a class="nav-link" href="patient-appointments.html">
+          <i class="bi bi-calendar-check"></i>Appointments
+        </a>
+        <a class="nav-link active" href="patient-medication.html">
+          <i class="bi bi-capsule"></i>Medications
+        </a>
+        <a class="nav-link" href="patient-symptom-diary.html">
+          <i class="bi bi-journal-text"></i>Symptom Diary
+        </a>
+
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-10 main-content">
+      <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="page-title">My Medications</h1>
+          <p class="page-subtitle">View your current medication schedule</p>
+        </div>
+      </div>
+
+      <!-- Search and Filter -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="search-container">
+            <i class="bi bi-search"></i>
+            <input type="text" class="form-control search-input" id="medicationSearch" placeholder="Search medications...">
+          </div>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <div class="dropdown filter-dropdown d-inline-block">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-funnel me-1"></i> Filter
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+              <li><a class="dropdown-item" href="#" data-filter="all">All Medications</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#" data-filter="DAILY">Daily</a></li>
+              <li><a class="dropdown-item" href="#" data-filter="TWICE_A_DAY">Twice a Day</a></li>
+              <li><a class="dropdown-item" href="#" data-filter="WEEKLY">Weekly</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#" data-filter="active">Active</a></li>
+              <li><a class="dropdown-item" href="#" data-filter="upcoming">Upcoming</a></li>
+              <li><a class="dropdown-item" href="#" data-filter="expired">Expired</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Medications -->
+      <div class="medicine-section" id="activeMedications">
+        <h2 class="section-title">Active Medications</h2>
+        <div class="row" id="activeMedicationsList">
+          <!-- Active medications will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Upcoming Medications -->
+      <div class="medicine-section" id="upcomingMedications">
+        <h2 class="section-title">Upcoming Medications</h2>
+        <div class="row" id="upcomingMedicationsList">
+          <!-- Upcoming medications will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Expired Medications -->
+      <div class="medicine-section" id="expiredMedications">
+        <h2 class="section-title">Expired Medications</h2>
+        <div class="row" id="expiredMedicationsList">
+          <!-- Expired medications will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+  $(document).ready(function() {
+    // Current patient ID (would normally come from session/auth)
+    let currentPatientId = 1;
+    let currentFilter = 'all';
+    const patientName = document.getElementById("patient_name");
+
+    loadPatientDetails();
+
+    // Initialize the page
+    loadMedications();
+
+    // Search functionality for medications
+    $('#medicationSearch').on('input', function() {
+      const searchTerm = $(this).val().toLowerCase();
+      $('.medicine-package').each(function() {
+        const medicationName = $(this).find('.medicine-name').text().toLowerCase();
+        if (medicationName.includes(searchTerm)) {
+          $(this).parent().show();
+        } else {
+          $(this).parent().hide();
+        }
+      });
+    });
+
+    // Filter functionality for medications
+    $('.dropdown-item[data-filter]').on('click', function(e) {
+      e.preventDefault();
+      currentFilter = $(this).data('filter');
+      $('#filterDropdown').text($(this).text());
+      filterMedications(currentFilter);
+    });
+
+    // Function to load patient details
+    function loadPatientDetails() {
+      $.ajax({
+        url: `http://localhost:8080/patient/medication/getPatient`,
+        type: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+        },
+        success: function(response) {
+          const patient = response.data;
+          patientName.textContent = patient.firstName+" "+patient.lastName;
+          currentPatientId = patient.id;
+        },
+        error: function(xhr, status, error) {
+          console.error('Error loading patient details:', error);
+        }
+      });
+    }
+
+    // Function to load medications
+    function loadMedications() {
+      $.ajax({
+        url: `http://localhost:8080/patient/medication/getMedications/${currentPatientId}`,
+        type: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
+        },
+        success: function(response) {
+          const medications = response.data || [];
+          processMedications(medications);
+        },
+        error: function(xhr, status, error) {
+          console.error('Error loading medications:', error);
+
+          // For demo purposes, load sample data
+          const sampleMedications = getSampleMedications();
+          processMedications(sampleMedications);
+        }
+      });
+    }
+
+    // Function to process and categorize medications
+    function processMedications(medications) {
+      // Clear existing medications
+      $('#activeMedicationsList, #upcomingMedicationsList, #expiredMedicationsList').empty();
+
+      if (medications.length === 0) {
+        showEmptyState();
+        return;
+      }
+
+      // Categorize medications
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const activeMeds = [];
+      const upcomingMeds = [];
+      const expiredMeds = [];
+
+      medications.forEach(med => {
+        const startDate = new Date(med.startDate);
+        const endDate = new Date(med.endDate);
+
+        if (startDate > today) {
+          upcomingMeds.push(med);
+        } else if (endDate < today) {
+          expiredMeds.push(med);
+        } else {
+          activeMeds.push(med);
+        }
+      });
+
+      // Render medications by category
+      renderMedicationsByCategory(activeMeds, 'activeMedicationsList');
+      renderMedicationsByCategory(upcomingMeds, 'upcomingMedicationsList');
+      renderMedicationsByCategory(expiredMeds, 'expiredMedicationsList');
+
+      // Show/hide sections based on content
+      $('#activeMedications').toggle(activeMeds.length > 0);
+      $('#upcomingMedications').toggle(upcomingMeds.length > 0);
+      $('#expiredMedications').toggle(expiredMeds.length > 0);
+
+      // Apply current filter
+      if (currentFilter !== 'all') {
+        filterMedications(currentFilter);
+      }
+    }
+
+    // Function to render medications by category
+    function renderMedicationsByCategory(medications, containerId) {
+      const container = $(`#${containerId}`);
+
+      if (medications.length === 0) {
+        container.html(`
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        No medications in this category.
+                    </div>
+                </div>
+            `);
+        return;
+      }
+
+      medications.forEach(med => {
+        const medicineCard = createMedicineCard(med);
+        container.append(medicineCard);
+      });
+    }
+
+    // Function to create a medicine card
+    function createMedicineCard(medication) {
+      // Format dates
+      const startDate = new Date(medication.startDate).toLocaleDateString();
+      const endDate = new Date(medication.endDate).toLocaleDateString();
+
+      // Determine frequency class and text
+      let frequencyClass = '';
+      let frequencyText = '';
+
+      switch(medication.frequency) {
+        case 'DAILY':
+          frequencyClass = 'daily';
+          frequencyText = 'Daily';
+          break;
+        case 'TWICE_A_DAY':
+          frequencyClass = 'twice';
+          frequencyText = 'Twice a Day';
+          break;
+        case 'WEEKLY':
+          frequencyClass = 'weekly';
+          frequencyText = 'Weekly';
+          break;
+        default:
+          frequencyClass = 'daily';
+          frequencyText = medication.frequency;
+      }
+
+      // Determine status
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const startDateObj = new Date(medication.startDate);
+      const endDateObj = new Date(medication.endDate);
+
+      let statusBadge = '';
+
+      if (startDateObj > today) {
+        statusBadge = '<span class="badge bg-info">Upcoming</span>';
+      } else if (endDateObj < today) {
+        statusBadge = '<span class="badge bg-secondary">Expired</span>';
+      } else {
+        statusBadge = '<span class="badge bg-success">Active</span>';
+      }
+
+      // Generate a random barcode number for visual effect
+      const barcodeNumber = 'MED' + medication.id.toString().padStart(6, '0');
+
+      return `
+            <div class="col-md-6 col-lg-4 medicine-item" data-frequency="${medication.frequency}">
+                <div class="medicine-package">
+                    <div class="medicine-header ${frequencyClass}">
+                        <h3 class="medicine-name">${medication.medicationName}</h3>
+                        <p class="medicine-dosage">${medication.dosage}</p>
+                        <div class="medicine-status">
+                            ${statusBadge}
+                        </div>
+                    </div>
+                    <div class="medicine-body">
+                        <span class="medicine-frequency ${frequencyClass}">${frequencyText}</span>
+                        <div class="medicine-info">
+                            <div class="medicine-info-item">
+                                <div class="medicine-info-label">Start Date</div>
+                                <div class="medicine-info-value">${startDate}</div>
+                            </div>
+                            <div class="medicine-info-item">
+                                <div class="medicine-info-label">End Date</div>
+                                <div class="medicine-info-value">${endDate}</div>
+                            </div>
+                        </div>
+                        <div class="medicine-reminder">
+                            <i class="bi bi-alarm"></i>
+                            <div class="medicine-reminder-text">
+                                Reminder at ${medication.reminderTime}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="medicine-barcode">
+                        <img src="https://barcode.tec-it.com/barcode.ashx?data=${barcodeNumber}&code=Code128&multiplebarcodes=false&translate-esc=false&unit=Fit&dpi=96&imagetype=Gif&rotation=0&color=%23000000&bgcolor=%23ffffff&codepage=&qunit=Mm&quiet=0" alt="Barcode">
+                        <div class="medicine-barcode-text">${barcodeNumber}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Function to show empty state
+    function showEmptyState() {
+      $('#activeMedicationsList').html(`
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-capsule"></i>
+                    <h5>No Medications Found</h5>
+                    <p>You don't have any medication schedules yet.</p>
+                </div>
+            </div>
+        `);
+
+      $('#upcomingMedications, #expiredMedications').hide();
+    }
+
+    // Function to filter medications
+    function filterMedications(filter) {
+      if (filter === 'all') {
+        $('.medicine-item').show();
+        return;
+      }
+
+      // Filter by status
+      if (filter === 'active' || filter === 'upcoming' || filter === 'expired') {
+        $('.medicine-section').hide();
+        $(`#${filter}Medications`).show();
+        return;
+      }
+
+      // Filter by frequency
+      $('.medicine-item').hide();
+      $(`.medicine-item[data-frequency="${filter}"]`).show();
+
+      // Show all sections that have visible items
+      $('.medicine-section').each(function() {
+        const hasVisibleItems = $(this).find('.medicine-item:visible').length > 0;
+        $(this).toggle(hasVisibleItems);
+      });
+    }
+
+    // Sample data for demo purposes
+    function getSampleMedications() {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const nextWeek = new Date(today);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+
+      const nextMonth = new Date(today);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+      const lastWeek = new Date(today);
+      lastWeek.setDate(lastWeek.getDate() - 7);
+
+      const lastMonth = new Date(today);
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+
+      // Format dates to YYYY-MM-DD
+      const formatDate = (date) => {
+        return date.toISOString().split('T')[0];
+      };
+
+      return [
+        {
+          id: 101,
+          medicationName: 'Lisinopril',
+          dosage: '10mg - 1 tablet',
+          frequency: 'DAILY',
+          startDate: formatDate(lastMonth),
+          endDate: formatDate(nextMonth),
+          reminderTime: '08:00',
+          patientId: 1
+        },
+        {
+          id: 102,
+          medicationName: 'Metformin',
+          dosage: '500mg - 1 tablet',
+          frequency: 'TWICE_A_DAY',
+          startDate: formatDate(lastMonth),
+          endDate: formatDate(nextMonth),
+          reminderTime: '08:00',
+          patientId: 1
+        },
+        {
+          id: 103,
+          medicationName: 'Aspirin',
+          dosage: '81mg - 1 tablet',
+          frequency: 'DAILY',
+          startDate: formatDate(lastMonth),
+          endDate: formatDate(lastWeek),
+          reminderTime: '08:00',
+          patientId: 1
+        },
+        {
+          id: 104,
+          medicationName: 'Vitamin D',
+          dosage: '1000 IU - 1 capsule',
+          frequency: 'WEEKLY',
+          startDate: formatDate(lastMonth),
+          endDate: formatDate(nextMonth),
+          reminderTime: '08:00',
+          patientId: 1
+        },
+        {
+          id: 105,
+          medicationName: 'Atorvastatin',
+          dosage: '20mg - 1 tablet',
+          frequency: 'DAILY',
+          startDate: formatDate(tomorrow),
+          endDate: formatDate(nextMonth),
+          reminderTime: '20:00',
+          patientId: 1
+        },
+        {
+          id: 106,
+          medicationName: 'Omeprazole',
+          dosage: '20mg - 1 capsule',
+          frequency: 'DAILY',
+          startDate: formatDate(tomorrow),
+          endDate: formatDate(nextMonth),
+          reminderTime: '08:00',
+          patientId: 1
+        },
+        {
+          id: 107,
+          medicationName: 'Amoxicillin',
+          dosage: '500mg - 1 capsule',
+          frequency: 'TWICE_A_DAY',
+          startDate: formatDate(lastWeek),
+          endDate: formatDate(nextWeek),
+          reminderTime: '08:00',
+          patientId: 1
+        }
+      ];
+    }
+  });
+</script>
+</body>
+</html>
