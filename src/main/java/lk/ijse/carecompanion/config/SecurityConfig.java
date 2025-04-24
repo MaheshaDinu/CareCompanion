@@ -55,6 +55,8 @@ public class SecurityConfig {
 
                 // URL rules
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/patient/symptom/**")
+                        .hasAuthority("USER")
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/auth/login/verify",
@@ -66,7 +68,7 @@ public class SecurityConfig {
                 )
 
                 // DISABLE Basic & Form
-//                .httpBasic(Customizer.withDefaults())
+                .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
 
                 // **HOOK IN YOUR JWT FILTER HERE**

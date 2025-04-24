@@ -988,7 +988,7 @@
                 url: 'http://localhost:8080/api/patient/symptom/addSymptom',
                 type: 'POST',
                 headers: {
-                    'Authorization': 'Bearer ' + jwtToken
+                    'Authorization': 'Bearer ' + localStorage.getItem("jwtToken")
                 },
                 contentType: 'application/json',
                 data: JSON.stringify(symptomData),
